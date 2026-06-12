@@ -1,0 +1,130 @@
+mod app;
+mod ui;
+
+use app::{App, Popup};
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEventKind},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::prelude::*;
+use std::{
+    io::{self, stdout, Stdout},
+    time::Duration,
+};
+
+pub fn run() -> Result<(), Box<dyn std::error::Error>> {
+    let mut terminal = setup_terminal()?;
+    let result = run_app(&mut terminal);
+    restore_terminal(&mut terminal)?;
+    result
+}
+
+fn setup_terminal() -> io::Result<Terminal<CrosstermBackend<Stdout>>> {
+    enable_raw_mode()?;
+    let mut stdout = stdout();
+    crossterm::execute!(stdout, EnterAlternateScreen)?;
+    let backend = CrosstermBackend::new(stdout);
+    Terminal::new(backend)
+}
+
+fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> io::Result<()> {
+    disable_raw_mode()?;
+    crossterm::execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+    terminal.show_cursor()
+}
+
+fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut app = App::new();
+    let tick_rate = Duration::from_millis(100);
+
+    loop {
+        terminal.draw(|f| ui::draw(f, &app))?;
+
+        if event::poll(tick_rate)? {
+            if let Event::Key(key) = event::read()? {
+                if key.kind == KeyEventKind::Press {
+                    handle_key(&mut app, key.code);
+                }
+            }
+        }
+
+        if app.should_quit {
+            return Ok(());
+        }
+    }
+}
+
+fn handle_key(app: &mut App, code: KeyCode) {
+    match app.popup {
+        Popup::Source => handle_source_popup(app, code),
+        Popup::Seed => handle_seed_popup(app, code),
+        Popup::None => handle_main(app, code),
+    }
+}
+
+fn handle_main(app: &mut App, code: KeyCode) {
+    match code {
+        KeyCode::Char('q') | KeyCode::Char('Q') => app.should_quit = true,
+        KeyCode::Up | KeyCode::Char('k') => {
+            if app.selected_method > 0 {
+                app.selected_method -= 1;
+            }
+        }
+        KeyCode::Down | KeyCode::Char('j') => {
+            if app.selected_method + 1 < app.methods.len() {
+                app.selected_method += 1;
+            }
+        }
+        KeyCode::Enter => app.run_selected(),
+        KeyCode::Char('s') => {
+            app.popup = Popup::Source;
+            app.popup_selection = app.selected_source;
+        }
+        KeyCode::Char('S') => {
+            app.popup = Popup::Seed;
+        }
+        _ => {}
+    }
+}
+
+fn handle_source_popup(app: &mut App, code: KeyCode) {
+    match code {
+        KeyCode::Esc => app.popup = Popup::None,
+        KeyCode::Up | KeyCode::Char('k') => {
+            if app.popup_selection > 0 {
+                app.popup_selection -= 1;
+            }
+        }
+        KeyCode::Down | KeyCode::Char('j') => {
+            if app.popup_selection + 1 < app.sources.len() {
+                app.popup_selection += 1;
+            }
+        }
+        KeyCode::Enter => {
+            app.selected_source = app.popup_selection;
+            app.popup = Popup::None;
+            app.status_message = Some(format!("source set to {}", app.current_source_name()));
+        }
+        _ => {}
+    }
+}
+
+fn handle_seed_popup(app: &mut App, code: KeyCode) {
+    match code {
+        KeyCode::Esc => app.popup = Popup::None,
+        KeyCode::Enter => {
+            app.popup = Popup::None;
+            let hint = if app.seed.is_empty() {
+                "cleared".to_string()
+            } else {
+                format!("set to {}", app.seed)
+            };
+            app.status_message = Some(format!("seed {}", hint));
+        }
+        KeyCode::Backspace => {
+            app.seed.pop();
+        }
+        KeyCode::Char(c) => app.seed.push(c),
+        _ => {}
+    }
+}
