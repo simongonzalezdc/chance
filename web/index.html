@@ -242,6 +242,13 @@
   .icopy{width:1em;height:1em;stroke:currentColor;stroke-width:1.5;fill:none}
   :focus-visible{outline:2px solid var(--brand-400);outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  /* premium result objects — flat vector illustrations keep their inline size */
+  .result svg{display:block}
+  .result .ic svg{margin:0 auto}
+  /* mobile-overflow guard · grid items must not blow out their track (min-width:auto→0) */
+  .bento-head>*,.bento-main>*,.ctrl-row>*{min-width:0}
+  .result,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
+  .result svg,.row svg,.faces svg,.coinrow svg,.cardrow svg,.viz-card svg{max-width:100%;height:auto}
 </style>
 </head>
 <body>
@@ -340,7 +347,7 @@ const METHODS=[
   fields:[{k:"version",label:"version",type:"select",def:"4",opts:["4","7"]}]},
  {key:"password",n:"Password",d:"Generate a strong password.",r:"mono",
   fields:[{k:"length",label:"length",type:"number",def:16,min:4,max:128},{k:"symbols",label:"symbols",type:"bool",def:true}]},
- {key:"runes",n:"Runes",d:"Draw Elder Futhark runes.",r:"list",
+ {key:"runes",n:"Runes",d:"Draw Elder Futhark runes.",r:"runes",
   fields:[{k:"count",label:"count",type:"number",def:1,min:1,max:24}]},
  {key:"iching",n:"I Ching",d:"Cast a hexagram by coins or yarrow.",r:"iching",
   fields:[{k:"method",label:"method",type:"select",def:"coin",opts:["coin","yarrow"]}]},
@@ -354,13 +361,17 @@ const METHODS=[
   fields:[{k:"pool",label:"pool",type:"number",def:49,min:1,max:99},{k:"pick",label:"pick",type:"number",def:6,min:1,max:20},{k:"bonus_pool",label:"bonus pool",type:"number",def:"",ph:"optional"}]},
  {key:"knucklebones",n:"Knucklebones",d:"Cast four-sided astragali.",r:"kbones",
   fields:[{k:"count",label:"count",type:"number",def:4,min:1,max:50}]},
- {key:"teetotum",n:"Teetotum",d:"Spin a teetotum, or a dreidel.",r:"string",
+ {key:"teetotum",n:"Teetotum",d:"Spin a teetotum, or a dreidel.",r:"teetotum",
   fields:[{k:"dreidel",label:"dreidel",type:"bool",def:false}]},
  {key:"cowrie",n:"Cowrie shells",d:"Cast cowrie shells and read the meaning.",r:"cowrie",
   fields:[{k:"shells",label:"shells",type:"number",def:4,min:1,max:16}]},
  {key:"lots",n:"Draw lots",d:"Sortition — draw lots from a list.",r:"list",
   fields:[{k:"items",label:"options (one per line)",type:"textarea",def:"Go\nStay\nWait"},{k:"count",label:"count",type:"number",def:1,min:1,max:100}]},
 ];
+// API base — relative by default so the page talks to its own `chance serve` (same origin).
+// Override with ?api=<origin> to point at a public backend (it must be CORS-enabled).
+let API_BASE="";
+try{const a=new URLSearchParams(location.search).get("api");if(a)API_BASE=a.replace(/\/+$/,"");}catch(_){}
 const $=id=>document.getElementById(id);
 const eMlist=$("mlist"),eForm=$("form"),eRes=$("result"),eProv=$("prov"),ePgrid=$("pgrid"),
       eCopy=$("copy"),eGo=$("go"),eHint=$("hint"),eSrc=$("source"),eSeed=$("seed"),
@@ -428,49 +439,268 @@ function bodyFromForm(){
 }
 async function generate(){
   eGo.disabled=true;eRes.innerHTML=`<div class="load">·· ··</div>`;eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="working…";
+  const url=`${API_BASE}/v1/${current.key}`;
   try{
-    const res=await fetch(`/v1/${current.key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(bodyFromForm())});
-    const data=await res.json();
-    if(!res.ok)throw new Error((data&&typeof data==="object")?JSON.stringify(data):String(data));
+    const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(bodyFromForm())});
+    const txt=await res.text();let data;try{data=JSON.parse(txt);}catch(_){}
+    if(!res.ok){
+      if(data&&typeof data==="object")throw new Error(data.error||data.message||JSON.stringify(data)); // real backend error
+      throw new Error("__NO_BACKEND__");                                                                    // non-JSON answer → not the chance API
+    }
+    if(!data)throw new Error("__NO_BACKEND__");
     lastRaw=data.result;render(data.result,data.provenance||{});
     if(data.provenance){
       track(data.provenance,data.result);
     }
     eHint.textContent="Enter to generate again";
-  }catch(e){eRes.innerHTML=`<div class="err">⚠ ${esc(e.message||"request failed")}</div>`;eHint.textContent="error";}
+  }catch(e){
+    const reach=/Failed to fetch|NetworkError|load failed|__NO_BACKEND__/i.test(e.message);
+    eRes.innerHTML=reach
+      ?`<div class="err">⚠ No <b>chance</b> backend reachable at <code style="font-family:var(--font-mono);color:var(--accent)">${esc(url)}</code>.<br>This page is a static showcase here — generation needs the live <b>chance serve</b> API.<br>${API_BASE?`Make sure <code style="font-family:var(--font-mono)">${esc(API_BASE)}</code> is up and CORS-enabled.`:`Run it locally with <code style="font-family:var(--font-mono)">chance serve --port 8484</code>.`}</div>`
+      :`<div class="err">⚠ ${esc(e.message||"request failed")}</div>`;
+    eHint.textContent="error";
+  }
   finally{eGo.disabled=false;}
 }
 
 /* ===== SVG generators (data-viz: ink maps to data) ===== */
-const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const K={b3:"oklch(0.72 0.13 287)",b4:"oklch(0.62 0.15 287)",b5:"oklch(0.54 0.16 287)",b6:"oklch(0.46 0.15 287)",b7:"oklch(0.38 0.12 287)",ac:"oklch(0.72 0.16 303)",n9:"oklch(0.18 0.012 287)",n8:"oklch(0.24 0.014 287)",n7:"oklch(0.30 0.014 287)",n5:"oklch(0.58 0.014 287)",tx:"oklch(0.96 0.005 287)",ik:"oklch(0.16 0.02 287)",lt:"oklch(0.93 0.008 287)",bn:"oklch(0.86 0.01 287)"};
+const SVGNS=' xmlns="http://www.w3.org/2000/svg"';
+// Elder Futhark rune name → unicode glyph
+const RUNES={fehu:"ᚠ",uruz:"ᚢ",thurisaz:"ᚦ",ansuz:"ᚨ",raido:"ᚱ",kenaz:"ᚲ",gebo:"ᚷ",wunjo:"ᚹ",hagalaz:"ᚺ",nauthiz:"ᚾ",isa:"ᛁ",jera:"ᛃ",eihwaz:"ᛇ",perthro:"ᛈ",algiz:"ᛉ",sowilo:"ᛋ",tiwaz:"ᛏ",berkano:"ᛒ",ehwaz:"ᛖ",mannaz:"ᛗ",laguz:"ᛚ",ingwaz:"ᛜ",dagaz:"ᛞ",othala:"ᛟ"};
+const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
+const ROMAN=["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI"];
+const EU_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const RED_SET=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+// pip helper for the isometric die top face (3×3 map)
+function pipsOn(v,cx,cy,col,sc){
+  const dx=10*sc,dy=6.5*sc,r=2.3*sc;
+  const map={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  return (map[v]||[]).map(i=>{const c=i%3,rr=(i/3|0);return `<circle cx="${(cx+(c-1)*dx).toFixed(1)}" cy="${(cy+(rr-1)*dy).toFixed(1)}" r="${r.toFixed(1)}" fill="${col}"/>`;}).join("");
+}
 function dieSVG(value,size,exploded){
-  const ex=exploded?" exploded":"";const v=Number(value);
-  // d6 (and small) → pip faces; larger dice → numbered facet
-  if(size<=6&&v>=1&&v<=6){
-    const cells=PIPS[v].map(i=>{const c=i%3,r=(i/3|0);return `<circle class="pip" cx="${18+c*18}" cy="${18+r*18}" r="8"/>`;}).join("");
-    return `<svg class="die${ex}" viewBox="0 0 72 72"><rect class="face" x="4" y="4" width="64" height="64" rx="13"/>${cells}</svg>`;
-  }
-  return `<svg class="die${ex}" viewBox="0 0 72 72"><rect class="face" x="4" y="4" width="64" height="64" rx="13"/><text class="dnum" x="36" y="36" text-anchor="middle" dominant-baseline="central">${esc(String(v))}</text><text x="60" y="68" text-anchor="end" font-family="DM Mono" font-size="9" fill="oklch(0.70 0.014 287)">d${size}</text></svg>`;
+  const v=Number(value),ex=!!exploded,sz=Number(size)||6;
+  const tF=ex?K.b3:K.b4,lF=ex?"oklch(0.62 0.15 303)":K.b5,rF=ex?K.ac:K.b6;
+  const top="50,12 80,30 50,48 20,30",left="20,30 50,48 50,84 20,66",right="80,30 50,48 50,84 80,66";
+  let center;
+  if(sz===6&&v>=1&&v<=6){center=pipsOn(v,50,30,K.lt,0.95);}
+  else{center=`<text x="50" y="31" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="18" font-weight="700" fill="${K.lt}">${esc(String(v))}</text><text x="66" y="41" text-anchor="middle" font-family="DM Mono" font-size="5" fill="${K.lt}" opacity="0.8">d${esc(String(sz))}</text>`;}
+  return `<svg${SVGNS} width="58" height="52" viewBox="0 0 100 90">`+
+    `<polygon points="${left}" fill="${lF}" stroke="${K.n7}" stroke-width="0.7"/>`+
+    `<polygon points="${right}" fill="${rF}" stroke="${K.n7}" stroke-width="0.7"/>`+
+    `<polygon points="${top}" fill="${tF}" stroke="${K.n7}" stroke-width="0.9"/>`+
+    center+`</svg>`;
 }
 function coinSVG(face){
-  const cls=face==="heads"?"heads":"tails";const g=face==="heads"?"H":"T";
-  return `<svg class="coin ${cls}" viewBox="0 0 56 56"><circle class="rim" cx="28" cy="28" r="27"/><circle class="disc" cx="28" cy="28" r="22"/><text class="glyph" x="28" y="28" text-anchor="middle" dominant-baseline="central">${g}</text></svg>`;
+  const h=String(face).toLowerCase()[0]==="h";
+  const field=h?K.b5:"oklch(0.50 0.16 303)";
+  let emblem;
+  if(h){
+    let rays="";for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;const x1=(32+Math.cos(a)*17).toFixed(1),y1=(32+Math.sin(a)*17).toFixed(1),x2=(32+Math.cos(a)*22.5).toFixed(1),y2=(32+Math.sin(a)*22.5).toFixed(1);rays+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${K.lt}" stroke-width="1.4" stroke-linecap="round"/>`;}
+    emblem=rays+`<circle cx="32" cy="32" r="14" fill="none" stroke="${K.lt}" stroke-width="1.2"/><circle cx="32" cy="32" r="3.2" fill="${K.lt}"/>`;
+  }else{
+    emblem=`<circle cx="32" cy="32" r="13" fill="none" stroke="${K.lt}" stroke-width="1.3"/><line x1="32" y1="15" x2="32" y2="49" stroke="${K.lt}" stroke-width="1.2"/><line x1="15" y1="32" x2="49" y2="32" stroke="${K.lt}" stroke-width="1.2"/><circle cx="32" cy="32" r="2.6" fill="${K.lt}"/>`;
+  }
+  return `<svg${SVGNS} width="46" height="46" viewBox="0 0 64 64">`+
+    `<circle cx="32" cy="32" r="30" fill="${K.n8}" stroke="${K.n7}" stroke-width="1.4"/>`+
+    `<circle cx="32" cy="32" r="27" fill="${field}"/>`+
+    `<circle cx="32" cy="32" r="24" fill="none" stroke="${K.n9}" stroke-width="1.6" stroke-dasharray="1.5 2.2"/>`+
+    emblem+`</svg>`;
 }
-const SUITS={SPADES:{s:"♠",c:"blk"},HEARTS:{s:"♥",c:"red"},DIAMONDS:{s:"♦",c:"red"},CLUBS:{s:"♣",c:"blk"}};
-const RANKS={ACE:"A",TWO:"2",THREE:"3",FOUR:"4",FIVE:"5",SIX:"6",SEVEN:"7",EIGHT:"8",NINE:"9",TEN:"10",JACK:"J",QUEEN:"Q",KING:"K"};
+// playing-card pip layout (canonical 2–10); pips below mid rotated 180° for authenticity
+function pipLayout(n,sym,col){
+  const P={Lt:[33,40],Ct:[46,40],Rt:[59,40],Lu:[33,54],Cu:[46,54],Ru:[59,54],Lm:[33,66],Cm:[46,66],Rm:[59,66],Ld:[33,78],Cd:[46,78],Rd:[59,78],Lb:[33,92],Cb:[46,92],Rb:[59,92]};
+  const LAY={2:["Ct","Cb"],3:["Ct","Cm","Cb"],4:["Lt","Rt","Lb","Rb"],5:["Lt","Rt","Cm","Lb","Rb"],6:["Lt","Rt","Lm","Rm","Lb","Rb"],7:["Lt","Rt","Cu","Lm","Rm","Lb","Rb"],8:["Lt","Rt","Cu","Lm","Rm","Cd","Lb","Rb"],9:["Lt","Rt","Lu","Ru","Cm","Ld","Rd","Lb","Rb"],10:["Lt","Rt","Lu","Cu","Ru","Ld","Cd","Rd","Lb","Rb"]};
+  const list=LAY[n];if(!list)return "";
+  return list.map(k=>{const[x,y]=P[k];const rot=y>66?` transform="rotate(180 ${x} ${y})"`:"";return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="17" font-weight="700" fill="${col}"${rot}>${sym}</text>`;}).join("");
+}
 function cardSVG(label){
-  const s=String(label);
-  // API returns compact form: "4♥", "J♣", "10♦", "A♠" — rank + trailing suit glyph.
-  // (also tolerate "rank of Suit" long form)
-  let rk=s,suSym="";
+  const s=String(label);let rk=s,suSym="";
   const m=s.match(/^(.+?)\s+of\s+(\w+)/i);
   if(m){rk=m[1];suSym=({spade:"♠",heart:"♥",diamond:"♦",club:"♣"})[(m[2]||"").toLowerCase().slice(0,5)]||"";}
   else{const c=s.match(/^(.+?)([♥♦♣♠])$/);if(c){rk=c[1];suSym=c[2];}}
   if(!suSym)return null;
-  const cls=(suSym==="♥"||suSym==="♦")?"red":"blk";
-  return `<svg class="pcard ${cls}" viewBox="0 0 92 128"><rect x="0.75" y="0.75" width="90.5" height="126.5" rx="8" fill="oklch(0.18 0.012 287)"/>
-    <text class="corner" x="8" y="20">${esc(rk)}</text><text class="corner" x="84" y="116" transform="rotate(180 84 116)">${esc(rk)}</text>
-    <text class="suit" x="46" y="74">${suSym}</text></svg>`;
+  const red=(suSym==="♥"||suSym==="♦"),col=red?K.ac:K.ik,rkUp=rk.toUpperCase();
+  let center;
+  if(rkUp==="A"){center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="46" font-weight="700" fill="${col}">${suSym}</text>`;}
+  else if(/^[JQK]$/.test(rkUp)){center=`<rect x="26" y="44" width="40" height="42" rx="4" fill="none" stroke="${col}" stroke-width="1.4"/><text x="46" y="60" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="46" y="79" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="15" font-weight="700" fill="${col}">${suSym}</text>`;}
+  else if(/^[2-9]$/.test(rkUp)||rkUp==="10"){center=pipLayout(Number(rkUp),suSym,col);}
+  else{center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" fill="${col}">${esc(rkUp)}</text>`;}
+  const corner=`<text x="8" y="17" font-family="Unbounded" font-size="13" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="8" y="29" font-family="Spline Sans" font-size="11" font-weight="700" fill="${col}">${suSym}</text>`;
+  return `<svg${SVGNS} width="66" height="92" viewBox="0 0 92 128">`+
+    `<rect x="0.75" y="0.75" width="90.5" height="126.5" rx="8" fill="${K.lt}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<rect x="4.5" y="4.5" width="83" height="119" rx="5.5" fill="none" stroke="${K.n7}" stroke-width="0.5" opacity="0.5"/>`+
+    corner+`<g transform="rotate(180 46 64)">${corner}</g>`+center+`</svg>`;
+}
+function runeSVG(str){
+  const s=String(str),reversed=/reversed/i.test(s);
+  const nm=(s.match(/^([a-z]+)/i)||["",""])[1].toLowerCase();
+  const glyph=RUNES[nm]||"ᛟ";
+  const rot=reversed?` transform="rotate(180 36 40)"`:"";
+  const stone=`<path d="M14 30 Q11 13 30 11 Q48 9 57 17 Q67 26 64 42 Q61 60 42 63 Q22 66 15 53 Q9 42 14 30 Z" fill="${K.b6}" stroke="${K.n7}" stroke-width="1.2"/>`;
+  return `<svg${SVGNS} width="50" height="62" viewBox="0 0 70 86">`+stone+
+    `<text x="36" y="40"${rot} text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="30" font-weight="700" fill="${K.b3}">${glyph}</text>`+
+    `<text x="35" y="74" text-anchor="middle" font-family="DM Mono" font-size="7.5" fill="${K.tx}">${esc(nm||"rune")}</text>`+
+    (reversed?`<text x="35" y="82" text-anchor="middle" font-family="DM Mono" font-size="6.5" fill="${K.ac}">rev</text>`:"")+`</svg>`;
+}
+function astragalusSVG(value){
+  const v=Number(value);
+  const body=`<path d="M22 14 Q13 19 15 32 Q8 42 12 54 Q15 68 28 76 Q42 83 55 78 Q67 72 68 58 Q70 42 64 31 Q60 17 47 13 Q34 10 22 14 Z" fill="${K.bn}" stroke="${K.n7}" stroke-width="1.2"/>`;
+  const grooves=`<path d="M15 36 Q42 32 67 38" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.35"/><path d="M12 54 Q42 50 69 56" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.3"/>`;
+  return `<svg${SVGNS} width="60" height="66" viewBox="0 0 84 92">`+body+grooves+
+    `<circle cx="42" cy="46" r="15" fill="${K.n7}" opacity="0.55"/>`+
+    `<text x="42" y="47" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(v))}</text>`+
+    `</svg>`;
+}
+function dominoPips(n,cx,cy,col){
+  const o=13,r=3.6;
+  const map={0:[],1:[[0,0]],2:[[-o,-o],[o,o]],3:[[-o,-o],[0,0],[o,o]],4:[[-o,-o],[o,-o],[-o,o],[o,o]],5:[[-o,-o],[o,-o],[0,0],[-o,o],[o,o]],6:[[-o,-o],[-o,0],[-o,o],[o,-o],[o,0],[o,o]]};
+  return (map[n]||[]).map(([dx,dy])=>`<circle cx="${cx+dx}" cy="${cy+dy}" r="${r}" fill="${col}"/>`).join("");
+}
+function dominoSVG(left,right){
+  const L=Number(left),R=Number(right);
+  const half=(n,cx)=>(n>=0&&n<=6)?dominoPips(n,cx,30,K.ik):`<text x="${cx}" y="31" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(n))}</text>`;
+  return `<svg${SVGNS} width="108" height="54" viewBox="0 0 120 60">`+
+    `<rect x="1.5" y="1.5" width="117" height="57" rx="7" fill="${K.lt}" stroke="${K.n7}" stroke-width="1.3"/>`+
+    `<line x1="60" y1="9" x2="60" y2="51" stroke="${K.n7}" stroke-width="1.3"/>`+
+    half(L,30)+half(R,90)+`</svg>`;
+}
+function tarotSuit(sym,cx,cy,col,sc){
+  sc=sc||1;const o=v=>v*sc;
+  if(sym==="wands")return `<line x1="${cx}" y1="${cy-o(11)}" x2="${cx}" y2="${cy+o(11)}" stroke="${col}" stroke-width="${(2.6*sc).toFixed(2)}" stroke-linecap="round"/><line x1="${cx-o(4)}" y1="${cy-o(11)}" x2="${cx+o(4)}" y2="${cy-o(11)}" stroke="${col}" stroke-width="${(2.6*sc).toFixed(2)}" stroke-linecap="round"/>`;
+  if(sym==="cups")return `<path d="M${cx-o(8)} ${cy-o(7)} L${cx-o(8)} ${cy+o(2)} Q${cx-o(8)} ${cy+o(9)} ${cx} ${cy+o(9)} Q${cx+o(8)} ${cy+o(9)} ${cx+o(8)} ${cy+o(2)} L${cx+o(8)} ${cy-o(7)}" fill="none" stroke="${col}" stroke-width="${(2*sc).toFixed(2)}"/><line x1="${cx-o(8)}" y1="${cy-o(7)}" x2="${cx+o(8)}" y2="${cy-o(7)}" stroke="${col}" stroke-width="${(2*sc).toFixed(2)}"/>`;
+  if(sym==="swords")return `<line x1="${cx}" y1="${cy+o(11)}" x2="${cx}" y2="${cy-o(11)}" stroke="${col}" stroke-width="${(2.2*sc).toFixed(2)}" stroke-linecap="round"/><path d="M${cx} ${cy-o(11)} L${cx-o(4)} ${cy-o(5)} M${cx} ${cy-o(11)} L${cx+o(4)} ${cy-o(5)}" fill="none" stroke="${col}" stroke-width="${(2.2*sc).toFixed(2)}" stroke-linecap="round"/>`;
+  if(sym==="pentacles")return `<circle cx="${cx}" cy="${cy}" r="${o(9).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${(2*sc).toFixed(2)}"/><line x1="${cx-o(9)}" y1="${cy}" x2="${cx+o(9)}" y2="${cy}" stroke="${col}" stroke-width="${(1.2*sc).toFixed(2)}"/><line x1="${cx}" y1="${cy-o(9)}" x2="${cx}" y2="${cy+o(9)}" stroke="${col}" stroke-width="${(1.2*sc).toFixed(2)}"/>`;
+  return "";
+}
+function minorPipPos(n){
+  const L=42,R=78,C=60,T=50,U=64,M=80,D=96,B=110;
+  const map={2:[[C,T],[C,B]],3:[[C,T],[C,M],[C,B]],4:[[L,T],[R,T],[L,B],[R,B]],5:[[L,T],[R,T],[C,M],[L,B],[R,B]],6:[[L,T],[R,T],[L,M],[R,M],[L,B],[R,B]],7:[[L,T],[R,T],[C,U],[L,M],[R,M],[L,B],[R,B]],8:[[L,T],[R,T],[C,U],[L,M],[R,M],[C,D],[L,B],[R,B]],9:[[L,T],[R,T],[L,U],[R,U],[C,M],[L,D],[R,D],[L,B],[R,B]],10:[[L,T],[R,T],[C,U],[L,U],[R,U],[L,D],[R,D],[C,D],[L,B],[R,B]]};
+  return map[n]||[];
+}
+function tarotEmblem(i){
+  const a=K.ac,b=K.b3,d=K.n9;
+  switch(i){
+    case 0:return `<circle cx="82" cy="54" r="8" fill="${b}"/><path d="M20 104 L60 104 L70 116 L14 116 Z" fill="${a}"/>`;
+    case 1:return `<path d="M50 58 q-9 0 -9 7 t9 7 q9 0 9 -7 t-9 -7 M70 58 q9 0 9 7 t-9 7 q-9 0 -9 -7 t9 -7" fill="none" stroke="${a}" stroke-width="2.2"/><line x1="34" y1="106" x2="86" y2="106" stroke="${b}" stroke-width="2"/>`;
+    case 2:return `<rect x="34" y="52" width="5" height="48" fill="${b}"/><rect x="81" y="52" width="5" height="48" fill="${b}"/><path d="M60 60 m-9 0 a9 9 0 1 0 18 0 a6 6 0 1 1 -18 0 Z" fill="${a}"/>`;
+    case 3:return `<path d="M42 62 L50 74 L60 60 L70 74 L78 62 L78 84 L42 84 Z" fill="${b}" stroke="${a}" stroke-width="1.2"/>`;
+    case 4:return `<rect x="44" y="58" width="32" height="34" fill="none" stroke="${b}" stroke-width="2.2"/><line x1="44" y1="75" x2="76" y2="75" stroke="${a}" stroke-width="1.6"/>`;
+    case 5:return `<path d="M46 58 L54 50 L60 56 L66 50 L74 58 L74 68 L46 68 Z" fill="${b}"/><path d="M52 96 L60 88 L68 96" fill="none" stroke="${a}" stroke-width="2"/>`;
+    case 6:return `<circle cx="48" cy="78" r="7" fill="${b}"/><circle cx="72" cy="78" r="7" fill="${b}"/><path d="M60 58 c-5 0 -7 4 -7 6 c0 -2 -2 -6 -7 -6 c-4 0 -5 4 -5 6 c0 6 12 11 12 11 s12 -5 12 -11 c0 -2 -1 -6 -5 -6 Z" fill="${a}"/>`;
+    case 7:return `<rect x="42" y="64" width="36" height="24" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="50" cy="102" r="6" fill="none" stroke="${a}" stroke-width="2"/><circle cx="70" cy="102" r="6" fill="none" stroke="${a}" stroke-width="2"/>`;
+    case 8:return `<path d="M44 80 a9 9 0 1 0 32 -8 a9 9 0 1 0 -32 8" fill="none" stroke="${a}" stroke-width="2.2"/><circle cx="60" cy="76" r="7" fill="${b}"/>`;
+    case 9:return `<line x1="60" y1="50" x2="60" y2="98" stroke="${b}" stroke-width="1.6"/><path d="M54 58 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="${a}"/><line x1="56" y1="50" x2="64" y2="50" stroke="${b}" stroke-width="1.4"/>`;
+    case 10:return `<circle cx="60" cy="78" r="16" fill="none" stroke="${b}" stroke-width="2.2"/><g stroke="${a}" stroke-width="1.4"><line x1="60" y1="62" x2="60" y2="94"/><line x1="44" y1="78" x2="76" y2="78"/><line x1="48" y1="66" x2="72" y2="90"/><line x1="72" y1="66" x2="48" y2="90"/></g>`;
+    case 11:return `<line x1="60" y1="54" x2="60" y2="100" stroke="${b}" stroke-width="2"/><line x1="60" y1="64" x2="44" y2="74" stroke="${a}" stroke-width="1.8"/><line x1="60" y1="64" x2="76" y2="74" stroke="${a}" stroke-width="1.8"/><circle cx="44" cy="74" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="76" cy="74" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/>`;
+    case 12:return `<rect x="44" y="56" width="32" height="48" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="60" cy="64" r="5" fill="${a}"/><line x1="52" y1="72" x2="68" y2="72" stroke="${a}" stroke-width="1.4"/>`;
+    case 13:return `<circle cx="60" cy="78" r="14" fill="${b}"/><circle cx="54" cy="75" r="2.4" fill="${d}"/><circle cx="66" cy="75" r="2.4" fill="${d}"/><path d="M48 60 L72 56" fill="none" stroke="${a}" stroke-width="1.8"/>`;
+    case 14:return `<path d="M44 72 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="none" stroke="${b}" stroke-width="1.8"/><path d="M64 72 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="none" stroke="${b}" stroke-width="1.8"/><path d="M50 80 Q60 88 70 80" fill="none" stroke="${a}" stroke-width="1.6"/>`;
+    case 15:return `<path d="M44 60 L60 86 L76 60 Z" fill="${b}"/><path d="M44 60 L52 48 M76 60 L68 48" fill="none" stroke="${a}" stroke-width="2.2"/>`;
+    case 16:return `<rect x="50" y="56" width="20" height="48" fill="none" stroke="${b}" stroke-width="2.2"/><path d="M38 64 L54 54 L48 64 L60 58" fill="none" stroke="${a}" stroke-width="1.8"/>`;
+    case 17:return `<g fill="${b}"><circle cx="60" cy="82" r="3.6"/><circle cx="60" cy="62" r="3"/><circle cx="44" cy="70" r="3"/><circle cx="76" cy="70" r="3"/><circle cx="46" cy="92" r="3"/><circle cx="74" cy="92" r="3"/><circle cx="60" cy="100" r="3"/></g><circle cx="60" cy="82" r="16" fill="none" stroke="${a}" stroke-width="1.4"/>`;
+    case 18:return `<path d="M60 60 m-12 0 a12 12 0 1 0 22 9 a9 9 0 1 1 -22 -9 Z" fill="${a}"/><circle cx="58" cy="82" r="5" fill="${b}"/>`;
+    case 19:return `<circle cx="60" cy="78" r="11" fill="${b}"/><g stroke="${a}" stroke-width="2"><line x1="60" y1="60" x2="60" y2="54"/><line x1="60" y1="102" x2="60" y2="96"/><line x1="42" y1="78" x2="36" y2="78"/><line x1="78" y1="78" x2="84" y2="78"/><line x1="48" y1="66" x2="44" y2="62"/><line x1="72" y1="66" x2="76" y2="62"/><line x1="48" y1="90" x2="44" y2="94"/><line x1="72" y1="90" x2="76" y2="94"/></g>`;
+    case 20:return `<path d="M48 56 L72 72 L48 88 Z" fill="${b}"/><circle cx="60" cy="72" r="4" fill="${a}"/>`;
+    case 21:return `<ellipse cx="60" cy="78" rx="20" ry="16" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="60" cy="78" r="7" fill="${a}"/>`;
+    default:return `<circle cx="60" cy="80" r="12" fill="none" stroke="${b}" stroke-width="2"/>`;
+  }
+}
+function tarotSVG(name,upright){
+  const nm=String(name),up=!!upright;
+  const idx=MAJOR.indexOf(nm);
+  let inner;
+  if(idx>=0){
+    inner=tarotEmblem(idx)+`<text x="60" y="40" text-anchor="middle" font-family="Unbounded" font-size="11" font-weight="700" fill="${K.ac}">${ROMAN[idx]||""}</text>`;
+  }else{
+    let art="";
+    const mm=nm.match(/^(.+?)\s+of\s+(\w+)\s*$/i);
+    if(mm){
+      const what=mm[1].trim();
+      const suitKey=({wands:"wands",wand:"wands",cups:"cups",cup:"cups",swords:"swords",sword:"swords",pentacles:"pentacles",pentacle:"pentacles",coins:"pentacles",coin:"pentacles"})[(mm[2]||"").toLowerCase()]||"";
+      const court=/^(page|knight|queen|king)$/i.test(what);
+      if(court){
+        art=`<rect x="38" y="56" width="44" height="44" fill="none" stroke="${K.b3}" stroke-width="1.6"/><text x="60" y="76" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" font-weight="700" fill="${K.ac}">${esc(what[0].toUpperCase())}</text>`+(suitKey?tarotSuit(suitKey,60,108,K.b3,0.7):"");
+      }else{
+        const numMap={ace:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
+        let n=numMap[what.toLowerCase()];if(n==null&&/^\d+$/.test(what))n=Number(what);
+        if(n!=null&&suitKey){art=n===1?tarotSuit(suitKey,60,82,K.b3,1.4):minorPipPos(n).map(([x,y])=>tarotSuit(suitKey,x,y,K.b3,0.6)).join("");}
+        else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="14" fill="${K.b3}">${esc(what)}</text>`;}
+      }
+    }else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="12" fill="${K.b3}">${esc(nm)}</text>`;}
+    inner=art;
+  }
+  const wrap=up?inner:`<g transform="rotate(180 60 84)">${inner}</g>`;
+  const cardName=`<text x="60" y="156" text-anchor="middle" font-family="Unbounded" font-size="${nm.length>16?6.5:7.5}" fill="${K.tx}">${esc(nm)}</text>`;
+  return `<svg${SVGNS} width="88" height="124" viewBox="0 0 120 168">`+
+    `<rect x="1" y="1" width="118" height="166" rx="9" fill="${K.n9}" stroke="${K.n7}" stroke-width="1.3"/>`+
+    `<rect x="6" y="6" width="108" height="156" rx="6" fill="none" stroke="${K.b3}" stroke-width="1"/><rect x="8.5" y="8.5" width="103" height="151" rx="4.5" fill="none" stroke="${K.ac}" stroke-width="0.6"/>`+
+    wrap+cardName+`</svg>`;
+}
+function annularWedge(cx,cy,R,r,a0,a1){
+  const p=(rad,rr)=>[cx+Math.cos(rad)*rr,cy+Math.sin(rad)*rr];
+  const large=(a1-a0)>Math.PI?1:0;
+  const[x0,y0]=p(a0,R),[x1,y1]=p(a1,R),[x2,y2]=p(a1,r),[x3,y3]=p(a0,r);
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} L${x2.toFixed(2)} ${y2.toFixed(2)} A${r} ${r} 0 ${large} 0 ${x3.toFixed(2)} ${y3.toFixed(2)} Z`;
+}
+function wheelSVG(number,color,variant){
+  const cx=62,cy=62,R=58,r=34,n=37,win=Number(number);
+  let wedges="",labels="";
+  for(let i=0;i<n;i++){
+    const num=EU_ORDER[i];
+    const a0=(i/n)*Math.PI*2-Math.PI/2-Math.PI/n,a1=a0+(Math.PI*2)/n,amid=(a0+a1)/2;
+    const fill=num===0?K.b6:(RED_SET.has(num)?K.ac:K.n9);
+    const isWin=num===win;
+    wedges+=`<path d="${annularWedge(cx,cy,R,r,a0,a1)}" fill="${fill}" stroke="${K.n7}" stroke-width="${isWin?2.2:0.6}"/>`;
+    const lr=(R+r)/2,lx=cx+Math.cos(amid)*lr,ly=cy+Math.sin(amid)*lr;
+    labels+=`<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-family="DM Mono" font-size="5.5" fill="${K.tx}" transform="rotate(${(amid*180/Math.PI+90).toFixed(1)} ${lx.toFixed(2)} ${ly.toFixed(2)})">${num}</text>`;
+    if(isWin){const bx=cx+Math.cos(amid)*(R-4),by=cy+Math.sin(amid)*(R-4);wedges+=`<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="3" fill="${K.tx}" stroke="${K.ik}" stroke-width="0.8"/>`;}
+  }
+  return `<svg${SVGNS} width="200" height="200" viewBox="0 0 124 124">`+
+    `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="${K.n7}" stroke-width="1.2"/>`+
+    wedges+labels+
+    `<circle cx="${cx}" cy="${cy}" r="${r-1}" fill="${K.n9}" stroke="${K.n7}" stroke-width="0.8"/>`+
+    `<circle cx="${cx}" cy="${cy}" r="7" fill="${K.b5}" stroke="${K.n7}" stroke-width="0.8"/>`+
+    `</svg>`;
+}
+function ballSVG(number,accent){
+  const ring=accent?`<circle cx="28" cy="28" r="27" fill="none" stroke="${K.ac}" stroke-width="2"/>`:"";
+  return `<svg${SVGNS} width="46" height="46" viewBox="0 0 56 56">`+ring+
+    `<circle cx="28" cy="28" r="25" fill="${K.b5}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<ellipse cx="21" cy="20" rx="12" ry="8" fill="${K.b3}" opacity="0.35"/>`+
+    `<text x="28" y="30" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="18" font-weight="700" fill="${K.lt}">${esc(String(number))}</text>`+
+    `</svg>`;
+}
+function cowrieSVG(open){
+  const o=!!open;
+  const body=`<path d="M6 25 Q8 8 30 6 Q52 8 54 25 Q52 42 30 44 Q8 42 6 25 Z" fill="${o?K.ac:K.b6}" stroke="${K.n7}" stroke-width="1"/>`;
+  let slit;
+  if(o){let lines="";for(let i=0;i<7;i++){const t=i/6,x=12+t*36,yc=25-Math.sin(t*Math.PI)*3;lines+=`<line x1="${x.toFixed(1)}" y1="${(yc-4).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(yc+4).toFixed(1)}" stroke="${K.n9}" stroke-width="1.2" stroke-linecap="round"/>`;}slit=lines;}
+  else{slit=`<path d="M12 25 Q30 19 48 25" fill="none" stroke="${K.n9}" stroke-width="3" opacity="0.25"/>`;}
+  return `<svg${SVGNS} width="44" height="36" viewBox="0 0 60 50">`+body+slit+`</svg>`;
+}
+function dreidelSVG(str){
+  const glyph=(String(str).match(/^[\u0590-\u05FF a-zA-Z]/)||["?"])[0].trim()||"?";
+  return `<svg${SVGNS} width="54" height="70" viewBox="0 0 70 90">`+
+    `<rect x="30" y="6" width="10" height="8" fill="${K.b7}" stroke="${K.n7}" stroke-width="1"/>`+
+    `<polygon points="16,16 54,16 54,52 16,52" fill="${K.b6}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<polygon points="16,16 24,16 24,52 16,52" fill="${K.b7}"/>`+
+    `<polygon points="16,52 54,52 35,80" fill="${K.b7}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<text x="35" y="36" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" font-weight="700" fill="${K.lt}">${esc(glyph)}</text>`+
+    `</svg>`;
+}
+function ichingSVG(lines){
+  const barW=100,x0=20,barH=9,gap=5,rows=(lines||[]).slice().reverse();
+  let y=6,out="";
+  rows.forEach((l,i)=>{
+    if(l.yang){out+=`<rect x="${x0}" y="${y}" width="${barW}" height="${barH}" rx="1.5" fill="${K.b4}"/>`;}
+    else{const segW=(barW-14)/2;out+=`<rect x="${x0}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.b4}"/><rect x="${(x0+segW+14).toFixed(1)}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.b4}"/>`;}
+    if(l.changing){out+=`<circle cx="${x0+barW+8}" cy="${y+barH/2}" r="3.2" fill="none" stroke="${K.ac}" stroke-width="1.6"/>`;}
+    y+=barH+gap;
+    if(i===2)y+=6;
+  });
+  const h=y+4;
+  return `<svg${SVGNS} width="150" height="${h.toFixed(0)}" viewBox="0 0 150 ${h.toFixed(0)}">${out}</svg>`;
 }
 function sparkSVG(svg,vals,color){
   if(!vals.length){svg.innerHTML="";return;}
@@ -535,18 +765,28 @@ const R={
   mono(r){eRes.appendChild(node("div","sig-mono",String(r)));},
   list(r){const a=Array.isArray(r)?r:[r];if(!a.length){eRes.appendChild(empty("no results"));return;}eRes.appendChild(mkChips(a.map(s=>({txt:String(s)}))));},
   tarot(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
-    a.forEach(c=>{const d=node("div","tarot");d.innerHTML=`<div class="nm">${esc(c.name)}</div><div class="ori ${c.upright?"up":"rev"}">${c.upright?"upright":"reversed"}</div>`;row.appendChild(d);});eRes.appendChild(row);},
+    a.forEach(c=>row.appendChild(wrapHTML(tarotSVG(c.name,c.upright),"tw")));eRes.appendChild(row);},
   dominoes(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
-    a.forEach(d=>{const t=node("div","dom");t.innerHTML=`<div class="h">${d.left}</div><div class="h">${d.right}</div>`;row.appendChild(t);});eRes.appendChild(row);},
-  roulette(r){const w=wrapHTML(`<div class="rwheel ${r.color||"black"}">${esc(String(r.number))}</div>`,"rw");eRes.appendChild(w);eRes.appendChild(node("div","sub",`${r.color} · ${r.variant} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`));},
-  lottery(r){const b=mkChips((r.numbers||[]).map(n=>({txt:n})));eRes.appendChild(b);
+    a.forEach(d=>row.appendChild(wrapHTML(dominoSVG(d.left,d.right),"dw")));eRes.appendChild(row);},
+  roulette(r){eRes.appendChild(wrapHTML(wheelSVG(r.number,r.color,r.variant),"wheelw"));
+    eRes.appendChild(node("div","sub",`${esc(String(r.color))} · ${esc(String(r.variant))} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`));},
+  lottery(r){const row=node("div","row");(r.numbers||[]).forEach(n=>row.appendChild(wrapHTML(ballSVG(n),"bw")));eRes.appendChild(row);
     if(r.bonus!=null){const w=node("div","row");w.style.alignItems="center";w.style.gap="var(--s2)";
-      w.appendChild(node("span","sub","bonus"));w.appendChild(mkChips([{txt:r.bonus,cls:"bonus"}]));eRes.appendChild(w);}},
+      w.appendChild(node("span","sub","bonus"));w.appendChild(wrapHTML(ballSVG(r.bonus,true),"bwb"));eRes.appendChild(w);}},
   kbones(r){const a=Array.isArray(r)?r:[r];const faces=node("div","faces");
-    a.forEach(v=>faces.appendChild(wrapHTML(dieSVG(Number(v),4,false),"dw")));eRes.appendChild(faces);eRes.appendChild(mkChips(a.map(v=>({txt:v,cls:"acc"}))));},
-  cowrie(r){eRes.appendChild(node("div","sig-num",`${r.open_count} / ${r.shells}`));eRes.appendChild(node("div","sub",r.meaning));},
-  iching(r){const ic=node("div","ic");const hex=node("div");
-    (r.lines||[]).slice().reverse().forEach(l=>{const ln=node("div","ln "+(l.yang?"yang":"yin")+(l.changing?" chg":""));hex.appendChild(ln);});
+    a.forEach(v=>faces.appendChild(wrapHTML(astragalusSVG(Number(v)),"abw")));eRes.appendChild(faces);
+    eRes.appendChild(mkChips(a.map(v=>({txt:v,cls:"acc"}))));
+    eRes.appendChild(node("div","sub","astragali · biased faces 1 / 3 / 4 / 6"));},
+  cowrie(r){const row=node("div","row");const oc=Number(r.open_count)||0,sh=Number(r.shells)||oc;
+    for(let i=0;i<oc;i++)row.appendChild(wrapHTML(cowrieSVG(true),"coww"));
+    for(let i=0;i<Math.max(0,sh-oc);i++)row.appendChild(wrapHTML(cowrieSVG(false),"coww"));
+    eRes.appendChild(row);eRes.appendChild(node("div","sig-num",`${oc} / ${sh}`));eRes.appendChild(node("div","sub",r.meaning));},
+  runes(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
+    a.forEach(s=>row.appendChild(wrapHTML(runeSVG(String(s)),"rw")));eRes.appendChild(row);},
+  teetotum(r){const s=String(r);eRes.appendChild(wrapHTML(dreidelSVG(s),"drew"));
+    const dreidel=/[\u0590-\u05FF]/.test(s);
+    eRes.appendChild(node("div","sub",`${dreidel?"dreidel":"teetotum"} spin · ${esc(s)}`));},
+  iching(r){const ic=node("div","ic");const hex=node("div");hex.innerHTML=ichingSVG(r.lines||[]);
     ic.appendChild(hex);ic.appendChild(node("div","nm",`${r.primary} — ${r.primary_name}`));
     if(r.transformed)ic.appendChild(node("div","sub",`→ transforming to ${r.transformed}`));eRes.appendChild(ic);},
   default(r){eRes.appendChild(node("div","sig-mono",typeof r==="string"?r:JSON.stringify(r,null,2)));}
