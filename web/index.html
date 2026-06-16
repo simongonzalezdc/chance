@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>chance — multi-source randomness studio</title>
+<style>
+  :root{
+    --bg:#0b0e14; --bg2:#0e1320; --surface:#141a28; --surface2:#1b2233;
+    --border:#232c40; --border-lit:#33405c;
+    --text:#e7eaf2; --dim:#8a93ad; --faint:#5b6480;
+    --accent:#4dd0e1;        /* cyan  */
+    --accent-dim:#2b6b75;
+    --accent2:#b388ff;       /* violet*/
+    --green:#66bb6a; --red:#ef5350; --yellow:#ffd54f; --blue:#64b5f6; --orange:#ffb74d;
+    --radius:14px; --radius-s:9px;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono","Fira Code",Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(1200px 700px at 82% -8%, rgba(77,208,225,.10), transparent 60%),
+      radial-gradient(1000px 600px at -5% 105%, rgba(179,136,255,.10), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 24px 64px}
+
+  /* header */
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand h1{font-size:26px;margin:0;letter-spacing:-.5px;font-weight:700}
+  .brand h1 .mark{color:var(--accent);font-family:var(--mono)}
+  .brand .tag{color:var(--dim);font-size:13px}
+  .global{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .global label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-right:2px}
+  select,input{font-family:var(--sans);font-size:13.5px;color:var(--text);
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-s);
+    padding:8px 11px;outline:none;transition:border-color .15s,box-shadow .15s}
+  select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(77,208,225,.14)}
+  select{cursor:pointer}
+  input[type=text]{width:170px}
+
+  /* layout */
+  .grid{display:grid;grid-template-columns:268px 1fr;gap:22px;align-items:start}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:var(--shadow)}
+
+  /* method rail */
+  aside.methods{padding:12px}
+  .rail-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);padding:8px 8px 6px}
+  .mlist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .mbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;
+    background:transparent;border:1px solid transparent;color:var(--dim);
+    padding:9px 9px;border-radius:var(--radius-s);cursor:pointer;transition:all .13s;font-family:var(--sans)}
+  .mbtn .g{font-size:17px;line-height:1}
+  .mbtn .n{font-size:12.5px;font-weight:600;color:var(--text)}
+  .mbtn:hover{background:var(--surface2);color:var(--text)}
+  .mbtn.active{background:var(--surface2);border-color:var(--accent-dim);
+    box-shadow:inset 0 0 0 1px rgba(77,208,225,.12)}
+  .mbtn.active .n{color:var(--accent)}
+
+  /* main */
+  main.stage{padding:24px 26px 26px;min-height:460px}
+  .mhead{display:flex;align-items:baseline;gap:12px;margin-bottom:2px}
+  .mhead h2{margin:0;font-size:21px;font-weight:700}
+  .mhead .g{font-size:24px;color:var(--accent)}
+  .mdesc{color:var(--dim);font-size:13.5px;margin:0 0 20px}
+
+  form.f .row{display:flex;flex-wrap:wrap;gap:14px 16px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)}
+  .field input[type=text],.field input[type=number],.field select{width:170px}
+  .field textarea{width:100%;min-height:74px;resize:vertical;font-family:var(--sans)}
+  .check{display:flex;align-items:center;gap:8px;height:38px}
+  .switch{position:relative;width:42px;height:24px;background:var(--surface2);border:1px solid var(--border);
+    border-radius:999px;cursor:pointer;transition:background .15s}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--dim);transition:transform .15s,background .15s}
+  .switch.on{background:rgba(77,208,225,.22);border-color:var(--accent-dim)}
+  .switch.on::after{transform:translateX(18px);background:var(--accent)}
+
+  .gen{margin-top:18px;display:flex;align-items:center;gap:14px}
+  button.go{font-family:var(--sans);font-size:14.5px;font-weight:700;color:#04161a;
+    background:linear-gradient(180deg,#6fe0ee,var(--accent));border:none;border-radius:10px;
+    padding:11px 22px;cursor:pointer;box-shadow:0 8px 20px -10px rgba(77,208,225,.7);transition:transform .1s,filter .1s}
+  button.go:hover{filter:brightness(1.06)}button.go:active{transform:translateY(1px)}
+  button.go:disabled{opacity:.55;cursor:wait}
+  .hint{color:var(--faint);font-size:12px}
+
+  /* result */
+  .out{margin-top:24px}
+  .out-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .out-head .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
+  .copy{font-family:var(--sans);font-size:12px;color:var(--dim);background:var(--surface2);
+    border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer}
+  .copy:hover{color:var(--text);border-color:var(--border-lit)}
+  .result{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+    padding:26px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+  .empty{color:var(--faint);font-size:14px}
+
+  /* result primitives */
+  .big{font-family:var(--mono);font-size:64px;font-weight:700;line-height:1;color:var(--accent);
+    text-shadow:0 0 28px rgba(77,208,225,.25)}
+  .big.s{font-size:22px;word-break:break-all;text-align:center}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+  .chip{font-family:var(--mono);font-size:16px;font-weight:600;background:var(--surface2);
+    border:1px solid var(--border-lit);color:var(--text);padding:7px 13px;border-radius:10px;min-width:40px;text-align:center}
+  .chip.acc{border-color:var(--accent-dim);color:var(--accent)}
+  .chip.dim{opacity:.45}
+  .chip .badge{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--yellow);margin-top:3px;font-weight:700}
+  .muted{color:var(--dim);font-size:13px}
+
+  /* tarot cards */
+  .trow{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .tarot{width:104px;background:linear-gradient(160deg,var(--surface2),var(--bg2));
+    border:1px solid var(--border-lit);border-radius:11px;padding:14px 10px;text-align:center}
+  .tarot .nm{font-size:13px;font-weight:700;min-height:34px;display:flex;align-items:center;justify-content:center}
+  .tarot .ori{font-size:11px;margin-top:8px;font-weight:700;letter-spacing:.04em}
+  .tarot .ori.up{color:var(--green)}.tarot .ori.rev{color:var(--orange)}
+
+  /* dominoes */
+  .dom{display:flex;flex-direction:column;background:var(--surface2);border:1px solid var(--border-lit);
+    border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:30px;font-weight:700}
+  .dom .half{padding:10px 22px;text-align:center}.dom .half+.half{border-top:2px solid var(--border)}
+
+  /* roulette */
+  .rwheel{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:38px;font-weight:700;color:#fff;border:4px solid var(--border-lit);box-shadow:var(--shadow)}
+  .rwheel.red{background:#b02a2a}.rwheel.black{background:#1a1a1a}.rwheel.green{background:#2e7d32}
+
+  /* lottery balls */
+  .balls .chip{border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;padding:0}
+  .balls .chip.bonus{border-color:var(--yellow);color:var(--yellow)}
+  .ic-draw{text-align:center}
+  .hex{font-family:var(--mono);line-height:1.15;font-size:15px}
+  .hex .ln{letter-spacing:1px;color:var(--accent2);font-weight:700}
+  .hex .ln.yin{color:var(--accent2)}
+  .hex .ln.changing{color:var(--yellow)}
+
+  /* provenance */
+  .prov{margin-top:18px}
+  .prov .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin-bottom:8px}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .pcell{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px}
+  .pcell .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .pcell .v{font-family:var(--mono);font-size:13px;color:var(--text);margin-top:2px;word-break:break-all}
+
+  .err{color:var(--red);font-size:14px;text-align:center;font-family:var(--mono)}
+  .spin{width:20px;height:20px;border:2.5px solid var(--border-lit);border-top-color:var(--accent);
+    border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  footer.ft{margin-top:30px;text-align:center;color:var(--faint);font-size:12px}
+  a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1><span class="mark">◆</span> chance</h1>
+      <span class="tag">multi-source randomness studio</span>
+    </div>
+    <div class="global">
+      <div><label for="source">source</label><select id="source"><option>loading…</option></select></div>
+      <div><label for="seed">seed</label><input id="seed" type="text" placeholder="optional" /></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel methods">
+      <div class="rail-title">methods</div>
+      <div class="mlist" id="mlist"></div>
+    </aside>
+
+    <main class="panel stage">
+      <div class="mhead"><span class="g" id="h-glyph">🎲</span><h2 id="h-name">Roll</h2></div>
+      <p class="mdesc" id="h-desc"></p>
+      <form class="f" id="form" autocomplete="off"></form>
+      <div class="gen">
+        <button class="go" id="go" type="button">Generate</button>
+        <span class="hint" id="hint">press Enter to generate</span>
+      </div>
+      <div class="out">
+        <div class="out-head"><span class="lbl">result</span><button class="copy" id="copy" type="button" hidden>copy</button></div>
+        <div class="result" id="result"><div class="empty">Configure options and press Generate.</div></div>
+        <div class="prov" id="prov" hidden>
+          <div class="lbl">provenance</div>
+          <div class="pgrid" id="pgrid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="ft">chance · served from the same binary as the CLI / MCP / TUI · <code style="font-family:var(--mono);color:var(--dim)">GET /v1/health</code></footer>
+</div>
+
+<script>
+"use strict";
+/* ---- method registry -------------------------------------------------- */
+// fields.type: text | number | select | textarea | bool
+const METHODS = [
+  { key:"roll",   n:"Roll dice",        g:"🎲", desc:"Standard RPG dice notation — d20, 4d6kh3, 2d20adv, 8d6!", r:"dice",
+    fields:[{k:"notation",label:"notation",type:"text",def:"d20",ph:"d20 · 3d6 · 2d20adv"}]},
+  { key:"flip",   n:"Flip coin",        g:"🪙", desc:"Fair coin flips.", r:"stringList",
+    fields:[{k:"times",label:"times",type:"number",def:1,min:1,max:1000}]},
+  { key:"draw",   n:"Draw cards",       g:"🃏", desc:"Draw from a shuffled 52-card deck.", r:"cards",
+    fields:[{k:"count",label:"count",type:"number",def:5,min:1,max:52}]},
+  { key:"pick",   n:"Pick winner",      g:"🎯", desc:"Pick one or more from a list.", r:"stringList",
+    fields:[{k:"items",label:"items (one per line)",type:"textarea",def:"Alice\nBob\nCarol\nDave"},
+            {k:"count",label:"count",type:"number",def:1,min:1,max:100}]},
+  { key:"shuffle",n:"Shuffle",          g:"🔀", desc:"Randomise the order of a list.", r:"stringList",
+    fields:[{k:"items",label:"items (one per line)",type:"textarea",def:"red\ngreen\nblue\nyellow"}]},
+  { key:"int",    n:"Integer",          g:"🔢", desc:"Uniform random integer in a closed range.", r:"number",
+    fields:[{k:"min",label:"min",type:"number",def:1},{k:"max",label:"max",type:"number",def:100}]},
+  { key:"bytes",  n:"Random bytes",     g:"🐾", desc:"Cryptographic random bytes, hex or base64.", r:"mono",
+    fields:[{k:"count",label:"count",type:"number",def:16,min:1,max:4096},
+            {k:"encoding",label:"encoding",type:"select",def:"hex",opts:["hex","base64"]}]},
+  { key:"uuid",   n:"UUID",             g:"🆔", desc:"Generate a UUID.", r:"mono",
+    fields:[{k:"version",label:"version",type:"select",def:"4",opts:["4","7"]}]},
+  { key:"password",n:"Password",        g:"🔐", desc:"Generate a strong password.", r:"mono",
+    fields:[{k:"length",label:"length",type:"number",def:16,min:4,max:128},
+            {k:"symbols",label:"symbols",type:"bool",def:true}]},
+  { key:"runes",  n:"Runes",            g:"ᚱ", desc:"Draw Elder Futhark runes.", r:"stringList",
+    fields:[{k:"count",label:"count",type:"number",def:1,min:1,max:24}]},
+  { key:"iching", n:"I Ching",          g:"☯",  desc:"Cast a hexagram by coins or yarrow.", r:"iching",
+    fields:[{k:"method",label:"method",type:"select",def:"coin",opts:["coin","yarrow"]}]},
+  { key:"tarot",  n:"Tarot",            g:"🔮", desc:"Draw Major Arcana cards.", r:"tarot",
+    fields:[{k:"count",label:"count",type:"number",def:1,min:1,max:22}]},
+  { key:"dominoes",n:"Dominoes",        g:"🁢", desc:"Draw double-six dominoes.", r:"dominoes",
+    fields:[{k:"set",label:"double set",type:"number",def:6,min:0,max:18},
+            {k:"count",label:"count",type:"number",def:1,min:1,max:100}]},
+  { key:"roulette",n:"Roulette",        g:"🎡", desc:"Spin a European or American wheel.", r:"roulette",
+    fields:[{k:"variant",label:"variant",type:"select",def:"european",opts:["european","american"]}]},
+  { key:"lottery",n:"Lottery",          g:"🎟️", desc:"Draw lottery numbers from a pool.", r:"lottery",
+    fields:[{k:"pool",label:"pool",type:"number",def:49,min:1,max:99},
+            {k:"pick",label:"pick",type:"number",def:6,min:1,max:20},
+            {k:"bonus_pool",label:"bonus pool",type:"number",def:"",ph:"optional"}]},
+  { key:"knucklebones",n:"Knucklebones",g:"🦴", desc:"Cast four-sided astragali (1·3·4·5·6).", r:"knucklebones",
+    fields:[{k:"count",label:"count",type:"number",def:4,min:1,max:50}]},
+  { key:"teetotum",n:"Teetotum",        g:"🎰", desc:"Spin a teetotum, or a dreidel.", r:"string",
+    fields:[{k:"dreidel",label:"dreidel",type:"bool",def:false}]},
+  { key:"cowrie", n:"Cowrie shells",    g:"🐚", desc:"Cast cowrie shells and read the meaning.", r:"cowrie",
+    fields:[{k:"shells",label:"shells",type:"number",def:4,min:1,max:16}]},
+  { key:"lots",   n:"Draw lots",        g:"🪟", desc:"Sortition — draw lots from a list.", r:"stringList",
+    fields:[{k:"items",label:"options (one per line)",type:"textarea",def:"Go\nStay\nWait"},
+            {k:"count",label:"count",type:"number",def:1,min:1,max:100}]},
+];
+
+/* ---- element refs ---- */
+const $ = id => document.getElementById(id);
+const elMlist=$("mlist"), elForm=$("form"), elResult=$("result"),
+      elProv=$("prov"), elPgrid=$("pgrid"), elCopy=$("copy"),
+      elGo=$("go"), elHint=$("hint"), elSrc=$("source"), elSeed=$("seed");
+const elHG=$("h-glyph"), elHN=$("h-name"), elHD=$("h-desc");
+
+let current = METHODS[0];
+let lastRaw = null;
+
+/* ---- build method rail ---- */
+function buildRail(){
+  elMlist.innerHTML="";
+  METHODS.forEach(m=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="mbtn"+(m===current?" active":"");
+    b.innerHTML=`<span class="g">${m.g}</span><span class="n">${m.n}</span>`;
+    b.onclick=()=>{current=m; buildRail(); renderForm(); resetOut();};
+    elMlist.appendChild(b);
+  });
+}
+
+/* ---- render the dynamic form ---- */
+function renderForm(){
+  elHG.textContent=current.g; elHN.textContent=current.n; elHD.textContent=current.desc;
+  elForm.innerHTML="";
+  const wrap=document.createElement("div"); wrap.className="row";
+  current.fields.forEach(f=>{
+    const fld=document.createElement("div"); fld.className="field";
+    const lbl=document.createElement("label"); lbl.textContent=f.label; fld.appendChild(lbl);
+    if(f.type==="bool"){
+      const c=document.createElement("div"); c.className="check";
+      const sw=document.createElement("div"); sw.className="switch"+(f.def?" on":""); sw.tabIndex=0;
+      sw.dataset.on=f.def?"1":"";
+      sw.onclick=()=>{sw.classList.toggle("on"); sw.dataset.on=sw.classList.contains("on")?"1":"";};
+      c.appendChild(sw); fld.appendChild(c);
+    } else if(f.type==="textarea"){
+      const t=document.createElement("textarea"); t.name=f.k; t.value=f.def; fld.appendChild(t);
+    } else if(f.type==="select"){
+      const s=document.createElement("select"); s.name=f.k;
+      f.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o;s.appendChild(op);});
+      s.value=f.def; fld.appendChild(s);
+    } else {
+      const i=document.createElement("input"); i.type=f.type; i.name=f.k; i.value=f.def;
+      if(f.ph)i.placeholder=f.ph; if(f.min!=null)i.min=f.min; if(f.max!=null)i.max=f.max;
+      fld.appendChild(i);
+    }
+    wrap.appendChild(fld);
+  });
+  elForm.appendChild(wrap);
+}
+
+/* ---- collect request body from the form ---- */
+function bodyFromForm(){
+  const body={};
+  const src=elSrc.value; if(src) body.source=src;
+  const seed=elSeed.value.trim(); if(seed) body.seed=seed;
+  current.fields.forEach(f=>{
+    if(f.type==="bool"){
+      const sw=elForm.querySelector(`.switch`); // single switch per render; map by dataset below
+    }
+  });
+  // robust field walk
+  current.fields.forEach(f=>{
+    if(f.type==="bool"){
+      const sw=[...elForm.querySelectorAll(".switch")].find(s=>s);
+      // each bool has its own switch in order; match by position via data attribute
+    }
+  });
+  // simplest: re-walk inputs by name
+  current.fields.forEach(f=>{
+    if(f.type==="bool"){
+      const sw=elForm.querySelector(`.switch[data-k="${f.k}"]`);
+      if(sw) body[f.k]=sw.classList.contains("on");
+      return;
+    }
+    const inp=elForm.querySelector(`[name="${f.k}"]`);
+    if(!inp) return;
+    let v=inp.value;
+    if(f.type==="number"){
+      if(v==="" || v==null){ // optional numeric (e.g. bonus_pool) -> omit
+        if(f.k==="bonus_pool") return;
+      }
+      v=Number(v); if(!Number.isNaN(v)) body[f.k]=v;
+    } else if(f.type==="textarea"){
+      body[f.k]=String(v).split("\n").map(s=>s.trim()).filter(Boolean);
+    } else {
+      body[f.k]=v;
+    }
+  });
+  return body;
+}
+
+/* ---- call API ---- */
+async function generate(){
+  elGo.disabled=true;
+  elResult.innerHTML=`<div class="spin"></div>`;
+  elProv.hidden=true; elCopy.hidden=true; elHint.textContent="working…";
+  const body=bodyFromForm();
+  try{
+    const res=await fetch(`/v1/${current.key}`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    const data=await res.json();
+    if(!res.ok){
+      const msg=(data&&typeof data==="object")?JSON.stringify(data):String(data);
+      throw new Error(msg);
+    }
+    lastRaw=data.result;
+    render(data.result, data.provenance||{});
+    elHint.textContent="press Enter to generate again";
+  }catch(e){
+    elResult.innerHTML=`<div class="err">⚠ ${escapeHtml(e.message||"request failed")}</div>`;
+    elHint.textContent="error";
+  }finally{
+    elGo.disabled=false;
+  }
+}
+
+/* ---- dispatch renderers ---- */
+function render(result, prov){
+  elResult.innerHTML="";
+  const R=RENDER[current.r]||RENDER.default;
+  R(result);
+  if(prov && Object.keys(prov).length) renderProv(prov);
+  elCopy.hidden=false;
+}
+const RENDER={
+  dice(r){
+    const total=document.createElement("div"); total.className="big"; total.textContent=r.total;
+    elResult.appendChild(total);
+    if(r.rolls && r.rolls.length){
+      const chips=mkChips(r.rolls.map(d=>{
+        const badges=[];
+        if(d.exploded)badges.push("explode");
+        if(d.rerolled)badges.push("reroll");
+        return {txt:`${d.value}`,cls:"acc",badge:badges.join(" ")||null};
+      }));
+      elResult.appendChild(chips);
+    }
+    const meta=[];
+    if(r.modifier_total) meta.push(`modifier ${r.modifier_total>=0?"+":""}${r.modifier_total}`);
+    if(r.dropped && r.dropped.length) meta.push(`dropped ${r.dropped.join(", ")}`);
+    if(r.success_count!=null) meta.push(`${r.success_count} successes`);
+    if(meta.length){const m=document.createElement("div");m.className="muted";m.textContent=meta.join(" · ");elResult.appendChild(m);}
+  },
+  stringList(r){
+    const arr=Array.isArray(r)?r:[r];
+    if(!arr.length){elResult.innerHTML=`<div class="empty">no results</div>`;return;}
+    elResult.appendChild(mkChips(arr.map(s=>({txt:String(s)}))));
+  },
+  cards(r){
+    const arr=Array.isArray(r)?r:[r];
+    elResult.appendChild(mkChips(arr.map(s=>({txt:cardGlyph(s)+s,cls:"acc"}))));
+  },
+  number(r){const b=document.createElement("div");b.className="big";b.textContent=String(r);elResult.appendChild(b);},
+  string(r){const b=document.createElement("div");b.className="big s";b.textContent=String(r);elResult.appendChild(b);},
+  mono(r){const b=document.createElement("div");b.className="big s";b.style.fontFamily="var(--mono)";
+          b.textContent=String(r);elResult.appendChild(b);},
+  tarot(r){
+    const arr=Array.isArray(r)?r:[r];const row=document.createElement("div");row.className="trow";
+    arr.forEach(c=>{
+      const d=document.createElement("div");d.className="tarot";
+      d.innerHTML=`<div class="nm">${escapeHtml(c.name)}</div>
+        <div class="ori ${c.upright?"up":"rev"}">${c.upright?"upright":"reversed"}</div>`;
+      row.appendChild(d);
+    });
+    elResult.appendChild(row);
+  },
+  dominoes(r){
+    const arr=Array.isArray(r)?r:[r];const row=document.createElement("div");row.className="trow";
+    arr.forEach(d=>{
+      const t=document.createElement("div");t.className="dom";
+      t.innerHTML=`<div class="half">${d.left}</div><div class="half">${d.right}</div>`;
+      row.appendChild(t);
+    });
+    elResult.appendChild(row);
+  },
+  roulette(r){
+    const w=document.createElement("div");w.className="rwheel "+(r.color||"black");w.textContent=r.number;
+    const m=document.createElement("div");m.className="muted";
+    m.textContent=`${r.color} · ${r.variant} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`;
+    elResult.appendChild(w);elResult.appendChild(m);
+  },
+  lottery(r){
+    const balls=mkChips((r.numbers||[]).map(n=>({txt:n})));balls.classList.add("balls");
+    elResult.appendChild(balls);
+    if(r.bonus!=null){const b=mkChips([{txt:r.bonus,cls:"bonus"}]);b.classList.add("balls");
+      const wrap=document.createElement("div");wrap.style.display="flex";wrap.style.alignItems="center";wrap.style.gap="10px";
+      const lbl=document.createElement("span");lbl.className="muted";lbl.textContent="bonus";
+      wrap.appendChild(lbl);wrap.appendChild(b);elResult.appendChild(wrap);}
+  },
+  knucklebones(r){
+    const arr=Array.isArray(r)?r:[r];
+    elResult.appendChild(mkChips(arr.map(v=>({txt:v,cls:"acc"}))));
+  },
+  cowrie(r){
+    const b=document.createElement("div");b.className="big";b.textContent=`${r.open_count} / ${r.shells}`;
+    const m=document.createElement("div");m.className="muted";m.style.maxWidth="360px";m.style.textAlign="center";
+    m.textContent=r.meaning;
+    elResult.appendChild(b);elResult.appendChild(m);
+  },
+  iching(r){
+    const wrap=document.createElement("div");wrap.className="ic-draw";
+    const nm=document.createElement("div");nm.style.fontSize="17px";nm.style.fontWeight="700";
+    nm.textContent=`Hexagram ${r.primary} — ${r.primary_name}`;
+    const hex=document.createElement("div");hex.className="hex";hex.style.margin="10px 0";
+    // lines are bottom→top; show top first
+    (r.lines||[]).slice().reverse().forEach(l=>{
+      const ln=document.createElement("div");ln.className="ln"+(l.yang?"":" yin")+(l.changing?" changing":"");
+      ln.textContent=l.yang?"━━━━━━━━━":"━━━━ ━━━━";
+      hex.appendChild(ln);
+    });
+    wrap.appendChild(hex);wrap.appendChild(nm);
+    if(r.transformed){
+      const t=document.createElement("div");t.className="muted";t.style.marginTop="8px";
+      t.textContent=`→ transforming to hexagram ${r.transformed}`;
+      wrap.appendChild(t);
+    }
+    elResult.appendChild(wrap);
+  },
+  default(r){
+    const b=document.createElement("div");b.className="big s";b.style.fontSize="15px";
+    b.style.whiteSpace="pre-wrap";b.style.fontFamily="var(--mono)";
+    b.textContent=typeof r==="string"?r:JSON.stringify(r,null,2);
+    elResult.appendChild(b);
+  }
+};
+
+/* ---- helpers ---- */
+function mkChips(items){
+  const c=document.createElement("div");c.className="chips";
+  items.forEach(it=>{
+    const s=document.createElement("span");s.className="chip"+(it.cls?(" "+it.cls):"");
+    s.textContent=it.txt;
+    if(it.badge){const b=document.createElement("span");b.className="badge";b.textContent=it.badge;s.appendChild(b);}
+    c.appendChild(s);
+  });
+  return c;
+}
+function cardGlyph(name){
+  const n=String(name||"").toUpperCase();
+  if(n.includes("HEART"))return"♥ ";if(n.includes("DIAMOND"))return"♦ ";
+  if(n.includes("CLUB"))return"♣ ";if(n.includes("SPADE"))return"♠ ";return"";
+}
+function renderProv(p){
+  const rows=[
+    ["source",p.source],["kind",p.source_kind],["entropy",p.entropy_bits!=null?Number(p.entropy_bits).toFixed(1)+" bits":null],
+    ["latency",p.latency_ms!=null?Number(p.latency_ms).toFixed(2)+" ms":null],
+    ["seed",p.seed||"—"],["request",p.request_id],["timestamp",p.timestamp]
+  ].filter(r=>r[1]!=null);
+  elPgrid.innerHTML="";
+  rows.forEach(([k,v])=>{
+    const c=document.createElement("div");c.className="pcell";
+    c.innerHTML=`<div class="k">${k}</div><div class="v">${escapeHtml(String(v))}</div>`;
+    elPgrid.appendChild(c);
+  });
+  elProv.hidden=false;
+}
+function resetOut(){
+  elResult.innerHTML=`<div class="empty">Configure options and press Generate.</div>`;
+  elProv.hidden=true; elCopy.hidden=true; elHint.textContent="press Enter to generate";
+  lastRaw=null;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+/* ---- sources ---- */
+async function loadSources(){
+  try{
+    const res=await fetch("/v1/sources"); const arr=await res.json();
+    elSrc.innerHTML="";
+    (arr||[]).forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=s;elSrc.appendChild(o);});
+    if(!arr.length){const o=document.createElement("option");o.textContent="os-csprng";elSrc.appendChild(o);}
+    // prefer an OS/CSPRNG source if present
+    const pref=(arr||[]).find(s=>/os|csprng|system/i.test(s));
+    if(pref) elSrc.value=pref;
+  }catch(e){ elSrc.innerHTML="<option>os-csprng</option>"; }
+}
+
+/* ---- events ---- */
+elGo.onclick=generate;
+elForm.addEventListener("submit",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.target.matches("textarea")){e.preventDefault();generate();}
+});
+elCopy.onclick=()=>{
+  const txt=typeof lastRaw==="string"?lastRaw:JSON.stringify(lastRaw,null,2);
+  navigator.clipboard&&navigator.clipboard.writeText(txt);
+  elCopy.textContent="copied"; setTimeout(()=>elCopy.textContent="copy",1200);
+};
+
+/* ---- wire switch data-k so bodyFromForm can find bools ---- */
+new MutationObserver(()=>{ elForm.querySelectorAll(".switch").forEach((s,i)=>{
+  const bools=current.fields.filter(f=>f.type==="bool");
+  if(bools[i]) s.dataset.k=bools[i].k;
+});}).observe(elForm,{childList:true,subtree:true});
+
+/* ---- boot ---- */
+buildRail(); renderForm(); resetOut(); loadSources();
+</script>
+</body>
+</html>
