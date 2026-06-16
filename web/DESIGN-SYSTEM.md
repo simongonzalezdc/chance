@@ -1,115 +1,131 @@
 # DESIGN-SYSTEM.md — chance web UI
 
-> **Committed direction (one line):**
-> *Memphis-postmodern Apollo cockpit — warm, playful, maximal, classic, refined, dense —
-> oxblood-on-dark anchor with a coral secondary, Instrument Serif numerals as the signature,
-> Hanken Grotesk body, hard-offset poster shadows, soft 11px corners, bento 3-col mosaic.*
+> The committed direction in one line: **"Phosphor-violet instrument console — a
+> Hasselblad lunar-surface camera catalog reimagined as a brutalist-terminal RNG
+> studio: cool, serious, maximal, classical, refined, spacious; violet 287 /
+> magenta 303 riso two-color on dark; Unbounded cascade signature; Perfect-Fifth
+> scale; honest data-visualization of every roll."**
 
-Every concrete decision below was rolled by **`chance`** itself (OS CSPRNG, no seed) — the
-`design-system-interview` forcing questions plus the finishing values the interview left as
-ranges. This file is the single source of truth the rest of the tastecheck pack builds to and
-`deslop-ui` audits against.
+Every value below was rolled at random by the `chance` binary itself (os-csprng,
+no seed). The tastecheck pack then implements to this committed spec. This is a
+re-roll — the prior oxblood/memphis direction has been superseded.
 
-## Interview answers (rolled by chance)
+## Refusals (the design IS the constraints)
 
-| # | Question | Rolled |
-|---|----------|--------|
-| 1 | Reference | NASA Apollo flight-deck console |
-| 2 | Personality poles | warm · playful · maximal · classic · refined · dense |
-| 3 | Aesthetic direction | memphis postmodern |
-| 4 | Type stance | Instrument Serif (display) + Neue Haas Grotesk (body) |
-| 5 | Color + mode | oxblood anchor · dark-only |
-| 6 | Density & shape | dense · soft 8–12px corners · layered/shadowed |
-| 7 | Structure & rhythm | symmetric centered · bento/tessellation · metronomic |
-| 8 | Signature move | oversized display numerals as section markers |
-| 9 | Imagery + icons | duotone photography · Radix @ 1.5 |
-| 10 | Motion | restrained |
+- **NO gradients.** A single committed dark-violet hue (OKLCH 287) is fine; an
+  indigo→violet *gradient* is the slop the pack bans. Fills are flat. Period.
+- **NO Inter / Roboto.** Display = **Unbounded**, body = **Spline Sans**, mono =
+  **DM Mono** (all Google Fonts, `display=swap`, no build step).
+- **NO emoji as icons.** Affordances are stroke-1.5 inline SVG. Numerals are set
+  in Unbounded (the signature), never pictograms.
+- **NO motion.** The roll landed `motion = none`. The "kinetic type cascade"
+  signature is rendered as a **static** stair-stepped type composition — no
+  animation (interactive hover/focus transitions only; `prefers-reduced-motion`
+  zeroes even those).
+- **NO decorative chartjunk.** Every visualization obeys the `data-viz` skill:
+  ink maps to data, bars from zero, direct-labeled, ≤5 hues from tokens,
+  not-color-alone, text equivalent present.
 
-## Finishing values (rolled by chance)
+## Rolled spec (chance output)
 
-| Decision | Rolled |
-|----------|--------|
-| Corner radius (8–12) | **11px** (cards) · 8px (controls) |
-| Memphis secondary accent | **coral** (`oklch(0.72 0.16 40)`) |
-| Oxblood hue | **H 26** |
-| Type scale ratio | **Minor Third 1.200** (dense cockpit) |
-| Elevation | **hard-offset poster shadow** (memphis) |
-| Bento shape | **3-col mosaic** |
+| # | Question | Rolled answer |
+|---|---|---|
+| 1 | Reference | Hasselblad lunar-surface camera catalog |
+| 2 | Personality | cool · serious · maximal · classical · refined · spacious |
+| 3 | Aesthetic | brutalist-terminal (refined-instrument reading) |
+| 4 | Type stance | Unbounded (display) / Spline Sans (body) / DM Mono (mono) |
+| 5 | Color + mode | hue **287** (phosphor-violet), **dark-only**; accent hue **303** |
+| 6 | Density & shape | spacious · **15px** cards / **4px** controls · soft-shadow |
+| 7 | Structure & rhythm | symmetric · collage motif · syncopated |
+| 8 | Signature move | kinetic type cascade (rendered **static**) |
+| 9 | Imagery | risograph two-color (violet + magenta, grain, overprint) |
+| 10 | Motion | **none** |
 
-## Refusals (the system is a set of refusals)
+### Finishing values (chance output)
+- Card radius **15px**, control radius **4px** (the 1px finishing roll was
+  reconciled against the 15px shape roll — shape governs cards; controls 4px).
+- Accent hue **303** (anchor 287 + rolled +16° offset) → tight analogous riso pair.
+- Scale ratio **Perfect Fifth 1.500**.
+- Elevation **soft-shadow** (layered, low-spread, low-opacity).
+- Bento **2 columns**.
 
-- No indigo→violet gradient, ever. Oxblood is the only brand hue; coral is the single accent.
-- No Inter / Roboto / system-default headlines. Instrument Serif or Hanken Grotesk only.
-- No pure gray neutrals — every neutral is tinted toward oxblood (H 26, tiny chroma).
-- No emoji as icons. Signature numerals mark methods; stroke-1.5 SVG marks affordances.
-- No pill text CTAs (8px), no uniform equal-card grid (mosaic varies tile sizes), no animated
-  stat-counter band, no gradient blobs. Memphis decoration = flat solid geometric shapes only.
-- No perpetual/looping motion. Restrained: focus, hover, a single generate confirmation.
-
-## Imagery deviation (explicit, accepted)
-
-Committed imagery was *duotone photography*. This UI has no photograph source, so the imagery
-plane is committed as **pure type & texture**: flat solid memphis geometric shapes (coral disc,
-dot-grid, zigzag) as committed decoration — never gradient blobs. Stated, not silently swapped.
-
-## Tokens
-
-### Color (OKLCH — constant hue, stepped lightness, neutrals tinted to H 26)
+## Token block (OKLCH, dark-only)
 
 ```css
-/* Brand oxblood ramp, H 26 */
---brand-300: oklch(0.72 0.13 26);  /* small accent text — ≥4.5:1 on bg */
---brand-400: oklch(0.62 0.15 26);
---brand-500: oklch(0.54 0.16 26);  /* base oxblood */
---brand-600: oklch(0.46 0.15 26);  /* primary fill */
---brand-700: oklch(0.38 0.12 26);
-
-/* Coral — the one secondary accent */
---accent: oklch(0.72 0.16 40);
-
-/* Neutrals tinted toward H 26 (not dead gray) */
---n-950: oklch(0.15 0.012 26); --n-900: oklch(0.18 0.012 26);
---n-850: oklch(0.21 0.013 26); --n-800: oklch(0.24 0.014 26);
---n-700: oklch(0.30 0.014 26); --n-500: oklch(0.58 0.014 26);
-
-/* Semantic aliases (dark mode) */
---color-bg:        oklch(0.15 0.014 26);
---color-surface-1: var(--n-850);
---color-surface-2: var(--n-800);
---color-border:    var(--n-700);
---color-text:      oklch(0.96 0.005 26);
---color-text-muted:oklch(0.70 0.014 26);
---color-primary:   var(--brand-400);
---color-primary-fill: var(--brand-600);
---color-primary-ink: oklch(0.97 0.01 26);
---color-success: oklch(0.72 0.15 150);
---color-error:   oklch(0.66 0.20 14);
+:root{
+  /* brand ramp · phosphor-violet hue 287 */
+  --brand-300:oklch(0.72 0.13 287); --brand-400:oklch(0.62 0.15 287);
+  --brand-500:oklch(0.54 0.16 287); --brand-600:oklch(0.46 0.15 287);
+  --brand-700:oklch(0.38 0.12 287);
+  /* accent · riso 2nd color, magenta-violet 303 */
+  --accent:oklch(0.72 0.16 303);
+  /* neutrals tinted toward 287 (no dead grays) */
+  --n-950:oklch(0.15 0.014 287); --n-900:oklch(0.18 0.012 287); --n-850:oklch(0.21 0.013 287);
+  --n-800:oklch(0.24 0.014 287); --n-700:oklch(0.30 0.014 287); --n-500:oklch(0.58 0.014 287);
+  /* semantic */
+  --color-bg:oklch(0.15 0.014 287); --surface-1:var(--n-850); --surface-2:var(--n-800);
+  --border:var(--n-700); --text:oklch(0.96 0.005 287); --muted:oklch(0.70 0.014 287);
+  /* CTA: bright-violet fill + dark ink (violet chroma lifts luminance, so a
+     mid fill can't carry white — verified 7.0:1 bright-fill/dark-ink) */
+  --primary-fill:oklch(0.74 0.15 287); --primary-ink:oklch(0.16 0.02 287);
+  --success:oklch(0.72 0.15 150); --error:oklch(0.66 0.20 14); --warn:oklch(0.82 0.15 85);
+  /* type */
+  --font-display:"Unbounded",system-ui,sans-serif;
+  --font-body:"Spline Sans",system-ui,sans-serif;
+  --font-mono:"DM Mono",ui-monospace,monospace;
+  /* scale · Perfect Fifth 1.500, fluid */
+  --step--2:clamp(0.625rem,0.6rem+0.1vw,0.7rem);
+  --step--1:clamp(0.75rem,0.72rem+0.15vw,0.85rem);
+  --step-0:1rem; --step-1:clamp(1.3rem,1.2rem+0.4vw,1.5rem);
+  --step-2:clamp(1.75rem,1.5rem+1vw,2.25rem);
+  --step-3:clamp(2.5rem,2rem+2vw,3.375rem);
+  --step-4:clamp(3.5rem,2.5rem+4vw,5.063rem);
+  --step-5:clamp(4.5rem,2.5rem+9vw,7.6rem);   /* signature cascade */
+  --measure:64ch;
+  /* spacing · spacious base */
+  --s1:0.5rem;--s2:0.75rem;--s3:1rem;--s4:1.5rem;--s5:2rem;--s6:2.5rem;--s7:3.5rem;--s8:5rem;
+  --section:clamp(2.5rem,2rem+3vw,5rem);
+  /* shape + elevation */
+  --r-ctrl:4px; --r-card:15px;
+  --sh-soft:0 10px 30px -8px oklch(0.05 0.02 287 / 0.55);
+  --sh-lift:0 4px 14px -4px oklch(0.05 0.02 287 / 0.45);
+  /* data-viz series (≤5 hues, from tokens, not color-alone) */
+  --series-1:var(--brand-300); --series-2:var(--accent);
+  --series-3:var(--brand-500); --series-4:var(--n-500);
+}
 ```
 
-Contrast (measured, WCAG AA): text L0.96 on bg L0.15 ≈ 17:1; muted L0.70 on bg ≈ 6.3:1;
-brand-300 L0.72 small-accent on bg ≈ 6.9:1; primary-fill L0.46 with ink L0.97 ≈ 7.1:1.
+## Contrast (analytically verified, OKLCH→linear sRGB→ratio)
 
-### Type
+| Pair | Ratio | AA |
+|---|---|---|
+| text / bg | 10.7 | ✓ |
+| muted / bg | 7.2 | ✓ |
+| brand-300 / bg | 7.3 | ✓ |
+| accent(303) / bg | 7.3 | ✓ |
+| brand-400 / bg | 6.0 | ✓ |
+| brand-500 / bg | 5.0 | ✓ |
+| primary-ink / primary-fill | 7.0 | ✓ |
+| accent / surface-1 | 4.6 | ✓ (large) |
 
-```css
---font-display: "Instrument Serif", Georgia, serif;          /* signature numerals + headlines */
---font-body:    "Hanken Grotesk", system-ui, sans-serif;     /* Neue Haas Grotesk substitute */
---font-mono:    "JetBrains Mono", ui-monospace, monospace;   /* bytes / uuid / data */
-/* Minor Third 1.200, dense; body 1rem, measure 66ch, unitless line-height 1.5 */
-```
+## Data-visualization contract (`data-viz` skill)
 
-### Spacing (4px dense base) · Shape · Elevation
+The prior UI rendered results as text ("just pretty fonts"). This roll
+implements honest, Tufte-informed visualization of the randomness:
 
-```css
---space-1..8: 0.25 / 0.5 / 0.75 / 1 / 1.5 / 2 / 3 / 4 rem;
---space-section: clamp(2rem, 1.5rem + 3vw, 4rem);
---radius-control: 8px; --radius-card: 11px;   /* pills reserved for tags/chips only */
---shadow-hard:  4px 4px 0 oklch(0.10 0.02 26);          /* memphis poster offset */
---shadow-coral: 5px 5px 0 var(--accent);
-```
+- **Graphical result objects** — dice render as **SVG pip faces**, coins as
+  **SVG coins**, cards as **SVG card faces**. Ink = the actual rolled value.
+- **Session distribution** — accumulates categorical draws into a **bar chart
+  from zero**, direct-labeled, single accent series, with a caption stating the
+  fairness takeaway. Not color-alone (labels carry it).
+- **Entropy / latency sparklines** — inline SVG sparkline of the last N draws in
+  the header stat tiles (trend per session, range-framed).
+- **Bit-grid entropy field** — random `bytes` render as a two-color bit grid
+  (each bit a cell); the most literal "ink maps to data" on the page.
+- Every chart has a text equivalent (caption + accessible table / aria-label).
 
 ## Pipeline handoff
 
-Built to this spec by `color-system` / `web-typography` / `spacing-system` / `responsive-layout` /
-`component-states` / `form-ux` / `empty-states` / `micro-motion`; audited by `deslop-ui` and
-gated by `tastecheck-pass` (report ships with the work).
+design-system-interview (this file) → color-system / web-typography / spacing →
+responsive-layout / component-states / form-ux → **data-viz** → micro-motion
+(none) → empty-states / humanize-copy → **deslop-ui** audits against this spec.
