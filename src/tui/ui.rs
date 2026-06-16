@@ -12,17 +12,17 @@ use super::app::{App, Popup};
 // -----------------------------------------------------------------------------
 // Color palette: warm, dark, expensive-terminal vibe
 // -----------------------------------------------------------------------------
-const BG: Color = Color::Rgb(14, 14, 20);
-const SURFACE: Color = Color::Rgb(26, 26, 36);
-const BORDER: Color = Color::Rgb(62, 62, 82);
-const TEXT: Color = Color::Rgb(236, 236, 242);
-const TEXT_DIM: Color = Color::Rgb(140, 140, 158);
-const ACCENT: Color = Color::Rgb(255, 199, 102); // warm amber
-const ACCENT_DARK: Color = Color::Rgb(28, 22, 14);
-const CYAN: Color = Color::Rgb(125, 211, 224);
-const GREEN: Color = Color::Rgb(158, 222, 176);
-const MAGENTA: Color = Color::Rgb(222, 165, 222);
-const RED: Color = Color::Rgb(242, 135, 135);
+pub const BG: Color = Color::Rgb(14, 14, 20);
+pub const SURFACE: Color = Color::Rgb(26, 26, 36);
+pub const BORDER: Color = Color::Rgb(62, 62, 82);
+pub const TEXT: Color = Color::Rgb(236, 236, 242);
+pub const TEXT_DIM: Color = Color::Rgb(140, 140, 158);
+pub const ACCENT: Color = Color::Rgb(255, 199, 102); // warm amber
+pub const ACCENT_DARK: Color = Color::Rgb(28, 22, 14);
+pub const CYAN: Color = Color::Rgb(125, 211, 224);
+pub const GREEN: Color = Color::Rgb(158, 222, 176);
+pub const MAGENTA: Color = Color::Rgb(222, 165, 222);
+pub const RED: Color = Color::Rgb(242, 135, 135);
 
 struct Theme {
     bg: Style,
@@ -66,6 +66,11 @@ pub fn draw(frame: &mut Frame, app: &App) {
     let theme = Theme::new();
     frame.render_widget(Paragraph::new("").style(theme.bg), frame.area());
 
+    if app.popup == Popup::Viz {
+        crate::tui::viz::draw_viz(frame, app);
+        return;
+    }
+
     let area = frame.area();
 
     let main_chunks = Layout::default()
@@ -98,6 +103,7 @@ pub fn draw(frame: &mut Frame, app: &App) {
     match app.popup {
         Popup::Source => draw_source_popup(frame, app, &theme),
         Popup::Seed => draw_seed_popup(frame, app, &theme),
+        Popup::Viz => {}
         Popup::None => {}
     }
 }
@@ -246,12 +252,23 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect, theme: &Theme) {
 
     // If there's a status message, overlay it briefly by replacing the footer text.
     if let Some(msg) = &app.status_message {
-        let error_line = Line::from(vec![
-            Span::styled(" ✦ error: ", theme.error),
-            Span::styled(msg.clone(), theme.error),
-        ]);
-        let p = Paragraph::new(Text::from(error_line))
-            .style(Style::default().bg(ACCENT_DARK).fg(RED));
+        let is_error = msg.starts_with("error");
+        let line = if is_error {
+            Line::from(vec![
+                Span::styled(" ✦ error: ", theme.error),
+                Span::styled(msg.clone(), theme.error),
+            ])
+        } else {
+            Line::from(vec![
+                Span::styled(" ✦ ", theme.accent),
+                Span::styled(msg.clone(), theme.dim),
+            ])
+        };
+        let p = Paragraph::new(Text::from(line)).style(if is_error {
+            Style::default().bg(ACCENT_DARK).fg(RED)
+        } else {
+            Style::default().bg(SURFACE).fg(TEXT)
+        });
         frame.render_widget(p, area);
     }
 }

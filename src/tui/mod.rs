@@ -1,5 +1,6 @@
 mod app;
 mod ui;
+mod viz;
 
 use app::{App, Popup};
 use crossterm::{
@@ -38,6 +39,7 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<(), Box<
     let tick_rate = Duration::from_millis(100);
 
     loop {
+        app.tick = app.tick.wrapping_add(1);
         terminal.draw(|f| ui::draw(f, &app))?;
 
         if event::poll(tick_rate)? {
@@ -58,6 +60,7 @@ fn handle_key(app: &mut App, code: KeyCode) {
     match app.popup {
         Popup::Source => handle_source_popup(app, code),
         Popup::Seed => handle_seed_popup(app, code),
+        Popup::Viz => handle_viz_popup(app, code),
         Popup::None => handle_main(app, code),
     }
 }
@@ -82,6 +85,10 @@ fn handle_main(app: &mut App, code: KeyCode) {
         }
         KeyCode::Char('S') => {
             app.popup = Popup::Seed;
+        }
+        KeyCode::Char('v') => {
+            app.popup = Popup::Viz;
+            app.popup_selection = app.selected_source;
         }
         _ => {}
     }
@@ -125,6 +132,28 @@ fn handle_seed_popup(app: &mut App, code: KeyCode) {
             app.seed.pop();
         }
         KeyCode::Char(c) => app.seed.push(c),
+        _ => {}
+    }
+}
+
+fn handle_viz_popup(app: &mut App, code: KeyCode) {
+    match code {
+        KeyCode::Esc | KeyCode::Char('v') | KeyCode::Enter => {
+            app.selected_source = app.popup_selection;
+            app.popup = Popup::None;
+            app.status_message =
+                Some(format!("source set to {}", app.current_source_name()));
+        }
+        KeyCode::Up | KeyCode::Left | KeyCode::Char('k') | KeyCode::Char('h') => {
+            if app.popup_selection > 0 {
+                app.popup_selection -= 1;
+            }
+        }
+        KeyCode::Down | KeyCode::Right | KeyCode::Char('j') | KeyCode::Char('l') => {
+            if app.popup_selection + 1 < app.sources.len() {
+                app.popup_selection += 1;
+            }
+        }
         _ => {}
     }
 }
