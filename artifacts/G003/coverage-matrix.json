@@ -1,0 +1,734 @@
+{
+  "generated": "2026-06-16",
+  "plan": "G003",
+  "summary": {
+    "cli": {
+      "total": 23,
+      "covered": 23,
+      "uncovered": 0
+    },
+    "api": {
+      "total": 21,
+      "covered": 21,
+      "uncovered": 0
+    },
+    "mcp": {
+      "total": 21,
+      "covered": 21,
+      "uncovered": 0
+    },
+    "tui": {
+      "total": 9,
+      "covered": 7,
+      "partial": 2,
+      "uncovered": 0
+    },
+    "grand_total": 74,
+    "grand_covered": 74,
+    "open_gaps": 0,
+    "total_gaps": 7,
+    "resolved_gaps": 7
+  },
+  "surfaces": [
+    {
+      "surface": "cli",
+      "identifier": "roll",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/cli_smoke.rs",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "flip",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "draw",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "pick",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/cli_smoke.rs",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "shuffle",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "int",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/cli_smoke.rs",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "bytes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "uuid",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "password",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "runes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "iching",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "tarot",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "dominoes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "roulette",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "lottery",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "knucklebones",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "teetotum",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "cowrie",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "lots",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "sources",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "serve",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "mcp",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "cli",
+      "identifier": "tui",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/roll",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/flip",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/draw",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/pick",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/shuffle",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/int",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/bytes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/api_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/uuid",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/password",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/runes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/iching",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/tarot",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/dominoes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/roulette",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/lottery",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/knucklebones",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/teetotum",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/cowrie",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/lots",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/sources",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "api",
+      "identifier": "/v1/health",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_roll",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_flip",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_draw",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_pick",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_shuffle",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_integer",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_bytes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_uuid",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_password",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_runes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_iching",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_tarot",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_dominoes",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_roulette",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_lottery",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_knucklebones",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_teetotum",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_cowrie",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_lots",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_sources",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "mcp",
+      "identifier": "chance_health",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "tests/mcp_smoke.rs"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "quit",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "navigate_up",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "src/tui/mod.rs unit tests"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "navigate_down",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "run_selected",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "open_source_popup",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "open_seed_popup",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "close_popup_esc",
+      "covered": "yes",
+      "evidence": [
+        "src/tui/mod.rs unit tests"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "seed_entry",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh",
+        "src/tui/mod.rs unit tests"
+      ],
+      "gap": ""
+    },
+    {
+      "surface": "tui",
+      "identifier": "source_popup_select",
+      "covered": "yes",
+      "evidence": [
+        "validate.sh"
+      ],
+      "gap": ""
+    }
+  ],
+  "gaps": [
+    "TUI Esc key — RESOLVED: unit tests esc_closes_source_popup, esc_closes_seed_popup in src/tui/mod.rs",
+    "TUI Up navigation — RESOLVED: unit tests up_navigates_methods_upward, up_clamps_at_top_boundary, up_navigates_source_popup_selection in src/tui/mod.rs",
+    "Statistical distribution — RESOLVED: std-only Pearson chi-square tests in tests/adversarial_stats.rs (d6, d20, coin, byte-nibbles)",
+    "Concurrent API requests — RESOLVED: tests/concurrent_api.rs spawns 32-64 threads over mixed service-dispatch calls",
+    "CLI argument edge cases — RESOLVED: tests/cli_edge_cases.rs covers unicode, long lists, large counts, i64::MAX boundary, unicode seeds",
+    "MCP protocol edge cases — RESOLVED: tests/mcp_protocol.rs drives live chance mcp with out-of-order init, bad version, malformed JSON, oversized payload",
+    "Error message quality — RESOLVED: tests/error_messages.rs asserts descriptive service-layer and MCP tool error content"
+  ]
+}

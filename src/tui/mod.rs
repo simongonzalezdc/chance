@@ -128,3 +128,90 @@ fn handle_seed_popup(app: &mut App, code: KeyCode) {
         _ => {}
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn esc_closes_source_popup() {
+        let mut app = App::new();
+        app.popup = Popup::Source;
+        handle_key(&mut app, KeyCode::Esc);
+        assert_eq!(app.popup, Popup::None);
+    }
+
+    #[test]
+    fn esc_closes_seed_popup() {
+        let mut app = App::new();
+        app.popup = Popup::Seed;
+        handle_key(&mut app, KeyCode::Esc);
+        assert_eq!(app.popup, Popup::None);
+    }
+
+    #[test]
+    fn up_navigates_methods_upward() {
+        let mut app = App::new();
+        handle_main(&mut app, KeyCode::Down);
+        handle_main(&mut app, KeyCode::Down);
+        assert_eq!(app.selected_method, 2);
+        handle_main(&mut app, KeyCode::Up);
+        assert_eq!(app.selected_method, 1);
+    }
+
+    #[test]
+    fn up_clamps_at_top_boundary() {
+        let mut app = App::new();
+        assert_eq!(app.selected_method, 0);
+        handle_main(&mut app, KeyCode::Up);
+        assert_eq!(app.selected_method, 0, "Up at index 0 must not underflow");
+    }
+
+    #[test]
+    fn up_navigates_source_popup_selection() {
+        let mut app = App::new();
+        app.popup = Popup::Source;
+        app.popup_selection = 2;
+        handle_source_popup(&mut app, KeyCode::Up);
+        assert_eq!(app.popup_selection, 1);
+    }
+
+    #[test]
+    fn backspace_pops_seed_character() {
+        let mut app = App::new();
+        app.popup = Popup::Seed;
+        app.seed = "abc".to_string();
+        handle_seed_popup(&mut app, KeyCode::Backspace);
+        assert_eq!(app.seed, "ab");
+    }
+
+    #[test]
+    fn char_appends_to_seed() {
+        let mut app = App::new();
+        app.popup = Popup::Seed;
+        handle_seed_popup(&mut app, KeyCode::Char('4'));
+        handle_seed_popup(&mut app, KeyCode::Char('2'));
+        assert_eq!(app.seed, "42");
+    }
+
+    #[test]
+    fn quit_key_sets_should_quit() {
+        let mut app = App::new();
+        handle_main(&mut app, KeyCode::Char('q'));
+        assert!(app.should_quit);
+    }
+
+    #[test]
+    fn source_key_opens_source_popup() {
+        let mut app = App::new();
+        handle_main(&mut app, KeyCode::Char('s'));
+        assert_eq!(app.popup, Popup::Source);
+    }
+
+    #[test]
+    fn shift_s_opens_seed_popup() {
+        let mut app = App::new();
+        handle_main(&mut app, KeyCode::Char('S'));
+        assert_eq!(app.popup, Popup::Seed);
+    }
+}
