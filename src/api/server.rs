@@ -1,12 +1,16 @@
 use crate::api::routes::*;
 use axum::routing::{get, post};
 use axum::Router;
+use axum::response::Html;
 use std::sync::Arc;
+const INDEX_HTML: &str = include_str!("../../web/index.html");
 
 pub async fn serve(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let state = Arc::new(AppState);
 
     let app = Router::new()
+        .route("/", get(index))
+        .route("/index.html", get(index))
         .route("/v1/roll", post(roll))
         .route("/v1/flip", post(flip))
         .route("/v1/draw", post(draw))
@@ -35,4 +39,8 @@ pub async fn serve(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     println!("chance API listening on http://{}", addr);
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+async fn index() -> Html<&'static str> {
+    Html(INDEX_HTML)
 }
