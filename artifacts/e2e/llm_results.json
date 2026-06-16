@@ -1,0 +1,137 @@
+{
+  "provider": "ollama",
+  "model_primary": "kimi-k2.5:cloud",
+  "model_fallback": "qwen3.5:cloud",
+  "passed": 4,
+  "total": 4,
+  "tool_count": 21,
+  "journeys": [
+    {
+      "label": "board-game-orchestration",
+      "pass": true,
+      "model": "kimi-k2.5:cloud",
+      "tools_called": [
+        "chance_roll",
+        "chance_flip",
+        "chance_draw"
+      ],
+      "rounds": 2,
+      "error": null,
+      "final_text": "Here are your **Game Night Results**:\n\n## 1. First Player's Score (2d6)\n**Total: 5** (rolled 4 + 1)\n\n## 2. Team Selection (Coin Flip)\n**Heads!** → **Red Team** gets the first pick!\n\n*(Alternate mapping: Tails would have been Blue)*\n\n## 3. Five Card Draw\nYour hand:\n- **A♠** (Ace of Spades)\n- **9♠** (Nine of Spades)\n- **7♠** (Seven of Spades)\n- **2♣** (Two of Clubs)\n- **7♦** (Seven of Diamonds)\n\n---\n\n**Summary:** The first player starts with **5 points**, the **Red Team** gets priority selection this round, and someone drew a decent hand with a pair of sevens and the ace of spades! Have a great game night! 🎲🎴",
+      "outputs": [
+        {
+          "tool": "chance_roll",
+          "input": {
+            "notation": "2d6"
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 5.169925001442312,\n    \"latency_ms\": 0.27545800000000004,\n    \"request_id\": \"req_fcc73cb52dbb25ac\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:07.417417+00:00\"\n  },\n  \"result\": {\n    \"dropped\": [],\n    \"modifier_total\": 0,\n    \"rolls\": [\n      {\n        \"exploded\": false,\n        \"rerolled\": false,\n        \"size\": 6,\n        \"value\": 4\n      },\n      {\n        \"exploded\": false,\n        \"rerolled\": false,\n        \"size\": 6,\n        \"value\": 1\n      }\n    ],\n    \"success_count\": null,\n    \"total\": 5\n  }\n}"
+        },
+        {
+          "tool": "chance_flip",
+          "input": {
+            "times": 1
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 1.0,\n    \"latency_ms\": 0.006,\n    \"request_id\": \"req_eeddaa354e9910e0\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:07.424292+00:00\"\n  },\n  \"result\": [\n    \"heads\"\n  ]\n}"
+        },
+        {
+          "tool": "chance_draw",
+          "input": {
+            "count": 5
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 28.502198590705458,\n    \"latency_ms\": 0.053333,\n    \"request_id\": \"req_c2097b1f0f6cb77f\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:07.424845+00:00\"\n  },\n  \"result\": [\n    \"A♠\",\n    \"9♠\",\n    \"7♠\",\n    \"2♣\",\n    \"7♦\"\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "label": "dinner-decision",
+      "pass": true,
+      "model": "kimi-k2.5:cloud",
+      "tools_called": [
+        "chance_pick"
+      ],
+      "rounds": 2,
+      "error": null,
+      "final_text": "Looks like fate has spoken — **we're eating tacos tonight!** 🌮\n\nEnjoy your dinner!",
+      "outputs": [
+        {
+          "tool": "chance_pick",
+          "input": {
+            "items": [
+              "pizza",
+              "sushi",
+              "tacos"
+            ],
+            "count": 1
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 1.584962500721156,\n    \"latency_ms\": 0.27216700000000005,\n    \"request_id\": \"req_8e13900358a52943\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:14.717204+00:00\"\n  },\n  \"result\": [\n    \"tacos\"\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "label": "project-provisioning",
+      "pass": true,
+      "model": "qwen3.5:cloud",
+      "tools_called": [
+        "chance_password",
+        "chance_uuid",
+        "chance_bytes"
+      ],
+      "rounds": 2,
+      "error": null,
+      "final_text": "Here are your three generated values for the new project:\n\n| Value Type | Result |\n|------------|--------|\n| **Password** (20 chars, no symbols) | `5kypZyCY2F85pxCV8LJN` |\n| **UUID** (v4) | `03192b75-c072-48a7-83f6-daff05cf37f9` |\n| **Random Bytes** (16 bytes, hex) | `f2c21078e76de0aa3819dc3edb6e7256` |\n\nAll values were generated using cryptographically secure random sources (os-csprng).",
+      "outputs": [
+        {
+          "tool": "chance_password",
+          "input": {
+            "length": 20,
+            "symbols": false
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 119.0839262077375,\n    \"latency_ms\": 0.070584,\n    \"request_id\": \"req_0c79885a7442ea17\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:25.065558+00:00\"\n  },\n  \"result\": \"5kypZyCY2F85pxCV8LJN\"\n}"
+        },
+        {
+          "tool": "chance_uuid",
+          "input": {
+            "version": 4
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 128.0,\n    \"latency_ms\": 0.005625000000000001,\n    \"request_id\": \"req_e0ac2f367a8d1716\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:25.065857+00:00\"\n  },\n  \"result\": \"03192b75-c072-48a7-83f6-daff05cf37f9\"\n}"
+        },
+        {
+          "tool": "chance_bytes",
+          "input": {
+            "count": 16,
+            "encoding": "hex"
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 128.0,\n    \"latency_ms\": 0.005584,\n    \"request_id\": \"req_d7384c15911f51ba\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:25.066126+00:00\"\n  },\n  \"result\": \"f2c21078e76de0aa3819dc3edb6e7256\"\n}"
+        }
+      ]
+    },
+    {
+      "label": "iching-divination",
+      "pass": true,
+      "model": "kimi-k2.5:cloud",
+      "tools_called": [
+        "chance_iching"
+      ],
+      "rounds": 2,
+      "error": null,
+      "final_text": "Your I Ching hexagram has been cast using the **coin method**.\n\n## Result\n\n**Hexagram #60: Chieh / Limitation** (節)\n\nThis hexagram represents **Limitation** — the concept of setting boundaries, moderation, and knowing when to stop. It suggests that success comes through restraint and proper management of resources and energy.\n\n### Lines (from bottom to top):\n- Line 1: Yin (7 → broken line)\n- **Line 2: Old Yin (6 → changing line)**\n- Line 3: Yang (7 → solid line)\n- Line 4: Yang (7 → solid line)\n- Line 5: Yang (7 → solid line)\n- Line 6: Yang (7 → solid line)\n\n### Changing Line:\nThe **second line** is a changing line (old yin → yang), which means there is dynamic potential for transformation. If this line changes, your hexagram would become **#31: Hsien / Influence** (咸), representing mutual attraction and the power of gentle persuasion.\n\n### Interpretation:\nThe hexagram of Limitation advises finding the middle path between excess and deprivation. The changing line in position 2 suggests that at this moment, excessive restriction or going too far in limiting yourself may need adjustment. The lesson is that limitation, when applied wisely and not excessively, creates the conditions for growth and success.",
+      "outputs": [
+        {
+          "tool": "chance_iching",
+          "input": {
+            "method": "coin"
+          },
+          "error": false,
+          "text": "{\n  \"provenance\": {\n    \"entropy_bits\": 6.0,\n    \"latency_ms\": 0.015667,\n    \"request_id\": \"req_d1fa38e702a1db7a\",\n    \"seed\": null,\n    \"source\": \"os-csprng\",\n    \"source_kind\": \"csprng\",\n    \"timestamp\": \"2026-06-16T04:31:29.440967+00:00\"\n  },\n  \"result\": {\n    \"lines\": [\n      {\n        \"changing\": false,\n        \"value\": 7,\n        \"yang\": true\n      },\n      {\n        \"changing\": false,\n        \"value\": 7,\n        \"yang\": true\n      },\n      {\n        \"changing\": false,\n        \"value\": 7,\n        \"yang\": true\n      },\n      {\n        \"changing\": false,\n        \"value\": 7,\n        \"yang\": true\n      },\n      {\n        \"changing\": true,\n        \"value\": 6,\n        \"yang\": false\n      },\n      {\n        \"changing\": false,\n        \"value\": 8,\n        \"yang\": false\n      }\n    ],\n    \"method\": \"coin\",\n    \"primary\": 60,\n    \"primary_name\": \"Chieh / Limitation\",\n    \"transformed\": 31\n  }\n}"
+        }
+      ]
+    }
+  ]
+}

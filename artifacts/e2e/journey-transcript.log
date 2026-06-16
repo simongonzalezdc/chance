@@ -1,0 +1,81 @@
+═══════════════════════════════════════════════════════
+ CHANCE END-TO-END JOURNEY VALIDATION
+ binary: /Users/simongonzalezdecruz/workspaces/chance/target/release/chance  | LLM model: claude-haiku-4-5-20251001
+═══════════════════════════════════════════════════════
+
+══ PHASE 1: CLI USER JOURNEYS ══
+  [PASS] CLI/roll d20
+  [PASS] CLI/roll 4d6kh3
+  [PASS] CLI/roll json
+  [PASS] CLI/flip
+  [PASS] CLI/flip x3
+  [PASS] CLI/draw 5
+  [PASS] CLI/pick
+  [PASS] CLI/shuffle
+  [PASS] CLI/int
+  [PASS] CLI/int range
+  [PASS] CLI/bytes hex
+  [PASS] CLI/bytes base64
+  [PASS] CLI/uuid
+  [PASS] CLI/password
+  [PASS] CLI/password no-symbols
+  [PASS] CLI/runes
+  [PASS] CLI/iching
+  [PASS] CLI/tarot
+  [PASS] CLI/dominoes
+  [PASS] CLI/roulette
+  [PASS] CLI/lottery
+  [PASS] CLI/knucklebones
+  [PASS] CLI/teetotum
+  [PASS] CLI/teetotum dreidel
+  [PASS] CLI/cowrie
+  [PASS] CLI/lots
+  [PASS] CLI/sources
+  [PASS] CLI/seeded determinism
+  [PASS] CLI/seeded reproducibility
+  [PASS] CLI/d0 rejected
+
+══ PHASE 2: API OPERATOR JOURNEYS ══
+  [PASS] API/server startup
+  [PASS] API//v1/health
+  [PASS] API//v1/sources
+  [PASS] API//v1/roll
+  [PASS] API//v1/roll
+  [PASS] API//v1/flip
+  [PASS] API//v1/draw
+  [PASS] API//v1/pick
+  [PASS] API//v1/shuffle
+  [PASS] API//v1/int
+  [PASS] API//v1/bytes
+  [PASS] API//v1/uuid
+  [PASS] API//v1/password
+  [PASS] API//v1/runes
+  [PASS] API//v1/iching
+  [PASS] API//v1/tarot
+  [PASS] API//v1/dominoes
+  [PASS] API//v1/roulette
+  [PASS] API//v1/lottery
+  [PASS] API//v1/knucklebones
+  [PASS] API//v1/teetotum
+  [PASS] API//v1/cowrie
+  [PASS] API//v1/lots
+  [PASS] API//v1/roll d0 rejected
+
+══ PHASE 3: MCP + LLM (skipped — run via llm_live.py) ══
+
+══ PHASE 4: TUI INTERACTIVE JOURNEYS ══
+  [PASS] TUI/renders method list
+  [PASS] TUI/run method shows result
+  [PASS] TUI/source popup opens
+  [PASS] TUI/esc closes popup
+  [PASS] TUI/seed entry accepted
+  [PASS] TUI/quit exits session
+
+═══════════════════════════════════════════════════════
+ SUMMARY
+═══════════════════════════════════════════════════════
+  CLI         30 passed, 0 failed
+  API         24 passed, 0 failed
+  TUI         6 passed, 0 failed
+
+  TOTAL: 60 passed, 0 failed

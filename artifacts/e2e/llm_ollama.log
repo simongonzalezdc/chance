@@ -1,0 +1,117 @@
+[21:31:05] ================ OLLAMA -> MCP JOURNEY RUNNER STARTING ================
+[21:31:05] MCP initialize: protocolVersion=2024-11-05
+[21:31:05] MCP tools/list: 21 tools
+[21:31:05] 
+=== JOURNEY: board-game-orchestration (model=kimi-k2.5:cloud) ===
+[21:31:05] prompt: I'm hosting game night. Using the chance tools, do all of the following then summarize: (1) roll 2d6
+[21:31:05]   -- round 1: calling kimi-k2.5:cloud
+[21:31:07]   round 1: LLM -> chance_roll({"notation": "2d6"}) ok: {
+  "provenance": {
+    "entropy_bits": 5.169925001442312,
+    "latency_ms": 0.2
+[21:31:07]   round 1: LLM -> chance_flip({"times": 1}) ok: {
+  "provenance": {
+    "entropy_bits": 1.0,
+    "latency_ms": 0.006,
+    "reque
+[21:31:07]   round 1: LLM -> chance_draw({"count": 5}) ok: {
+  "provenance": {
+    "entropy_bits": 28.502198590705458,
+    "latency_ms": 0.
+[21:31:07]   -- round 2: calling kimi-k2.5:cloud
+[21:31:12]   round 2: finish=stop (no tool_calls) -> final text
+[21:31:12]   RESULT: PASS | model=kimi-k2.5:cloud | tools=['chance_roll', 'chance_flip', 'chance_draw'] | err=None
+[21:31:12]   final: Here are your **Game Night Results**:
+
+## 1. First Player's Score (2d6)
+**Total: 5** (rolled 4 + 1)
+
+## 2. Team Selection (Coin Flip)
+**Heads!** → **Red Team** gets the first pick!
+
+*(Alternate mappin
+[21:31:12] 
+=== JOURNEY: dinner-decision (model=kimi-k2.5:cloud) ===
+[21:31:12] prompt: I can't decide between pizza, sushi, and tacos for dinner. Use the chance pick tool to choose fairly
+[21:31:12]   -- round 1: calling kimi-k2.5:cloud
+[21:31:14]   round 1: LLM -> chance_pick({"items": ["pizza", "sushi", "tacos"], "count": 1}) ok: {
+  "provenance": {
+    "entropy_bits": 1.584962500721156,
+    "latency_ms": 0.2
+[21:31:14]   -- round 2: calling kimi-k2.5:cloud
+[21:31:16]   round 2: finish=stop (no tool_calls) -> final text
+[21:31:16]   RESULT: PASS | model=kimi-k2.5:cloud | tools=['chance_pick'] | err=None
+[21:31:16]   final: Looks like fate has spoken — **we're eating tacos tonight!** 🌮
+
+Enjoy your dinner!
+[21:31:16] 
+=== JOURNEY: project-provisioning (model=kimi-k2.5:cloud) ===
+[21:31:16] prompt: Provision a new project using chance tools: generate a 20-character password with no symbols, a UUID
+[21:31:16]   -- round 1: calling kimi-k2.5:cloud
+[21:31:19]   round 1: LLM -> chance_password({"symbols": false, "length": 20}) ok: {
+  "provenance": {
+    "entropy_bits": 119.0839262077375,
+    "latency_ms": 0.0
+[21:31:19]   round 1: LLM -> chance_uuid({}) ok: {
+  "provenance": {
+    "entropy_bits": 128.0,
+    "latency_ms": 0.032084,
+    "
+[21:31:19]   round 1: LLM -> chance_bytes({"count": 16, "encoding": "hex"}) ok: {
+  "provenance": {
+    "entropy_bits": 128.0,
+    "latency_ms": 0.02875,
+    "r
+[21:31:19]   -- round 2: calling kimi-k2.5:cloud
+[21:31:21]   round 2: finish=stop (no tool_calls) -> final text
+[21:31:21]   RESULT: FAIL | model=kimi-k2.5:cloud | tools=['chance_password', 'chance_uuid', 'chance_bytes'] | err=None
+[21:31:21]   final: 
+[21:31:21]   -- primary failed for project-provisioning; retrying once with qwen3.5:cloud
+[21:31:21] 
+=== JOURNEY: project-provisioning (model=qwen3.5:cloud) ===
+[21:31:21] prompt: Provision a new project using chance tools: generate a 20-character password with no symbols, a UUID
+[21:31:21]   -- round 1: calling qwen3.5:cloud
+[21:31:25]   round 1: LLM -> chance_password({"length": 20, "symbols": false}) ok: {
+  "provenance": {
+    "entropy_bits": 119.0839262077375,
+    "latency_ms": 0.0
+[21:31:25]   round 1: LLM -> chance_uuid({"version": 4}) ok: {
+  "provenance": {
+    "entropy_bits": 128.0,
+    "latency_ms": 0.0056250000000
+[21:31:25]   round 1: LLM -> chance_bytes({"count": 16, "encoding": "hex"}) ok: {
+  "provenance": {
+    "entropy_bits": 128.0,
+    "latency_ms": 0.005584,
+    "
+[21:31:25]   -- round 2: calling qwen3.5:cloud
+[21:31:27]   round 2: finish=stop (no tool_calls) -> final text
+[21:31:27]   RESULT: PASS | model=qwen3.5:cloud | tools=['chance_password', 'chance_uuid', 'chance_bytes'] | err=None
+[21:31:27]   final: Here are your three generated values for the new project:
+
+| Value Type | Result |
+|------------|--------|
+| **Password** (20 chars, no symbols) | `5kypZyCY2F85pxCV8LJN` |
+| **UUID** (v4) | `03192b75-
+[21:31:27] 
+=== JOURNEY: iching-divination (model=kimi-k2.5:cloud) ===
+[21:31:27] prompt: Cast an I Ching hexagram via the coin method using the chance tools, and tell me the hexagram number
+[21:31:27]   -- round 1: calling kimi-k2.5:cloud
+[21:31:29]   round 1: LLM -> chance_iching({"method": "coin"}) ok: {
+  "provenance": {
+    "entropy_bits": 6.0,
+    "latency_ms": 0.015667,
+    "re
+[21:31:29]   -- round 2: calling kimi-k2.5:cloud
+[21:31:36]   round 2: finish=stop (no tool_calls) -> final text
+[21:31:36]   RESULT: PASS | model=kimi-k2.5:cloud | tools=['chance_iching'] | err=None
+[21:31:36]   final: Your I Ching hexagram has been cast using the **coin method**.
+
+## Result
+
+**Hexagram #60: Chieh / Limitation** (節)
+
+This hexagram represents **Limitation** — the concept of setting boundaries, modera
+[21:31:36] 
+================ DONE: 4/4 journeys passed ================
+[21:31:36] wrote artifacts/e2e/llm_results.json

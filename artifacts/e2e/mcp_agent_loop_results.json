@@ -1,0 +1,76 @@
+{
+  "passed": 14,
+  "failed": 0,
+  "journeys": [
+    {
+      "name": "initialize: protocol + capabilities",
+      "pass": true,
+      "detail": "pv=2024-11-05 caps=['tools']"
+    },
+    {
+      "name": "tools/list: 21 tools with valid schemas",
+      "pass": true,
+      "detail": "count=21 schemas_ok=True"
+    },
+    {
+      "name": "A1 chance_roll 2d6",
+      "pass": true,
+      "detail": "total=8"
+    },
+    {
+      "name": "A2 chance_flip",
+      "pass": true,
+      "detail": "flip=['heads']"
+    },
+    {
+      "name": "A3 chance_draw 5",
+      "pass": true,
+      "detail": "cards=5"
+    },
+    {
+      "name": "A journey multi-tool chain",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B chance_pick decision",
+      "pass": true,
+      "detail": "chose=['sushi']"
+    },
+    {
+      "name": "C1 chance_password 20 no-symbols",
+      "pass": true,
+      "detail": "pw_len=20"
+    },
+    {
+      "name": "C2 chance_uuid",
+      "pass": true,
+      "detail": "uuid=da93c10b-b667-42f1-8233-42efcbf802d9"
+    },
+    {
+      "name": "C3 chance_bytes 16 hex",
+      "pass": true,
+      "detail": "hex_len=32"
+    },
+    {
+      "name": "D chance_iching coin",
+      "pass": true,
+      "detail": "hex=17 Sui / Following"
+    },
+    {
+      "name": "E1 chance_roll d0 \u2192 graceful error",
+      "pass": true,
+      "detail": "is_error=True"
+    },
+    {
+      "name": "E2 chance_pick empty \u2192 graceful error",
+      "pass": true,
+      "detail": "is_error=True"
+    },
+    {
+      "name": "E3 unknown tool \u2192 graceful error",
+      "pass": true,
+      "detail": "is_error=True"
+    }
+  ]
+}
