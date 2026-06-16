@@ -7,6 +7,7 @@ pub enum Popup {
     None,
     Source,
     Seed,
+    Viz,
 }
 
 pub type MethodRun = dyn Fn(&App) -> Result<Value, String>;
@@ -29,6 +30,7 @@ pub struct App {
     pub last_provenance: Option<serde_json::Value>,
     pub status_message: Option<String>,
     pub should_quit: bool,
+    pub tick: u64,
 }
 
 impl App {
@@ -45,6 +47,7 @@ impl App {
             last_provenance: None,
             status_message: None,
             should_quit: false,
+            tick: 0,
         }
     }
 
