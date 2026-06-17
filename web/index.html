@@ -119,8 +119,8 @@
 
   /* stage */
   main.stage{padding:var(--s6);min-height:60vh}
-  .snum{font-family:var(--font-display);font-weight:700;font-size:var(--step-5);line-height:.85;color:var(--brand-500);
-    letter-spacing:-.01em}
+  .snum{font-family:var(--font-mono);font-weight:500;font-size:var(--step--1);line-height:1;color:var(--muted);
+    letter-spacing:.2em;text-transform:uppercase;margin-bottom:var(--s2)}
   .sname{font-family:var(--font-display);font-weight:600;font-size:var(--step-3);line-height:1.05;
     text-wrap:balance;margin:var(--s2) 0 var(--s1)}
   .sdesc{color:var(--muted);max-width:var(--measure);margin:0 0 var(--s5);font-size:var(--step--1)}
@@ -151,10 +151,13 @@
     border:1px solid var(--border);border-radius:var(--r-ctrl);padding:var(--s1) var(--s3);cursor:pointer;
     display:inline-flex;align-items:center;gap:var(--s1)}
   .copy:hover{color:var(--text);border-color:var(--accent)}
-  .result{background:var(--color-bg);border:1px solid var(--border);border-radius:var(--r-card);
-    padding:var(--s6);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s4)}
-  .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s2);color:var(--muted);text-align:center;max-width:44ch}
-  .empty .big{font-family:var(--font-display);font-size:var(--step-4);color:var(--brand-600);line-height:.9}
+  .result{background:oklch(0.11 0.03 287);border:1px solid oklch(0.30 0.014 287 / .7);border-radius:var(--r-card);
+    box-shadow:var(--sh-soft),inset 0 0 0 1px oklch(0.62 0.15 287 / .24),inset 0 1px 0 oklch(0.72 0.13 287 / .10);
+    padding:clamp(var(--s6),5vw,var(--s8));min-height:min(52vh,480px);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:var(--s6)}
+  .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s3);color:var(--muted);text-align:center;max-width:48ch}
+  .empty .ghostdie{opacity:.18;filter:saturate(.65);margin-bottom:var(--s2)}
+  .empty .ghostdie svg{width:clamp(120px,15vw,210px);height:auto;display:block}
   .load{font-family:var(--font-mono);color:var(--accent);letter-spacing:.4em;font-size:var(--step-2)}
   .err{color:var(--error);font-family:var(--font-mono);font-size:var(--step--1);text-align:center;max-width:54ch}
 
@@ -250,7 +253,20 @@
   .result,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
   .result svg,.row svg,.faces svg,.coinrow svg,.cardrow svg,.viz-card svg{max-width:100%;height:auto}
   /* soft-shadow elevation (the rolled --sh elevation) lifts result objects off the stage; fills stay flat, zero gradients */
-  .faces svg,.coinrow svg,.cardrow svg,.row svg,.wheelw svg,.drew svg,.ic svg{filter:drop-shadow(0 5px 8px oklch(0.04 0.02 287 / .55))}
+  .faces svg,.coinrow svg,.cardrow svg,.row svg,.wheelw svg,.drew svg,.ic svg{filter:drop-shadow(0 1px 2px oklch(0.02 0.02 287 / .75)) drop-shadow(0 7px 12px oklch(0.03 0.02 287 / .45))}
+  /* HERO result objects — editorial presence; viewBoxes scale cleanly, flat fills preserved, zero gradients */
+  .die-wrap svg{width:clamp(140px,11vw,188px);height:auto}
+  .abw svg{width:clamp(150px,12vw,200px);height:auto}
+  .cw svg{width:clamp(108px,8vw,150px);height:auto}
+  .cdw svg{width:clamp(140px,12vw,188px);height:auto}
+  .tw svg{width:clamp(210px,19vw,290px);height:auto}
+  .dw svg{width:clamp(220px,19vw,300px);height:auto}
+  .rw svg{width:clamp(150px,12vw,200px);height:auto}
+  .coww svg{width:clamp(120px,10vw,165px);height:auto}
+  .bw svg,.bwb svg{width:clamp(104px,8vw,140px);height:auto}
+  .drew svg{width:clamp(150px,12vw,200px);height:auto}
+  .wheelw svg{width:clamp(380px,42vw,600px);height:auto}
+  .ic svg{width:clamp(260px,24vw,400px);height:auto}
 </style>
 </head>
 <body>
@@ -398,7 +414,7 @@ function buildRail(){
 }
 function renderForm(){
   const i=METHODS.indexOf(current);
-  eHnum.textContent=String(i+1).padStart(2,"0");
+  eHnum.textContent="method · "+String(i+1).padStart(2,"0");
   eHname.textContent=current.n;eHdesc.textContent=current.d;
   eForm.innerHTML="";
   const g=document.createElement("div");g.className="grid-f";
@@ -476,9 +492,14 @@ const EU_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1
 const RED_SET=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 // pip helper for the isometric die top face (3×3 map)
 function pipsOn(v,cx,cy,col,sc){
-  const dx=10*sc,dy=6.5*sc,r=2.3*sc,well=K.b7;
+  const dx=10*sc,dy=6.5*sc,r=2.3*sc;
   const map={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
-  return (map[v]||[]).map(i=>{const c=i%3,rr=(i/3|0);const x=(cx+(c-1)*dx).toFixed(1),y=(cy+(rr-1)*dy).toFixed(1);return `<circle cx="${x}" cy="${y}" r="${(r+0.6).toFixed(1)}" fill="${well}" opacity="0.5"/><circle cx="${x}" cy="${y}" r="${r.toFixed(1)}" fill="${col}"/>`;}).join("");
+  return (map[v]||[]).map(i=>{const c=i%3,rr=(i/3|0);const x=cx+(c-1)*dx,y=cy+(rr-1)*dy;
+    return `<circle cx="${(x+1.8).toFixed(1)}" cy="${(y+1.8).toFixed(1)}" r="${(r+2.0).toFixed(1)}" fill="${K.ik}" opacity="0.8"/>`+
+           `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+0.6).toFixed(1)}" fill="${K.b7}" opacity="0.95"/>`+
+           `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${col}"/>`+
+           `<circle cx="${(x-r*0.45).toFixed(1)}" cy="${(y-r*0.45).toFixed(1)}" r="${(r*0.5).toFixed(1)}" fill="${K.b3}" opacity="0.95"/>`;
+  }).join("");
 }
 function dieSVG(value,size,exploded){
   const v=Number(value),ex=!!exploded,sz=Number(size)||6;
@@ -487,10 +508,16 @@ function dieSVG(value,size,exploded){
   let center;
   if(sz===6&&v>=1&&v<=6){center=pipsOn(v,50,30,K.lt,0.95);}
   else{center=`<text x="50" y="31" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="18" font-weight="700" fill="${K.lt}">${esc(String(v))}</text><text x="66" y="41" text-anchor="middle" font-family="DM Mono" font-size="5" fill="${K.lt}" opacity="0.8">d${esc(String(sz))}</text>`;}
-  return `<svg${SVGNS} width="58" height="52" viewBox="0 0 100 90">`+
+  return `<svg${SVGNS} width="58" height="56" viewBox="0 0 100 96">`+
+    `<ellipse cx="50" cy="90" rx="30" ry="4.5" fill="oklch(0.04 0.015 287)" opacity="0.6"/>`+
     `<polygon points="${left}" fill="${lF}" stroke="${K.n7}" stroke-width="0.7"/>`+
     `<polygon points="${right}" fill="${rF}" stroke="${K.n7}" stroke-width="0.7"/>`+
     `<polygon points="${top}" fill="${tF}" stroke="${K.n7}" stroke-width="0.9"/>`+
+    // machined bevel — bold light crest (upper-left light), edge accents, grounding silhouette + contact pool
+    `<polyline points="20,30 50,12 80,30" fill="none" stroke="${ex?K.lt:K.b3}" stroke-width="1.7" stroke-linejoin="round" opacity="0.85"/>`+
+    `<line x1="20" y1="30" x2="20" y2="66" stroke="${ex?K.lt:K.b3}" stroke-width="0.9" opacity="0.4"/>`+
+    `<line x1="80" y1="30" x2="80" y2="66" stroke="${K.ik}" stroke-width="1.1" opacity="0.45"/>`+
+    `<polyline points="20,66 50,84 80,66" fill="none" stroke="${K.ik}" stroke-width="1.5" stroke-linejoin="round" opacity="0.65"/>`+
     center+`</svg>`;
 }
 function coinSVG(face){
@@ -585,30 +612,30 @@ function minorPipPos(n){
   return map[n]||[];
 }
 function tarotEmblem(i){
-  const a=K.ac,b=K.b3,d=K.n9;
+  const a=K.ac,b=K.b3,c=K.b4,d=K.n9,e=K.b6,f=K.lt,ik=K.ik;
   switch(i){
-    case 0:return `<circle cx="82" cy="54" r="8" fill="${b}"/><path d="M20 104 L60 104 L70 116 L14 116 Z" fill="${a}"/>`;
-    case 1:return `<path d="M50 58 q-9 0 -9 7 t9 7 q9 0 9 -7 t-9 -7 M70 58 q9 0 9 7 t-9 7 q-9 0 -9 -7 t9 -7" fill="none" stroke="${a}" stroke-width="2.2"/><line x1="34" y1="106" x2="86" y2="106" stroke="${b}" stroke-width="2"/>`;
-    case 2:return `<rect x="34" y="52" width="5" height="48" fill="${b}"/><rect x="81" y="52" width="5" height="48" fill="${b}"/><path d="M60 60 m-9 0 a9 9 0 1 0 18 0 a6 6 0 1 1 -18 0 Z" fill="${a}"/>`;
-    case 3:return `<path d="M42 62 L50 74 L60 60 L70 74 L78 62 L78 84 L42 84 Z" fill="${b}" stroke="${a}" stroke-width="1.2"/>`;
-    case 4:return `<rect x="44" y="58" width="32" height="34" fill="none" stroke="${b}" stroke-width="2.2"/><line x1="44" y1="75" x2="76" y2="75" stroke="${a}" stroke-width="1.6"/>`;
-    case 5:return `<path d="M46 58 L54 50 L60 56 L66 50 L74 58 L74 68 L46 68 Z" fill="${b}"/><path d="M52 96 L60 88 L68 96" fill="none" stroke="${a}" stroke-width="2"/>`;
-    case 6:return `<circle cx="48" cy="78" r="7" fill="${b}"/><circle cx="72" cy="78" r="7" fill="${b}"/><path d="M60 58 c-5 0 -7 4 -7 6 c0 -2 -2 -6 -7 -6 c-4 0 -5 4 -5 6 c0 6 12 11 12 11 s12 -5 12 -11 c0 -2 -1 -6 -5 -6 Z" fill="${a}"/>`;
-    case 7:return `<rect x="42" y="64" width="36" height="24" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="50" cy="102" r="6" fill="none" stroke="${a}" stroke-width="2"/><circle cx="70" cy="102" r="6" fill="none" stroke="${a}" stroke-width="2"/>`;
-    case 8:return `<path d="M44 80 a9 9 0 1 0 32 -8 a9 9 0 1 0 -32 8" fill="none" stroke="${a}" stroke-width="2.2"/><circle cx="60" cy="76" r="7" fill="${b}"/>`;
-    case 9:return `<line x1="60" y1="50" x2="60" y2="98" stroke="${b}" stroke-width="1.6"/><path d="M54 58 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="${a}"/><line x1="56" y1="50" x2="64" y2="50" stroke="${b}" stroke-width="1.4"/>`;
-    case 10:return `<circle cx="60" cy="78" r="16" fill="none" stroke="${b}" stroke-width="2.2"/><g stroke="${a}" stroke-width="1.4"><line x1="60" y1="62" x2="60" y2="94"/><line x1="44" y1="78" x2="76" y2="78"/><line x1="48" y1="66" x2="72" y2="90"/><line x1="72" y1="66" x2="48" y2="90"/></g>`;
-    case 11:return `<line x1="60" y1="54" x2="60" y2="100" stroke="${b}" stroke-width="2"/><line x1="60" y1="64" x2="44" y2="74" stroke="${a}" stroke-width="1.8"/><line x1="60" y1="64" x2="76" y2="74" stroke="${a}" stroke-width="1.8"/><circle cx="44" cy="74" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="76" cy="74" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/>`;
-    case 12:return `<rect x="44" y="56" width="32" height="48" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="60" cy="64" r="5" fill="${a}"/><line x1="52" y1="72" x2="68" y2="72" stroke="${a}" stroke-width="1.4"/>`;
-    case 13:return `<circle cx="60" cy="78" r="14" fill="${b}"/><circle cx="54" cy="75" r="2.4" fill="${d}"/><circle cx="66" cy="75" r="2.4" fill="${d}"/><path d="M48 60 L72 56" fill="none" stroke="${a}" stroke-width="1.8"/>`;
-    case 14:return `<path d="M44 72 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="none" stroke="${b}" stroke-width="1.8"/><path d="M64 72 m0 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0" fill="none" stroke="${b}" stroke-width="1.8"/><path d="M50 80 Q60 88 70 80" fill="none" stroke="${a}" stroke-width="1.6"/>`;
-    case 15:return `<path d="M44 60 L60 86 L76 60 Z" fill="${b}"/><path d="M44 60 L52 48 M76 60 L68 48" fill="none" stroke="${a}" stroke-width="2.2"/>`;
-    case 16:return `<rect x="50" y="56" width="20" height="48" fill="none" stroke="${b}" stroke-width="2.2"/><path d="M38 64 L54 54 L48 64 L60 58" fill="none" stroke="${a}" stroke-width="1.8"/>`;
-    case 17:return `<g fill="${b}"><circle cx="60" cy="82" r="3.6"/><circle cx="60" cy="62" r="3"/><circle cx="44" cy="70" r="3"/><circle cx="76" cy="70" r="3"/><circle cx="46" cy="92" r="3"/><circle cx="74" cy="92" r="3"/><circle cx="60" cy="100" r="3"/></g><circle cx="60" cy="82" r="16" fill="none" stroke="${a}" stroke-width="1.4"/>`;
-    case 18:return `<path d="M60 60 m-12 0 a12 12 0 1 0 22 9 a9 9 0 1 1 -22 -9 Z" fill="${a}"/><circle cx="58" cy="82" r="5" fill="${b}"/>`;
-    case 19:return `<circle cx="60" cy="78" r="11" fill="${b}"/><g stroke="${a}" stroke-width="2"><line x1="60" y1="60" x2="60" y2="54"/><line x1="60" y1="102" x2="60" y2="96"/><line x1="42" y1="78" x2="36" y2="78"/><line x1="78" y1="78" x2="84" y2="78"/><line x1="48" y1="66" x2="44" y2="62"/><line x1="72" y1="66" x2="76" y2="62"/><line x1="48" y1="90" x2="44" y2="94"/><line x1="72" y1="90" x2="76" y2="94"/></g>`;
-    case 20:return `<path d="M48 56 L72 72 L48 88 Z" fill="${b}"/><circle cx="60" cy="72" r="4" fill="${a}"/>`;
-    case 21:return `<ellipse cx="60" cy="78" rx="20" ry="16" fill="none" stroke="${b}" stroke-width="2.2"/><circle cx="60" cy="78" r="7" fill="${a}"/>`;
+    case 0:return `<g stroke="${a}" stroke-width="1.3" stroke-linecap="round"><line x1="80" y1="50" x2="80" y2="46"/><line x1="89" y1="58" x2="93" y2="58"/><line x1="71" y1="58" x2="67" y2="58"/><line x1="74" y1="52" x2="71" y2="49"/><line x1="86" y1="52" x2="89" y2="49"/></g><circle cx="80" cy="58" r="6.5" fill="${a}"/><circle cx="80" cy="58" r="3" fill="${b}"/><path d="M12 116 L44 94 L70 116 L62 122 L16 122 Z" fill="${e}" stroke="${d}" stroke-width="1"/><line x1="22" y1="116" x2="58" y2="116" stroke="${d}" stroke-width="0.7" opacity="0.5"/><circle cx="50" cy="80" r="5" fill="${f}"/><rect x="47.5" y="85" width="5" height="15" rx="1.5" fill="${f}"/><line x1="52.5" y1="88" x2="61" y2="78" stroke="${b}" stroke-width="1.5"/><circle cx="62" cy="77" r="3" fill="${a}"/><ellipse cx="40" cy="110" rx="4" ry="2.4" fill="${b}"/>`;
+    case 1:return `<circle cx="50" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><circle cx="70" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><rect x="30" y="98" width="60" height="9" rx="2" fill="${e}" stroke="${d}" stroke-width="1"/><line x1="40" y1="98" x2="40" y2="82" stroke="${b}" stroke-width="2.2" stroke-linecap="round"/><path d="M52 98 L52 84 M49 87 L55 87" stroke="${b}" stroke-width="1.8" stroke-linecap="round"/><circle cx="64" cy="88" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="64" cy="88" r="1.2" fill="${b}"/><rect x="77" y="82" width="6" height="16" fill="none" stroke="${b}" stroke-width="1.6"/>`;
+    case 2:return `<rect x="25" y="52" width="13" height="62" rx="2" fill="${ik}"/><rect x="82" y="52" width="13" height="62" rx="2" fill="${b}"/><rect x="22" y="49" width="19" height="7" rx="1" fill="${e}"/><rect x="79" y="49" width="19" height="7" rx="1" fill="${e}"/><rect x="22" y="109" width="19" height="6" rx="1" fill="${e}"/><rect x="79" y="109" width="19" height="6" rx="1" fill="${e}"/><path d="M60 70 m-9 0 a9 9 0 1 0 15 7 a6.5 6.5 0 1 1 -15 -7 Z" fill="${a}"/><rect x="54" y="82" width="12" height="22" rx="1.5" fill="${f}" stroke="${d}" stroke-width="0.7"/><line x1="60" y1="86" x2="60" y2="100" stroke="${d}" stroke-width="0.7"/>`;
+    case 3:return `<g fill="${a}"><circle cx="50" cy="54" r="1.8"/><circle cx="60" cy="52" r="1.8"/><circle cx="70" cy="54" r="1.8"/></g><path d="M46 58 Q60 52 74 58" fill="none" stroke="${b}" stroke-width="1.2"/><g stroke="${b}" stroke-width="1.4" stroke-linecap="round" fill="none"><path d="M40 72 q4 -5 8 0 M44 72 q4 -5 8 0"/><line x1="42" y1="72" x2="42" y2="100"/><line x1="46" y1="72" x2="46" y2="100"/></g><circle cx="64" cy="76" r="11" fill="none" stroke="${a}" stroke-width="2.6"/><circle cx="64" cy="76" r="2.5" fill="${a}"/><line x1="64" y1="87" x2="64" y2="100" stroke="${a}" stroke-width="2.6"/><line x1="56" y1="92" x2="72" y2="92" stroke="${a}" stroke-width="2.6"/>`;
+    case 4:return `<path d="M44 60 L50 54 L56 60 L60 52 L64 60 L70 54 L76 60 L76 66 L44 66 Z" fill="${a}"/><rect x="42" y="62" width="36" height="52" fill="none" stroke="${b}" stroke-width="2.4"/><rect x="42" y="62" width="36" height="6" fill="${e}"/><circle cx="60" cy="86" r="7" fill="${b}"/><rect x="58" y="93" width="4" height="13" fill="${b}"/><rect x="55" y="102" width="10" height="4" rx="1" fill="${b}"/>`;
+    case 5:return `<rect x="30" y="56" width="8" height="52" fill="${d}"/><rect x="82" y="56" width="8" height="52" fill="${d}"/><path d="M48 54 h24 v6 h-24 z M52 48 h16 v6 h-16 z M56 42 h8 v6 h-8 z" fill="${b}"/><g stroke="${a}" stroke-width="1.6" fill="none"><circle cx="54" cy="92" r="3"/><circle cx="66" cy="92" r="3"/><line x1="54" y1="95" x2="66" y2="89"/></g>`;
+    case 6:return `<circle cx="60" cy="54" r="6" fill="${b}"/><g stroke="${a}" stroke-width="1" stroke-linecap="round"><line x1="60" y1="45" x2="60" y2="41"/><line x1="69" y1="54" x2="73" y2="54"/><line x1="51" y1="54" x2="47" y2="54"/><line x1="66" y1="48" x2="69" y2="45"/><line x1="54" y1="48" x2="51" y2="45"/></g><circle cx="48" cy="86" r="4" fill="${f}"/><rect x="46" y="90" width="4" height="16" rx="1" fill="${f}"/><circle cx="72" cy="86" r="4" fill="${f}"/><rect x="70" y="90" width="4" height="16" rx="1" fill="${f}"/><path d="M60 96 c-5 0 -7 4 -7 6 c0 -2 -2 -6 -7 -6 c-4 0 -5 4 -5 6 c0 6 12 11 12 11 s12 -5 12 -11 c0 -2 -1 -6 -5 -6 Z" fill="${a}"/>`;
+    case 7:return `<path d="M42 58 h36 v8 h-36 z" fill="${b}"/><g fill="${a}"><circle cx="50" cy="62" r="1.2"/><circle cx="60" cy="62" r="1.2"/><circle cx="70" cy="62" r="1.2"/></g><rect x="44" y="66" width="32" height="22" rx="2" fill="${e}" stroke="${d}" stroke-width="0.8"/><path d="M34 96 Q30 86 40 82 L48 86 M86 96 Q90 86 80 82 L72 86" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="34" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="86" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/>`;
+    case 8:return `<path d="M48 54 q-6 0 -6 5 t6 5 q6 0 6 -5 t-6 -5 M72 54 q6 0 6 5 t-6 5 q-6 0 -6 -5 t6 -5" fill="none" stroke="${b}" stroke-width="2"/><circle cx="60" cy="86" r="11" fill="${a}"/><path d="M51 80 q-3 -5 -6 -2 M69 80 q3 -5 6 -2" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="56" cy="84" r="1.4" fill="${d}"/><circle cx="64" cy="84" r="1.4" fill="${d}"/><path d="M57 89 q3 3 6 0" fill="none" stroke="${d}" stroke-width="1"/>`;
+    case 9:return `<path d="M60 56 q-12 0 -14 16 q-2 14 6 26 l16 0 q8 -12 6 -26 q-2 -16 -14 -16 Z" fill="${e}" stroke="${d}" stroke-width="0.9"/><line x1="74" y1="58" x2="74" y2="108" stroke="${b}" stroke-width="2" stroke-linecap="round"/><rect x="66" y="78" width="9" height="12" rx="2" fill="${f}" stroke="${b}" stroke-width="1"/><circle cx="70.5" cy="84" r="3" fill="${a}"/>`;
+    case 10:return `<circle cx="60" cy="84" r="18" fill="none" stroke="${b}" stroke-width="2.4"/><circle cx="60" cy="84" r="13" fill="none" stroke="${a}" stroke-width="1"/><circle cx="60" cy="84" r="4" fill="${e}"/><g stroke="${b}" stroke-width="1.6"><line x1="60" y1="66" x2="60" y2="102"/><line x1="42" y1="84" x2="78" y2="84"/><line x1="47" y1="71" x2="73" y2="97"/><line x1="73" y1="71" x2="47" y2="97"/></g>`;
+    case 11:return `<line x1="60" y1="52" x2="60" y2="104" stroke="${b}" stroke-width="2"/><line x1="48" y1="58" x2="72" y2="58" stroke="${b}" stroke-width="1.8"/><path d="M44 64 q-6 6 0 12 q6 -6 0 -12 M76 64 q6 6 0 12 q-6 6 0 -12" fill="none" stroke="${a}" stroke-width="1.4"/><line x1="44" y1="58" x2="44" y2="64" stroke="${b}" stroke-width="1"/><line x1="76" y1="58" x2="76" y2="64" stroke="${b}" stroke-width="1"/><path d="M54 104 h12 l-2 4 h-8 z" fill="${e}"/>`;
+    case 12:return `<line x1="30" y1="58" x2="90" y2="58" stroke="${b}" stroke-width="2.2"/><line x1="34" y1="58" x2="34" y2="112" stroke="${b}" stroke-width="2"/><line x1="86" y1="58" x2="86" y2="112" stroke="${b}" stroke-width="2"/><line x1="60" y1="58" x2="60" y2="74" stroke="${a}" stroke-width="1.4"/><g transform="rotate(180 60 92)"><rect x="58" y="78" width="4" height="16" rx="1" fill="${f}"/><circle cx="60" cy="74" r="4" fill="${f}"/></g><circle cx="60" cy="74" r="7" fill="none" stroke="${a}" stroke-width="1.4"/>`;
+    case 13:return `<path d="M48 72 q12 -10 24 0 q2 10 -4 14 l0 6 q-8 4 -16 0 l0 -6 q-6 -4 -4 -14 Z" fill="${f}" stroke="${d}" stroke-width="0.9"/><circle cx="54" cy="78" r="2.4" fill="${d}"/><circle cx="66" cy="78" r="2.4" fill="${d}"/><path d="M58 86 h4 M57 90 h6" stroke="${d}" stroke-width="1"/><path d="M40 100 q10 -6 22 0 q-6 6 -22 4 Z" fill="${a}"/><line x1="78" y1="58" x2="84" y2="110" stroke="${b}" stroke-width="2"/><path d="M78 58 q14 0 14 12" fill="none" stroke="${b}" stroke-width="2"/>`;
+    case 14:return `<path d="M40 54 q-6 8 -14 6 M80 54 q6 8 14 6" fill="none" stroke="${b}" stroke-width="1.4"/><path d="M48 64 l-4 10 q4 4 8 0 z M72 64 l4 10 q-4 4 -8 0 z" fill="${e}"/><path d="M52 76 q8 -4 16 0 M54 82 q6 -3 12 0" fill="none" stroke="${a}" stroke-width="1.4"/><path d="M56 54 h8 l-2 4 h-4 z" fill="${a}"/>`;
+    case 15:return `<path d="M44 62 L60 88 L76 62 Z" fill="${ik}"/><path d="M44 62 L38 52 M76 62 L82 52" fill="none" stroke="${a}" stroke-width="2.6" stroke-linecap="round"/><path d="M60 64 L67 74 L60 70 L53 74 Z" fill="${a}"/><circle cx="52" cy="70" r="1.4" fill="${b}"/><circle cx="68" cy="70" r="1.4" fill="${b}"/><circle cx="48" cy="94" r="4" fill="none" stroke="${b}" stroke-width="1.4"/><circle cx="72" cy="94" r="4" fill="none" stroke="${b}" stroke-width="1.4"/><path d="M52 94 h16" stroke="${b}" stroke-width="1.4"/>`;
+    case 16:return `<rect x="48" y="58" width="24" height="50" fill="${e}" stroke="${d}" stroke-width="0.9"/><path d="M44 58 L60 48 L76 58 Z" fill="${b}"/><rect x="54" y="68" width="4" height="6" fill="${d}"/><rect x="62" y="68" width="4" height="6" fill="${d}"/><rect x="58" y="82" width="4" height="8" fill="${d}"/><path d="M40 64 L52 76 M44 58 L60 74" stroke="${a}" stroke-width="1.8" fill="none"/><path d="M70 58 q4 6 0 10 M76 64 q-4 6 0 10" fill="none" stroke="${b}" stroke-width="1.2"/>`;
+    case 17:return `<g fill="${b}"><circle cx="44" cy="62" r="1.8"/><circle cx="76" cy="62" r="1.8"/><circle cx="38" cy="74" r="1.8"/><circle cx="82" cy="74" r="1.8"/><circle cx="48" cy="56" r="1.8"/><circle cx="72" cy="56" r="1.8"/><circle cx="60" cy="52" r="1.8"/></g><path d="M60 64 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.5 -7 3.5 1.5 -7.5 -5.5 -5 7.5 -1 z" fill="${a}"/><path d="M50 100 q4 4 0 8 M70 100 q-4 4 0 8" fill="none" stroke="${b}" stroke-width="1.4"/>`;
+    case 18:return `<path d="M60 58 m-10 0 a10 10 0 1 0 18 7 a7.5 7.5 0 1 1 -18 -7 Z" fill="${a}"/><circle cx="57" cy="58" r="1.2" fill="${d}"/><path d="M55 64 q3 2 6 0" stroke="${d}" stroke-width="0.8" fill="none"/><rect x="34" y="66" width="8" height="24" fill="${b}"/><rect x="78" y="66" width="8" height="24" fill="${b}"/><path d="M44 94 q8 -4 32 0 q-4 6 -32 4 Z" fill="${e}"/><ellipse cx="48" cy="92" rx="3" ry="2" fill="${b}"/><ellipse cx="72" cy="92" rx="3" ry="2" fill="${b}"/>`;
+    case 19:return `<g stroke="${a}" stroke-width="1.8" stroke-linecap="round"><line x1="60" y1="56" x2="60" y2="49"/><line x1="60" y1="92" x2="60" y2="99"/><line x1="40" y1="74" x2="33" y2="74"/><line x1="80" y1="74" x2="87" y2="74"/><line x1="46" y1="60" x2="41" y2="55"/><line x1="74" y1="60" x2="79" y2="55"/><line x1="46" y1="88" x2="41" y2="93"/><line x1="74" y1="88" x2="79" y2="93"/></g><circle cx="60" cy="74" r="11" fill="${b}"/><circle cx="56" cy="72" r="1.2" fill="${d}"/><circle cx="64" cy="72" r="1.2" fill="${d}"/><path d="M56 78 q4 3 8 0" stroke="${d}" stroke-width="0.9" fill="none"/><rect x="34" y="98" width="52" height="5" fill="${e}"/><g fill="${a}"><circle cx="40" cy="98" r="2.5"/><circle cx="80" cy="98" r="2.5"/></g>`;
+    case 20:return `<path d="M40 56 q8 -5 20 0 q8 8 20 0 q-6 5 -20 5 q-14 0 -20 -5 Z" fill="${b}"/><line x1="60" y1="60" x2="60" y2="70" stroke="${a}" stroke-width="1.8"/><path d="M54 72 L66 72 L62 80 L58 80 Z" fill="${a}"/><rect x="42" y="92" width="36" height="18" fill="${e}" stroke="${d}" stroke-width="0.9"/><line x1="48" y1="96" x2="48" y2="106" stroke="${d}" stroke-width="0.7"/><line x1="54" y1="96" x2="54" y2="106" stroke="${d}" stroke-width="0.7"/><line x1="66" y1="96" x2="66" y2="106" stroke="${d}" stroke-width="0.7"/><line x1="72" y1="96" x2="72" y2="106" stroke="${d}" stroke-width="0.7"/><circle cx="60" cy="88" r="4.5" fill="${f}"/><path d="M56 84 q4 -3 8 0" fill="none" stroke="${f}" stroke-width="1.2"/>`;
+    case 21:return `<ellipse cx="60" cy="84" rx="22" ry="26" fill="none" stroke="${b}" stroke-width="2.2"/><ellipse cx="60" cy="84" rx="17" ry="21" fill="none" stroke="${a}" stroke-width="1" opacity="0.7"/><path d="M60 72 q-6 0 -6 6 q0 6 6 12 q6 -6 6 -12 q0 -6 -6 -6 Z" fill="${a}"/><g fill="${b}"><circle cx="40" cy="60" r="2.5"/><circle cx="80" cy="60" r="2.5"/><circle cx="40" cy="108" r="2.5"/><circle cx="80" cy="108" r="2.5"/></g>`;
     default:return `<circle cx="60" cy="80" r="12" fill="none" stroke="${b}" stroke-width="2"/>`;
   }
 }
@@ -617,7 +644,9 @@ function tarotSVG(name,upright){
   const idx=MAJOR.indexOf(nm);
   let inner;
   if(idx>=0){
-    inner=tarotEmblem(idx)+`<text x="60" y="40" text-anchor="middle" font-family="Unbounded" font-size="11" font-weight="700" fill="${K.ac}">${ROMAN[idx]||""}</text>`;
+    inner=`<path d="M60 48 q-24 0 -24 36 q0 36 24 36 q24 0 24 -36 q0 -36 -24 -36 Z" fill="${K.b6}" fill-opacity="0.45" stroke="${K.b3}" stroke-width="0.8"/>`+
+      tarotEmblem(idx)+
+      `<text x="60" y="40" text-anchor="middle" font-family="Unbounded" font-size="11" font-weight="700" fill="${K.ac}">${ROMAN[idx]||""}</text>`;
   }else{
     let art="";
     const mm=nm.match(/^(.+?)\s+of\s+(\w+)\s*$/i);
@@ -855,7 +884,7 @@ function renderProv(p){const rows=[["source",p.source],["kind",p.source_kind],["
 function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
 function wrapHTML(html,cls){const d=document.createElement("span");if(cls)d.className=cls;d.innerHTML=html;return d;}
 function mkChips(items){const c=node("div","chips");items.forEach(it=>{const s=node("span","chip"+(it.cls?" "+it.cls:""));s.textContent=it.txt;if(it.badge){const b=node("span","badge",it.badge);s.appendChild(b);}c.appendChild(s);});return c;}
-function empty(t){const e=node("div","empty");e.innerHTML=`<div class="big">∅</div><div>${esc(t)}</div>`;return e;}
+function empty(t){const e=node("div","empty");e.innerHTML=`<div class="ghostdie">${dieSVG(6,6,false)}</div><div>${esc(t)}</div>`;return e;}
 function resetOut(){
   eRes.innerHTML="";eRes.appendChild(empty("Pick a method and press Generate. Every byte is rolled live by chance — then visualized."));
   eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="Enter to generate";lastRaw=null;
