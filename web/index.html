@@ -8,15 +8,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ===== Ink & Parchment — warm paper, ink structure, paced flat signal. NO gradients, NO purple haze. =====
-     Taste provenance: PuenteWorks warm-paper editorial discipline + Kyanite tri-color signal separation
-     + Mola geometric construction (thick ink outlines, cream insets, flat saturated fields). */
+  /* ===== Ephemeris — a celestial almanac for randomness. =====
+     Inspired by the owner's taste PATTERNS (warm tactile paper, ink structure,
+     editorial type confidence, paced flat color, geometric craft, two-color
+     discipline) — NOT a copy of any existing brand. chance's own identity:
+     fate read in the cosmos; an ephemeris/astrolabe language bridges the ancient
+     divination half (astrology, the original oracle) and the modern measurement
+     half (astronomy / quantum). Iron-gall oxblood + antique gold + vermilion on
+     aged paper. NO gradients, NO purple, NO reef-teal/SaaS-blue. */
   :root{
     /* paper foundation */
     --paper:#f4ecdb; --paper-soft:#efe6d2; --warm-white:#fbf6ea; --cream-line:#fff7e6;
     --ink:#1c1813; --ink-soft:#2a241c; --muted:#7a6f60; --line:#d4c4a3;
     /* signal · paced, flat, spatially separated (never blended into purple) */
-    --signal:#0b3d91; --reef:#007a86; --seal:#b3261e; --gold:#a87810; --leaf:#1f7a3f;
+    --signal:#7a2418; --reef:#8a6400; --seal:#c1351b; --gold:#a87810; --leaf:#3a5a2b;
     --color-bg:var(--paper); --surface-1:var(--paper-soft); --surface-2:var(--warm-white);
     --border:var(--line); --text:var(--ink-soft);
     --primary-fill:var(--ink); --primary-ink:var(--warm-white);
@@ -52,7 +57,7 @@
     background-blend-mode:multiply}
   /* Mola geometric decoration — nested arch/triangle construction as structure, not confetti */
   .deco{position:fixed;pointer-events:none;z-index:0}
-  .deco.mola{top:-40px;right:-50px;width:240px;height:240px;opacity:.10}
+  .deco.mola{top:-40px;right:-50px;width:240px;height:240px;opacity:.22}
   .deco.rule{bottom:0;left:0;right:0;height:1px;background:var(--line);opacity:.6}
   .wrap{max-width:1080px;margin:0 auto;padding:var(--s7) var(--s5) var(--s8);position:relative;z-index:1}
 
@@ -62,7 +67,7 @@
   .brand{display:flex;flex-direction:column;gap:var(--s1)}
   .brand .wordmark{font-family:var(--font-display);font-weight:900;font-size:var(--step-5);
     line-height:.82;letter-spacing:-.025em;color:var(--ink);font-variation-settings:"opsz" 120}
-  .brand .wordmark em{font-style:italic;font-weight:500;color:var(--signal)}
+  .brand .wordmark em{font-style:italic;font-weight:500;color:var(--gold)}
   .brand .tag{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.22em;color:var(--ink-soft);opacity:.7;margin-top:var(--s2)}
   /* stat readouts · huge number → tiny label rhythm */
@@ -70,7 +75,7 @@
   .stat{text-align:right}
   .stat .k{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.18em;color:var(--muted)}
-  .stat .v{font-family:var(--font-display);font-weight:600;font-size:var(--step-2);color:var(--ink);
+  .stat .v{font-family:var(--font-display);font-weight:600;font-size:var(--step-2);color:var(--gold);
     line-height:1;margin-top:var(--s1);font-variation-settings:"opsz" 80}
   .stat .v small{font-family:var(--font-mono);font-size:.42em;color:var(--muted);margin-left:3px;
     font-weight:500;letter-spacing:.05em}
@@ -250,11 +255,25 @@
 </head>
 <body>
 <svg class="deco mola" aria-hidden="true" viewBox="0 0 240 240">
-  <g fill="none" stroke="#1c1813" stroke-width="1.4">
-    <path d="M120 30 q90 0 90 90 q0 90 -90 90 q-90 0 -90 -90 q0 -90 90 -90 Z"/>
-    <path d="M120 60 q60 0 60 60 q0 60 -60 60 q-60 0 -60 -60 q0 -60 60 -60 Z"/>
-    <path d="M120 90 q30 0 30 30 q0 30 -30 30 q-30 0 -30 -30 q0 -30 30 -30 Z"/>
-    <path d="M40 210 L120 150 L200 210"/>
+  <g fill="none" stroke="#1c1813" stroke-width="1.2">
+    <circle cx="120" cy="120" r="94"/>
+    <ellipse cx="120" cy="120" rx="94" ry="32" transform="rotate(-22 120 120)"/>
+    <line x1="26" y1="120" x2="214" y2="120"/>
+    <line x1="120" y1="26" x2="120" y2="214"/>
+  </g>
+  <g stroke="#1c1813" stroke-width="0.8">
+    <polyline points="64,58 92,82 126,70 156,96 140,128 172,142" fill="none"/>
+    <circle cx="64" cy="58" r="2.2" fill="#1c1813"/>
+    <circle cx="92" cy="82" r="2.8" fill="#1c1813"/>
+    <circle cx="126" cy="70" r="2" fill="#1c1813"/>
+    <circle cx="156" cy="96" r="3" fill="#1c1813"/>
+    <circle cx="140" cy="128" r="2" fill="#1c1813"/>
+    <circle cx="172" cy="142" r="2.4" fill="#1c1813"/>
+  </g>
+  <g fill="#1c1813">
+    <path d="M194 56 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z"/>
+    <path d="M58 176 l1.6 4 l4 1.6 l-4 1.6 l-1.6 4 l-1.6 -4 l-4 -1.6 l4 -1.6 z"/>
+    <path d="M150 40 l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 z"/>
   </g>
 </svg>
 
@@ -458,9 +477,9 @@ async function generate(){
   finally{eGo.disabled=false;}
 }
 
-/* ===== SVG generators · ink line-art on parchment =====
-   K = ink & parchment token map. ink outlines, paper surfaces, paced signal accents. */
-const K={b3:"#0b3d91",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#b3261e",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",lf:"#1f7a3f",bl:"#0b3d91",ps:"#efe6d2",pd:"#e2d4b6",reef:"#007a86"};
+/* ===== SVG generators · ink woodcut line-art on aged almanac paper =====
+   K = Ephemeris token map. ink structure, paper surfaces, oxblood + vermilion + gold signals. */
+const K={b3:"#7a2418",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#c1351b",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",lf:"#3a5a2b",bl:"#7a2418",ps:"#efe6d2",pd:"#e2d4b6",reef:"#8a6400",gd:"#a87810"};
 const SVGNS=' xmlns="http://www.w3.org/2000/svg"';
 const RUNES={fehu:"ᚠ",uruz:"ᚢ",thurisaz:"ᚦ",ansuz:"ᚨ",raido:"ᚱ",kenaz:"ᚲ",gebo:"ᚷ",wunjo:"ᚹ",hagalaz:"ᚺ",nauthiz:"ᚾ",isa:"ᛁ",jera:"ᛃ",eihwaz:"ᛇ",perthro:"ᛈ",algiz:"ᛉ",sowilo:"ᛋ",tiwaz:"ᛏ",berkano:"ᛒ",ehwaz:"ᛖ",mannaz:"ᛗ",laguz:"ᛚ",ingwaz:"ᛜ",dagaz:"ᛞ",othala:"ᛟ"};
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
@@ -813,7 +832,7 @@ function track(prov,result){
     eEnt.classList.remove("idle");eEnt.innerHTML=Number(prov.entropy_bits).toFixed(1)+"<small>bits</small>";}
   if(prov.latency_ms!=null){latHist.push(Number(prov.latency_ms));if(latHist.length>SPARK_MAX)latHist.shift();
     eLat.classList.remove("idle");eLat.innerHTML=Number(prov.latency_ms).toFixed(2)+"<small>ms</small>";}
-  sparkSVG(eSpkEnt,entHist,"var(--series-1)");sparkSVG(eSpkLat,latHist,"var(--series-2)");
+  sparkSVG(eSpkEnt,entHist,"var(--gold)");sparkSVG(eSpkLat,latHist,"var(--signal)");
   if(NUMERIC_DIST.has(current.key))feedDist(result);
 }
 function distCats(result){
@@ -874,7 +893,7 @@ function resetOut(){
   eRes.innerHTML="";eRes.appendChild(empty("Pick a method and cast."));
   eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="Enter to cast";lastRaw=null;
   eEnt.textContent="armed";eLat.textContent="armed";eEnt.classList.add("idle");eLat.classList.add("idle");
-  entHist=[];latHist=[];dist={};sparkSVG(eSpkEnt,[],"var(--series-1)");sparkSVG(eSpkLat,[],"var(--series-2)");
+  entHist=[];latHist=[];dist={};sparkSVG(eSpkEnt,[],"var(--gold)");sparkSVG(eSpkLat,[],"var(--signal)");
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
