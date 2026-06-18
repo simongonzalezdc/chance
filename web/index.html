@@ -251,7 +251,19 @@
   .bento-main>*,.ctrl-row>*,.masthead>*{min-width:0}
   .result,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
   .result svg,.row svg,.faces svg,.coinrow svg,.cardrow svg,.viz-card svg{max-width:100%;height:auto}
+  /* ===== living cosmos backdrop (WebGL star chart) + motion primitives ===== */
+  #cosmos{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.72}
+  .rail-cursor{position:absolute;left:0;top:0;width:3px;background:var(--seal);border-radius:3px;
+    opacity:0;pointer-events:none;z-index:3}
+  .mbtn,.sig-num,.die-wrap svg,.wheelw svg,.tarot .tw{will-change:transform}
+  /* perspective for 3D card flips */
+  .tarot{perspective:700px}
+  @media (prefers-reduced-motion:reduce){#cosmos{display:none}*.wspin{transform:none!important}}
 </style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 </head>
 <body>
 <svg class="deco mola" aria-hidden="true" viewBox="0 0 240 240">
@@ -276,6 +288,7 @@
     <path d="M150 40 l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 z"/>
   </g>
 </svg>
+<canvas id="cosmos" aria-hidden="true"></canvas>
 
 <div class="wrap">
   <header class="masthead">
@@ -690,7 +703,7 @@ function wheelSVG(number,color,variant){
   }
   return `<svg${SVGNS} width="200" height="200" viewBox="0 0 124 124">`+
     `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="${K.ik}" stroke-width="1.2"/>`+
-    wedges+labels+
+    `<g class="wspin">`+wedges+labels+`</g>`+
     `<circle cx="${cx}" cy="${cy}" r="${r-1}" fill="${K.ps}" stroke="${K.ik}" stroke-width="0.8"/>`+
     `<circle cx="${cx}" cy="${cy}" r="7" fill="${K.ik}" stroke="${K.ik}" stroke-width="0.8"/>`+
     `</svg>`;
@@ -907,6 +920,163 @@ eForm.addEventListener("submit",e=>e.preventDefault());
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.target.matches("textarea,select")){e.preventDefault();generate();}});
 eCopy.onclick=()=>{const t=typeof lastRaw==="string"?lastRaw:JSON.stringify(lastRaw,null,2);navigator.clipboard&&navigator.clipboard.writeText(t);eCopy.innerHTML='<svg class="icopy" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> copied';setTimeout(()=>eCopy.innerHTML='<svg class="icopy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg> copy',1200);};
 buildRail();renderForm();resetOut();loadSources();
+</script>
+<script type="module">
+"use strict";
+/* chance · SOTA visuals layer. CDN libraries (Three.js WebGL cosmos + GSAP motion) are
+   PROGRESSIVE ENHANCEMENT. Core app (cast / fetch / render) is fully functional without
+   them; if a CDN is unreachable, every enhancement is skipped and the page still works. */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const G = window.gsap || null;
+const $ = id => document.getElementById(id);
+const eRes = $('result'), eGo = $('go'), eMlist = $('mlist');
+
+/* ---------- GSAP motion orchestration (runs sync; no-op if gsap absent) ---------- */
+if (G && !reduce) {
+  (function motion(){
+    function countUp(el){
+      const m = String(el.textContent).match(/^(-?\d+(?:\.\d+)?)/); if(!m) return;
+      const target = parseFloat(m[1]), suffix = el.textContent.slice(m[1].length);
+      const o = {v:0};
+      G.to(o, {v:target, duration:0.9, ease:'power2.out', onUpdate(){
+        el.textContent = (target % 1 ? o.v.toFixed(1) : Math.round(o.v)) + suffix; }});
+    }
+    function animateReveal(){
+      const kids = Array.from(eRes.children); if(!kids.length) return;
+      G.killTweensOf(eRes); G.killTweensOf(kids);
+      kids.forEach(el => { if(el.classList && el.classList.contains('sig-num')) countUp(el); });
+      G.fromTo(kids, {autoAlpha:0, y:22, scale:0.96},
+        {autoAlpha:1, y:0, scale:1, duration:0.6, stagger:0.07, ease:'power3.out', clearProps:'transform,opacity,visibility'});
+      // dice tumble in
+      const dice = eRes.querySelectorAll('.die-wrap svg');
+      if(dice.length) G.fromTo(dice, {rotation:-30, y:-46, opacity:0},
+        {rotation:0, y:0, opacity:1, duration:0.7, stagger:0.08, ease:'back.out(1.5)', clearProps:'all'});
+      // roulette deceleration spin to the winning pocket
+      const spin = eRes.querySelector('.wspin');
+      if(spin){ G.set(spin, {svgOrigin:'62 62'}); G.fromTo(spin, {rotation:-1440},
+        {rotation:0, duration:2.2, ease:'power3.out'}); }
+      // tarot manuscript-card flip reveal
+      const cards = eRes.querySelectorAll('.tarot .tw');
+      if(cards.length) G.fromTo(cards, {rotationY:-92, opacity:0},
+        {rotationY:0, opacity:1, duration:0.7, stagger:0.12, ease:'back.out(1.3)', clearProps:'all'});
+    }
+    // wrap generate → button press feedback + post-render reveal
+    const origGen = window.generate;
+    if(typeof origGen === 'function'){
+      const wrapped = function(){
+        G.to(eGo, {scale:0.95, duration:0.09, yoyo:true, repeat:1, ease:'power1.inOut'});
+        const p = origGen.apply(this, arguments);
+        if(p && p.then) p.then(animateReveal);
+        return p;
+      };
+      window.generate = wrapped; eGo.onclick = wrapped;
+    }
+    // animate sparkline draw on update
+    const origSpark = window.sparkSVG;
+    if(typeof origSpark === 'function'){
+      window.sparkSVG = function(svg, vals, color){
+        origSpark(svg, vals, color);
+        if(!vals || !vals.length) return;
+        const line = svg.querySelector('polyline'); if(!line) return;
+        let len = 0; try{ len = line.getTotalLength(); }catch(_){}
+        if(!len) return;
+        G.set(line, {strokeDasharray:len, strokeDashoffset:len});
+        G.to(line, {strokeDashoffset:0, duration:0.6, ease:'power2.out'});
+      };
+    }
+    // sliding active-method cursor on the rail
+    const rail = document.querySelector('aside.rail');
+    if(rail){
+      rail.style.position = 'relative';
+      const cur = document.createElement('span'); cur.className = 'rail-cursor';
+      rail.appendChild(cur);
+      const move = () => {
+        const a = eMlist.querySelector('.mbtn.active'); if(!a) return;
+        const ar = a.getBoundingClientRect(), rr = rail.getBoundingClientRect();
+        G.to(cur, {opacity:0.95, top:(ar.top - rr.top), height:ar.height, duration:0.45, ease:'power2.out'});
+      };
+      eMlist.addEventListener('click', () => setTimeout(move, 0));
+      setTimeout(move, 150);
+    }
+  })();
+}
+
+/* ---------- living cosmos backdrop (Three.js WebGL star chart on the parchment) ---------- */
+/* dynamic import → resilient: if three fails to load, this simply no-ops. */
+if(!reduce) import('three').then(THREE => {
+  const canvas = document.getElementById('cosmos'); if(!canvas) return;
+  let renderer;
+  try{ renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, preserveDrawingBuffer:true, powerPreference:'high-performance'}); }
+  catch(e){ return; }
+  const PR = Math.min(window.devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(PR);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 11);
+  function resize(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
+  resize(); addEventListener('resize', resize);
+  // soft round star sprite (canvas texture — not a CSS gradient)
+  function dotTex(){
+    const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+    const g = x.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(255,251,240,1)'); g.addColorStop(.3,'rgba(255,251,240,.85)');
+    g.addColorStop(.65,'rgba(255,251,240,.15)'); g.addColorStop(1,'rgba(255,251,240,0)');
+    x.fillStyle = g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c);
+  }
+  // ink + warm-gold star chart — dots DARKER than the paper, like an old celestial atlas (normal blend)
+  const COL = { ink:[0.110,0.094,0.074], gold:[0.659,0.470,0.063], seal:[0.476,0.141,0.094], amber:[0.500,0.300,0.050] };
+  const palette = [COL.ink,COL.ink,COL.ink,COL.ink,COL.ink,COL.gold,COL.gold,COL.seal,COL.amber,COL.amber];
+  const N = 1700;
+  const pos=new Float32Array(N*3), col=new Float32Array(N*3), sz=new Float32Array(N), al=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()*2-1)*11; pos[i*3+1]=(Math.random()*2-1)*11; pos[i*3+2]=-7-Math.random()*7;
+    const c=palette[(Math.random()*palette.length)|0]; col[i*3]=c[0]; col[i*3+1]=c[1]; col[i*3+2]=c[2];
+    sz[i]=3.2+Math.random()*Math.random()*7.5; al[i]=0.55+Math.random()*0.4;
+  }
+  // nebula dust: large faint warm motes
+  const M=18, pos2=new Float32Array(M*3), col2=new Float32Array(M*3), sz2=new Float32Array(M), al2=new Float32Array(M);
+  const neb=[COL.gold,COL.amber,COL.gold];
+  for(let i=0;i<M;i++){
+    pos2[i*3]=(Math.random()*2-1)*10; pos2[i*3+1]=(Math.random()*2-1)*10; pos2[i*3+2]=-8-Math.random()*6;
+    const c=neb[(Math.random()*neb.length)|0]; col2[i*3]=c[0]; col2[i*3+1]=c[1]; col2[i*3+2]=c[2];
+    sz2[i]=22+Math.random()*34; al2[i]=0.05+Math.random()*0.07;
+  }
+  function mkGeo(P,C,S,A){
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(P,3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(C,3));
+    g.setAttribute('aSize', new THREE.BufferAttribute(S,1));
+    g.setAttribute('aAlpha', new THREE.BufferAttribute(A,1));
+    return g;
+  }
+  const mat = new THREE.ShaderMaterial({
+    uniforms:{ uTex:{value:dotTex()}, uPR:{value:PR} },
+    vertexShader:`uniform float uPR; attribute vec3 aColor; attribute float aSize; attribute float aAlpha;
+      varying vec3 vC; varying float vA;
+      void main(){ vC=aColor; vA=aAlpha; vec4 mv=modelViewMatrix*vec4(position,1.0);
+      gl_PointSize=aSize*uPR*(30.0/max(-mv.z,0.001)); gl_Position=projectionMatrix*mv; }`,
+    fragmentShader:`uniform sampler2D uTex; varying vec3 vC; varying float vA;
+      void main(){ vec4 t=texture2D(uTex,gl_PointCoord); gl_FragColor=vec4(vC, t.a*vA); }`,
+    transparent:true, depthWrite:false
+  });
+  const group = new THREE.Group();
+  group.add(new THREE.Points(mkGeo(pos2,col2,sz2,al2), mat));
+  group.add(new THREE.Points(mkGeo(pos,col,sz,al), mat));
+  scene.add(group);
+  let tx=0, ty=0, cx=0, cy=0, visible=true;
+  addEventListener('pointermove', e => { tx=(e.clientX/innerWidth-0.5); ty=(e.clientY/innerHeight-0.5); }, {passive:true});
+  document.addEventListener('visibilitychange', () => visible = !document.hidden);
+  function frame(){
+    requestAnimationFrame(frame);
+    if(!visible) return;
+    group.rotation.y += 0.00032; group.rotation.x += 0.00012;
+    cx += (tx-cx)*0.04; cy += (ty-cy)*0.04;
+    camera.position.x = cx*1.4; camera.position.y = -cy*1.1; camera.lookAt(0,0,0);
+    renderer.render(scene, camera);
+  }
+  window.__cosmos='ok';
+  frame();
+}).catch(e => { window.__cosmos='catch:'+(e&&e.message||e); });
 </script>
 </body>
 </html>
