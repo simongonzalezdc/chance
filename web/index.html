@@ -21,7 +21,7 @@
     --paper:#f4ecdb; --paper-soft:#efe6d2; --warm-white:#fbf6ea; --cream-line:#fff7e6;
     --ink:#1c1813; --ink-soft:#2a241c; --muted:#7a6f60; --line:#d4c4a3;
     /* signal · paced, flat, spatially separated (never blended into purple) */
-    --signal:#7a2418; --reef:#8a6400; --seal:#c1351b; --gold:#a87810; --leaf:#3a5a2b;
+    --signal:#7a2418; --reef:#8a6400; --seal:#c1351b; --gold:#a87810; --leaf:#a87810;
     --color-bg:var(--paper); --surface-1:var(--paper-soft); --surface-2:var(--warm-white);
     --border:var(--line); --text:var(--ink-soft);
     --primary-fill:var(--ink); --primary-ink:var(--warm-white);
@@ -492,7 +492,7 @@ async function generate(){
 
 /* ===== SVG generators · ink woodcut line-art on aged almanac paper =====
    K = Ephemeris token map. ink structure, paper surfaces, oxblood + vermilion + gold signals. */
-const K={b3:"#7a2418",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#c1351b",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",lf:"#3a5a2b",bl:"#7a2418",ps:"#efe6d2",pd:"#e2d4b6",reef:"#8a6400",gd:"#a87810"};
+const K={b3:"#7a2418",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#c1351b",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",bl:"#7a2418",ps:"#efe6d2",pd:"#e2d4b6",reef:"#8a6400",gd:"#a87810"};
 const SVGNS=' xmlns="http://www.w3.org/2000/svg"';
 const RUNES={fehu:"ᚠ",uruz:"ᚢ",thurisaz:"ᚦ",ansuz:"ᚨ",raido:"ᚱ",kenaz:"ᚲ",gebo:"ᚷ",wunjo:"ᚹ",hagalaz:"ᚺ",nauthiz:"ᚾ",isa:"ᛁ",jera:"ᛃ",eihwaz:"ᛇ",perthro:"ᛈ",algiz:"ᛉ",sowilo:"ᛋ",tiwaz:"ᛏ",berkano:"ᛒ",ehwaz:"ᛖ",mannaz:"ᛗ",laguz:"ᛚ",ingwaz:"ᛜ",dagaz:"ᛞ",othala:"ᛟ"};
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
@@ -694,7 +694,7 @@ function wheelSVG(number,color,variant){
   for(let i=0;i<n;i++){
     const num=EU_ORDER[i];
     const a0=(i/n)*Math.PI*2-Math.PI/2-Math.PI/n,a1=a0+(Math.PI*2)/n,amid=(a0+a1)/2;
-    const fill=num===0?K.lf:(RED_SET.has(num)?K.ac:K.ik);
+    const fill=num===0?K.gd:(RED_SET.has(num)?K.ac:K.ik);
     const isWin=num===win;
     wedges+=`<path d="${annularWedge(cx,cy,R,r,a0,a1)}" fill="${fill}" stroke="${K.n9}" stroke-width="${isWin?2.2:0.6}"/>`;
     const lr=(R+r)/2,lx=cx+Math.cos(amid)*lr,ly=cy+Math.sin(amid)*lr;
@@ -811,7 +811,7 @@ const R={
     a.forEach(c=>{const w=node("div","tarot");w.appendChild(wrapHTML(tarotSVG(c.name,c.upright),"tw"));w.appendChild(node("div","nm",c.name));w.appendChild(node("div","ori "+(c.upright?"up":"rev"),c.upright?"upright":"reversed"));row.appendChild(w);});eRes.appendChild(row);},
   dominoes(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
     a.forEach(d=>row.appendChild(wrapHTML(dominoSVG(d.left,d.right),"dw")));eRes.appendChild(row);},
-  roulette(r){const col=String(r.color);const hex=col==="green"?K.lf:col==="red"?K.ac:K.ik;
+  roulette(r){const col=String(r.color);const hex=col==="green"?K.gd:col==="red"?K.ac:K.ik;
     const big=node("div","sig-num",String(r.number));big.style.color=hex;eRes.appendChild(big);
     eRes.appendChild(wrapHTML(wheelSVG(r.number,r.color,r.variant),"wheelw"));
     eRes.appendChild(node("div","sub",`${esc(col)} · ${esc(String(r.variant))} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`));},
