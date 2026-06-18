@@ -83,7 +83,7 @@
   .stat .k{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
   .stat .v{font-family:var(--font-mono);font-size:var(--step-2);color:var(--text);margin-top:2px}
   .stat .v small{font-size:.55em;color:var(--muted);margin-left:2px}
-  .stat .v.idle{opacity:.42}
+  .stat .v.idle{font-size:var(--step--1);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;color:var(--muted);opacity:1}
   .spark{width:96px;height:34px;display:block}
 
   /* source + seed controls row (under header) */
@@ -110,11 +110,11 @@
   .mbtn{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:var(--s3);width:100%;text-align:left;
     background:transparent;border:1px solid transparent;color:var(--muted);border-radius:var(--r-ctrl);
     padding:var(--s2) var(--s3);cursor:pointer;font-family:var(--font-body);transition:background .12s,color .12s}
-  .mbtn .num{font-family:var(--font-display);font-weight:600;font-size:var(--step-1);line-height:1;color:var(--n-500);min-width:1.7em}
+  .mbtn .num{font-family:var(--font-mono);font-weight:500;font-size:var(--step--1);line-height:1;color:var(--n-500);min-width:1.9em;letter-spacing:.04em}
   .mbtn .nm{font-size:var(--step-0);font-weight:500}
   .mbtn:hover{background:var(--surface-2);color:var(--text)}
   .mbtn:hover .num{color:var(--accent)}
-  .mbtn.active{background:var(--surface-2);color:var(--text);box-shadow:inset 2px 0 0 var(--accent)}
+  .mbtn.active{background:oklch(0.74 0.15 287 / .10);color:var(--text);box-shadow:inset 3px 0 0 var(--accent)}
   .mbtn.active .num{color:var(--brand-300)}
   .mbtn:focus-visible{outline:2px solid var(--brand-400);outline-offset:1px}
 
@@ -136,11 +136,13 @@
   .switch.on::after{transform:translateX(20px);background:var(--brand-300)}
 
   .genrow{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);flex-wrap:wrap}
-  button.go{font-family:var(--font-body);font-size:var(--step-0);font-weight:700;letter-spacing:.01em;
+  button.go{font-family:var(--font-body);font-size:var(--step-1);font-weight:700;letter-spacing:.01em;
     color:var(--primary-ink);background:var(--primary-fill);border:1px solid var(--brand-500);
-    border-radius:var(--r-ctrl);padding:var(--s3) var(--s6);cursor:pointer;box-shadow:var(--sh-lift);
-    transition:transform .08s,box-shadow .12s;display:inline-flex;align-items:center;gap:var(--s2)}
-  button.go:hover{box-shadow:var(--sh-soft)}
+    border-radius:var(--r-ctrl);padding:var(--s4) var(--s7);cursor:pointer;
+    box-shadow:var(--sh-soft),inset 0 1px 0 oklch(0.88 0.09 287 / .6);
+    transition:transform .08s,box-shadow .12s;display:inline-flex;align-items:center;gap:var(--s3)}
+  button.go::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--primary-ink);flex:none}
+  button.go:hover{box-shadow:0 14px 34px -8px oklch(0.40 0.16 287 / .65),inset 0 1px 0 oklch(0.88 0.09 287 / .65)}
   button.go:active{transform:translateY(1px)}
   button.go:disabled{opacity:.6;cursor:wait}
   .hint{color:var(--muted);font-size:var(--step--1)}
@@ -157,8 +159,11 @@
     padding:clamp(var(--s6),5vw,var(--s8));min-height:min(52vh,480px);display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:var(--s6)}
   .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s3);color:var(--muted);text-align:center;max-width:48ch}
-  .empty .ghostdie{opacity:.18;filter:saturate(.65);margin-bottom:var(--s2)}
-  .empty .ghostdie svg{width:clamp(120px,15vw,210px);height:auto;display:block}
+  .empty .reticle svg{width:clamp(104px,12vw,150px);height:auto;display:block}
+  .empty .eye{font-family:var(--font-mono);font-size:var(--step--1);text-transform:uppercase;letter-spacing:.34em;color:var(--accent);margin-top:var(--s2)}
+  .empty .msg{font-family:var(--font-display);font-weight:500;font-size:var(--step-1);line-height:1.25;color:var(--text);text-wrap:balance}
+  .empty .note{font-size:var(--step--1);color:var(--muted);max-width:42ch}
+  .empty .note code{font-family:var(--font-mono);color:var(--accent)}
   .load{font-family:var(--font-mono);color:var(--accent);letter-spacing:.4em;font-size:var(--step-2)}
   .err{color:var(--error);font-family:var(--font-mono);font-size:var(--step--1);text-align:center;max-width:54ch}
 
@@ -287,11 +292,11 @@
     </div>
     <div class="tile stats">
       <div class="stat">
-        <div><div class="k">entropy</div><div class="v idle" id="st-ent">—<small>bits</small></div></div>
+        <div><div class="k">entropy</div><div class="v idle" id="st-ent">armed</div></div>
         <svg class="spark" id="spk-ent" viewBox="0 0 96 34" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
       <div class="stat">
-        <div><div class="k">latency</div><div class="v idle" id="st-lat">—<small>ms</small></div></div>
+        <div><div class="k">latency</div><div class="v idle" id="st-lat">armed</div></div>
         <svg class="spark" id="spk-lat" viewBox="0 0 96 34" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
     </div>
@@ -326,7 +331,7 @@
           copy</button>
       </div>
       <div class="result" id="result">
-        <div class="empty"><div class="big">∅</div><div>Pick a method and press Generate. Every byte below is rolled live by <code style="font-family:var(--font-mono);color:var(--accent)">chance</code> — then visualized.</div></div>
+        <div class="empty"><div class="eye">awaiting roll</div><div class="msg">Pick a method and press Generate.</div></div>
       </div>
       <!-- DATA-VIZ: session distribution (honest bars from zero, direct-labeled) -->
       <section class="viz-card" id="viz-dist" hidden aria-label="Session distribution">
@@ -740,7 +745,7 @@ function ichingSVG(lines){
   return `<svg${SVGNS} width="150" height="${h.toFixed(0)}" viewBox="0 0 150 ${h.toFixed(0)}">${out}</svg>`;
 }
 function sparkSVG(svg,vals,color){
-  if(!vals.length){svg.innerHTML="";return;}
+  if(!vals.length){svg.innerHTML=`<line x1="3" y1="28" x2="93" y2="28" stroke="${color}" stroke-width="1.2" stroke-dasharray="1.5 3" stroke-linecap="round" opacity="0.4"/>`;return;}
   const W=96,H=34,n=vals.length;
   const mn=Math.min(...vals),mx=Math.max(...vals),span=(mx-mn)||1;
   const pad=span<1e-9?H/2:3;
@@ -886,12 +891,26 @@ function renderProv(p){const rows=[["source",p.source],["kind",p.source_kind],["
 function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
 function wrapHTML(html,cls){const d=document.createElement("span");if(cls)d.className=cls;d.innerHTML=html;return d;}
 function mkChips(items){const c=node("div","chips");items.forEach(it=>{const s=node("span","chip"+(it.cls?" "+it.cls:""));s.textContent=it.txt;if(it.badge){const b=node("span","badge",it.badge);s.appendChild(b);}c.appendChild(s);});return c;}
-function empty(t){const e=node("div","empty");e.innerHTML=`<div class="ghostdie">${dieSVG(6,6,false)}</div><div>${esc(t)}</div>`;return e;}
+function empty(t){const e=node("div","empty");const a=K.ac,b=K.b4,c=K.b5;
+  e.innerHTML=`<div class="reticle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">`+
+    `<circle cx="60" cy="60" r="50" fill="none" stroke="${c}" stroke-width="1" opacity="0.45"/>`+
+    `<circle cx="60" cy="60" r="34" fill="none" stroke="${b}" stroke-width="1.3" opacity="0.7"/>`+
+    `<circle cx="60" cy="60" r="3.6" fill="${a}"/>`+
+    `<g stroke="${a}" stroke-width="1.5" stroke-linecap="round">`+
+    `<line x1="60" y1="8" x2="60" y2="20"/><line x1="60" y1="100" x2="60" y2="112"/>`+
+    `<line x1="8" y1="60" x2="20" y2="60"/><line x1="100" y1="60" x2="112" y2="60"/>`+
+    `<line x1="26" y1="26" x2="33" y2="33"/><line x1="87" y1="87" x2="94" y2="94"/>`+
+    `<line x1="94" y1="26" x2="87" y2="33"/><line x1="33" y1="87" x2="26" y2="94"/></g>`+
+    `</svg></div>`+
+    `<div class="eye">awaiting roll</div>`+
+    `<div class="msg">${esc(t)}</div>`+
+    `<div class="note">Every byte is rolled live by <code>chance</code> — then visualized.</div>`;
+  return e;}
 function resetOut(){
-  eRes.innerHTML="";eRes.appendChild(empty("Pick a method and press Generate. Every byte is rolled live by chance — then visualized."));
+  eRes.innerHTML="";eRes.appendChild(empty("Pick a method and press Generate."));
   eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="Enter to generate";lastRaw=null;
-  eEnt.innerHTML="—<small>bits</small>";eLat.innerHTML="—<small>ms</small>";eEnt.classList.add("idle");eLat.classList.add("idle");
-  entHist=[];latHist=[];dist={};sparkSVG(eSpkEnt,[],"--");sparkSVG(eSpkLat,[],"--");
+  eEnt.textContent="armed";eLat.textContent="armed";eEnt.classList.add("idle");eLat.classList.add("idle");
+  entHist=[];latHist=[];dist={};sparkSVG(eSpkEnt,[],"var(--series-1)");sparkSVG(eSpkLat,[],"var(--series-2)");
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
