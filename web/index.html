@@ -3,301 +3,277 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>chance — multi-source randomness studio</title>
+<title>chance — a randomness ritual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Spline+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ===== color-system · OKLCH phosphor-violet (H 287) on dark, neutrals hue-tinted · ZERO gradients ===== */
+  /* ===== Ink & Parchment — warm paper, ink structure, paced flat signal. NO gradients, NO purple haze. =====
+     Taste provenance: PuenteWorks warm-paper editorial discipline + Kyanite tri-color signal separation
+     + Mola geometric construction (thick ink outlines, cream insets, flat saturated fields). */
   :root{
-    --brand-300:oklch(0.72 0.13 287); --brand-400:oklch(0.62 0.15 287);
-    --brand-500:oklch(0.54 0.16 287); --brand-600:oklch(0.46 0.15 287);
-    --brand-700:oklch(0.38 0.12 287);
-    --accent:oklch(0.72 0.16 303);            /* riso 2nd color — magenta-violet */
-    --n-950:oklch(0.15 0.014 287); --n-900:oklch(0.18 0.012 287); --n-850:oklch(0.21 0.013 287);
-    --n-800:oklch(0.24 0.014 287); --n-700:oklch(0.30 0.014 287); --n-500:oklch(0.58 0.014 287);
-    --color-bg:oklch(0.15 0.014 287); --surface-1:var(--n-850); --surface-2:var(--n-800);
-    --border:var(--n-700); --text:oklch(0.96 0.005 287); --muted:oklch(0.70 0.014 287);
-    --primary-fill:oklch(0.74 0.15 287); --primary-ink:oklch(0.16 0.02 287);  /* CTA: bright-violet + dark ink = 7.0:1 */
-    --success:oklch(0.72 0.15 150); --error:oklch(0.66 0.20 14); --warn:oklch(0.82 0.15 85);
-    /* type · Perfect Fifth 1.500 */
-    --font-display:"Unbounded",system-ui,sans-serif;
-    --font-body:"Spline Sans",system-ui,sans-serif;
-    --font-mono:"DM Mono",ui-monospace,monospace;
-    --step--2:clamp(0.625rem,0.6rem + 0.1vw,0.7rem);
-    --step--1:clamp(0.75rem,0.72rem + 0.15vw,0.85rem);
-    --step-0:1rem; --step-1:clamp(1.3rem,1.2rem + 0.4vw,1.5rem);
-    --step-2:clamp(1.75rem,1.5rem + 1vw,2.25rem);
-    --step-3:clamp(2.5rem,2rem + 2vw,3.375rem);
-    --step-4:clamp(3.5rem,2.5rem + 4vw,5.063rem);
-    --step-5:clamp(4.5rem,2.5rem + 9vw,7.6rem);
-    --measure:64ch;
-    /* spacing · spacious */
+    /* paper foundation */
+    --paper:#f4ecdb; --paper-soft:#efe6d2; --warm-white:#fbf6ea; --cream-line:#fff7e6;
+    --ink:#1c1813; --ink-soft:#2a241c; --muted:#7a6f60; --line:#d4c4a3;
+    /* signal · paced, flat, spatially separated (never blended into purple) */
+    --signal:#0b3d91; --reef:#007a86; --seal:#b3261e; --gold:#a87810; --leaf:#1f7a3f;
+    --color-bg:var(--paper); --surface-1:var(--paper-soft); --surface-2:var(--warm-white);
+    --border:var(--line); --text:var(--ink-soft);
+    --primary-fill:var(--ink); --primary-ink:var(--warm-white);
+    --success:var(--leaf); --error:var(--seal); --warn:var(--gold);
+    /* type · Fraunces (editorial serif) + Inter (UI/numerals) + JetBrains Mono (notation/provenance) */
+    --font-display:"Fraunces",Georgia,"Times New Roman",serif;
+    --font-body:"Inter",system-ui,-apple-system,sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+    /* scale · Perfect Fifth 1.500, calm */
+    --step--2:clamp(0.68rem,0.66rem+0.1vw,0.75rem);
+    --step--1:clamp(0.8rem,0.78rem+0.12vw,0.9rem);
+    --step-0:1rem; --step-1:clamp(1.3rem,1.2rem+0.4vw,1.5rem);
+    --step-2:clamp(1.75rem,1.5rem+1vw,2.25rem);
+    --step-3:clamp(2.5rem,2rem+2vw,3.375rem);
+    --step-4:clamp(3.5rem,2.6rem+3.5vw,4.75rem);
+    --step-5:clamp(4.5rem,2.8rem+8vw,7rem);
+    --measure:62ch;
     --s1:0.5rem;--s2:0.75rem;--s3:1rem;--s4:1.5rem;--s5:2rem;--s6:2.5rem;--s7:3.5rem;--s8:5rem;
-    --section:clamp(2.5rem,2rem + 3vw,5rem);
-    /* shape + elevation · soft-shadow */
-    --r-ctrl:4px; --r-card:15px;
-    --sh-soft:0 10px 30px -8px oklch(0.05 0.02 287 / 0.55);
-    --sh-lift:0 4px 14px -4px oklch(0.05 0.02 287 / 0.45);
-    --series-1:var(--brand-300); --series-2:var(--accent);
-    --series-3:var(--brand-500); --series-4:var(--n-500);
+    --section:clamp(2.5rem,2rem+3vw,5rem);
+    --r-ctrl:5px; --r-card:14px;
+    --sh-soft:0 12px 32px -12px oklch(0.28 0.03 70 / .20);
+    --sh-lift:0 2px 8px -3px oklch(0.28 0.03 70 / .14);
+    --series-1:var(--signal); --series-2:var(--seal);
+    --series-3:var(--reef); --series-4:var(--muted);
   }
   *{box-sizing:border-box}
   html{font-size:100%;-webkit-text-size-adjust:100%}
-  [hidden]{display:none!important}   /* attribute must beat author display rules (.copy inline-flex etc.) */
+  [hidden]{display:none!important}
   body{margin:0;min-height:100dvh;background:var(--color-bg);color:var(--text);
-    font-family:var(--font-body);font-size:var(--step-0);line-height:1.55;font-synthesis:none;
-    background-image:
-      radial-gradient(900px 600px at 86% -12%, oklch(0.46 0.15 287 / .10), transparent 60%),
-      radial-gradient(720px 520px at -10% 110%, oklch(0.72 0.16 303 / .07), transparent 55%);
-    background-attachment:fixed}
-  /* riso two-color decoration — flat solid instrument shapes + grain, NOT gradient blobs */
+    font-family:var(--font-body);font-size:var(--step-0);line-height:1.6;font-synthesis:none;
+    -webkit-font-smoothing:antialiased;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-blend-mode:multiply}
+  /* Mola geometric decoration — nested arch/triangle construction as structure, not confetti */
   .deco{position:fixed;pointer-events:none;z-index:0}
-  .deco.ring{width:260px;height:260px;border-radius:50%;border:1.5px solid oklch(0.72 0.16 303 / .28);
-    top:6%;right:-70px}
-  .deco.ring::after{content:"";position:absolute;inset:34px;border-radius:50%;border:1px solid oklch(0.72 0.13 287 / .30)}
-  .deco.cross{top:14%;right:60px;width:54px;height:54px;opacity:.4}
-  .deco.ticks{bottom:9%;left:4%;width:150px;height:150px;opacity:.5;
-    background-image:conic-gradient(from 0deg,var(--brand-500) 0 2deg,transparent 2deg 30deg);
-    border-radius:50%;-webkit-mask:radial-gradient(circle,transparent 40px,#000 41px);mask:radial-gradient(circle,transparent 40px,#000 41px)}
-  .deco.grain{inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
-    opacity:.05;mix-blend-mode:screen}
-  .wrap{max-width:1120px;margin:0 auto;padding:var(--s7) var(--s5) var(--s8);position:relative;z-index:1}
+  .deco.mola{top:-40px;right:-50px;width:240px;height:240px;opacity:.10}
+  .deco.rule{bottom:0;left:0;right:0;height:1px;background:var(--line);opacity:.6}
+  .wrap{max-width:1080px;margin:0 auto;padding:var(--s7) var(--s5) var(--s8);position:relative;z-index:1}
 
-  /* ===== symmetric collage header (2-col mosaic, syncopated) ===== */
-  .bento-head{display:grid;grid-template-columns:1.6fr 1fr;gap:var(--s3);margin-bottom:var(--section)}
-  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-card);
-    padding:var(--s5);position:relative;box-shadow:var(--sh-lift)}
-  /* signature · STATIC type cascade (motion=none): stacked ghosted wordmark stair-step */
-  .tile.brand{overflow:hidden;background:var(--n-900)}
-  .cascade{position:relative;min-height:7rem;display:flex;align-items:flex-end}
-  .cascade .ghost{position:absolute;left:0;bottom:0;font-family:var(--font-display);font-weight:800;
-    font-size:var(--step-5);line-height:.82;letter-spacing:-.01em;color:var(--brand-500);opacity:.10}
-  .cascade .ghost.g2{transform:translate(10px,-6px);opacity:.16}
-  .cascade .word{position:relative;font-family:var(--font-display);font-weight:800;font-size:var(--step-5);
-    line-height:.82;letter-spacing:-.01em;color:var(--brand-300)}
-  .brand .tag{color:var(--muted);font-size:var(--step--1);text-transform:uppercase;letter-spacing:.18em;margin-top:var(--s3)}
-  /* stat tiles · value + inline sparkline */
-  .stats{display:grid;grid-template-rows:1fr 1fr;gap:var(--s3)}
-  .stat{display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--s3)}
-  .stat .k{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
-  .stat .v{font-family:var(--font-mono);font-size:var(--step-2);color:var(--text);margin-top:2px}
-  .stat .v small{font-size:.55em;color:var(--muted);margin-left:2px}
-  .stat .v.idle{font-size:var(--step--1);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;color:var(--muted);opacity:1}
-  .spark{width:96px;height:34px;display:block}
+  /* ===== masthead ===== */
+  .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s5);
+    padding-bottom:var(--s4);margin-bottom:var(--s5);border-bottom:1px solid var(--ink)}
+  .brand{display:flex;flex-direction:column;gap:var(--s1)}
+  .brand .wordmark{font-family:var(--font-display);font-weight:900;font-size:var(--step-5);
+    line-height:.82;letter-spacing:-.025em;color:var(--ink);font-variation-settings:"opsz" 120}
+  .brand .wordmark em{font-style:italic;font-weight:500;color:var(--signal)}
+  .brand .tag{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.22em;color:var(--ink-soft);opacity:.7;margin-top:var(--s2)}
+  /* stat readouts · huge number → tiny label rhythm */
+  .stats{display:flex;gap:var(--s6);align-items:flex-end}
+  .stat{text-align:right}
+  .stat .k{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.18em;color:var(--muted)}
+  .stat .v{font-family:var(--font-display);font-weight:600;font-size:var(--step-2);color:var(--ink);
+    line-height:1;margin-top:var(--s1);font-variation-settings:"opsz" 80}
+  .stat .v small{font-family:var(--font-mono);font-size:.42em;color:var(--muted);margin-left:3px;
+    font-weight:500;letter-spacing:.05em}
+  .stat .v.idle{font-family:var(--font-mono);font-size:var(--step--1);font-weight:500;
+    text-transform:uppercase;letter-spacing:.22em;color:var(--muted)}
+  .spark{width:84px;height:26px;display:block;margin-top:var(--s1);margin-left:auto}
 
-  /* source + seed controls row (under header) */
-  .ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-bottom:var(--section)}
+  /* source + seed controls */
+  .ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-bottom:var(--s5)}
   label.fld{display:flex;flex-direction:column;gap:var(--s1)}
-  label.fld>span{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-  select,input,textarea{font-family:var(--font-body);font-size:var(--step-0);color:var(--text);
-    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-ctrl);
+  label.fld>span{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.16em;color:var(--muted)}
+  select,input,textarea{font-family:var(--font-body);font-size:var(--step-0);color:var(--ink-soft);
+    background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-ctrl);
     padding:var(--s2) var(--s3);outline:none;width:100%;transition:border-color .15s,box-shadow .15s}
-  select:focus,input:focus,textarea:focus{border-color:var(--brand-400);box-shadow:0 0 0 3px oklch(0.62 0.15 287 / .22)}
+  select:focus,input:focus,textarea:focus{border-color:var(--signal);box-shadow:0 0 0 3px oklch(0.27 0.10 264 / .16)}
   select{cursor:pointer;appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a99cd6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231c1813' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right var(--s2) center;padding-right:var(--s6)}
   textarea{resize:vertical;font-family:var(--font-mono);font-size:var(--step--1);line-height:1.5}
 
-  /* ===== main bento · method rail + stage ===== */
-  .bento-main{display:grid;grid-template-columns:1fr 2.1fr;gap:var(--s3);align-items:start}
-  @media (max-width:880px){.bento-head,.bento-main,.ctrl-row{grid-template-columns:1fr}}
+  /* ===== main · method rail + ritual stage ===== */
+  .bento-main{display:grid;grid-template-columns:240px 1fr;gap:var(--s6);align-items:start}
+  @media (max-width:880px){.bento-main{grid-template-columns:1fr}.ctrl-row{grid-template-columns:1fr}.masthead{flex-direction:column;align-items:flex-start}}
 
-  aside.rail{padding:var(--s4);max-height:74vh;overflow:auto;position:sticky;top:var(--s3)}
-  .rail h3{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.16em;color:var(--muted);
-    margin:var(--s1) var(--s1) var(--s3)}
-  .mlist{display:flex;flex-direction:column;gap:2px}
+  aside.rail{position:sticky;top:var(--s3)}
+  .rail h3{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.2em;color:var(--muted);margin:0 0 var(--s3)}
+  .mlist{display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--line)}
   .mbtn{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:var(--s3);width:100%;text-align:left;
-    background:transparent;border:1px solid transparent;color:var(--muted);border-radius:var(--r-ctrl);
-    padding:var(--s2) var(--s3);cursor:pointer;font-family:var(--font-body);transition:background .12s,color .12s}
-  .mbtn .num{font-family:var(--font-mono);font-weight:500;font-size:var(--step--1);line-height:1;color:var(--n-500);min-width:1.9em;letter-spacing:.04em}
-  .mbtn .nm{font-size:var(--step-0);font-weight:500}
-  .mbtn:hover{background:var(--surface-2);color:var(--text)}
-  .mbtn:hover .num{color:var(--accent)}
-  .mbtn.active{background:oklch(0.74 0.15 287 / .10);color:var(--text);box-shadow:inset 3px 0 0 var(--accent)}
-  .mbtn.active .num{color:var(--brand-300)}
-  .mbtn:focus-visible{outline:2px solid var(--brand-400);outline-offset:1px}
+    background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink-soft);
+    padding:var(--s2) var(--s1);cursor:pointer;font-family:var(--font-body);transition:background .12s,color .12s}
+  .mbtn .num{font-family:var(--font-mono);font-weight:500;font-size:var(--step--2);line-height:1;
+    color:var(--muted);min-width:1.9em;letter-spacing:.04em}
+  .mbtn .nm{font-size:var(--step--1);font-weight:500}
+  .mbtn:hover{background:var(--paper-soft);color:var(--ink)}
+  .mbtn:hover .num{color:var(--signal)}
+  .mbtn.active{background:var(--warm-white);color:var(--ink);box-shadow:inset 4px 0 0 var(--seal);font-weight:600}
+  .mbtn.active .nm{font-weight:600}
+  .mbtn.active .num{color:var(--seal);font-weight:600}
+  .mbtn:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
 
-  /* stage */
-  main.stage{padding:var(--s6);min-height:60vh}
-  .snum{font-family:var(--font-mono);font-weight:500;font-size:var(--step--1);line-height:1;color:var(--muted);
-    letter-spacing:.2em;text-transform:uppercase;margin-bottom:var(--s2)}
+  /* ritual stage */
+  main.stage{min-height:60vh}
+  .snum{font-family:var(--font-mono);font-weight:500;font-size:var(--step--2);line-height:1;color:var(--muted);
+    letter-spacing:.22em;text-transform:uppercase;margin-bottom:var(--s2)}
   .sname{font-family:var(--font-display);font-weight:600;font-size:var(--step-3);line-height:1.05;
-    text-wrap:balance;margin:var(--s2) 0 var(--s1)}
+    text-wrap:balance;margin:var(--s1) 0 var(--s2);color:var(--ink);font-variation-settings:"opsz" 90}
   .sdesc{color:var(--muted);max-width:var(--measure);margin:0 0 var(--s5);font-size:var(--step--1)}
 
   form .grid-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--s4)}
   .check{display:flex;align-items:center;gap:var(--s2);min-height:2.8rem}
-  .switch{position:relative;width:44px;height:24px;background:var(--surface-2);border:1px solid var(--border);
-    border-radius:999px;cursor:pointer;flex:none;transition:background .15s}
+  .switch{position:relative;width:44px;height:24px;background:var(--paper-soft);border:1px solid var(--line);
+    border-radius:999px;cursor:pointer;flex:none;transition:background .15s,border-color .15s}
   .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
     background:var(--muted);transition:transform .15s,background .15s}
-  .switch.on{background:oklch(0.74 0.15 287 / .30);border-color:var(--brand-400)}
-  .switch.on::after{transform:translateX(20px);background:var(--brand-300)}
+  .switch.on{background:var(--signal);border-color:var(--signal)}
+  .switch.on::after{transform:translateX(20px);background:var(--warm-white)}
 
-  .genrow{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);flex-wrap:wrap}
-  button.go{font-family:var(--font-body);font-size:var(--step-1);font-weight:700;letter-spacing:.01em;
-    color:var(--primary-ink);background:var(--primary-fill);border:1px solid var(--brand-500);
-    border-radius:var(--r-ctrl);padding:var(--s4) var(--s7);cursor:pointer;
-    box-shadow:var(--sh-soft),inset 0 1px 0 oklch(0.88 0.09 287 / .6);
-    transition:transform .08s,box-shadow .12s;display:inline-flex;align-items:center;gap:var(--s3)}
-  button.go::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--primary-ink);flex:none}
-  button.go:hover{box-shadow:0 14px 34px -8px oklch(0.40 0.16 287 / .65),inset 0 1px 0 oklch(0.88 0.09 287 / .65)}
+  .genrow{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);margin-bottom:var(--s6);flex-wrap:wrap}
+  button.go{font-family:var(--font-body);font-size:var(--step-1);font-weight:700;letter-spacing:-.005em;
+    color:var(--primary-ink);background:var(--primary-fill);border:1px solid var(--ink);
+    border-radius:var(--r-ctrl);padding:var(--s3) var(--s6);cursor:pointer;
+    box-shadow:var(--sh-soft);transition:transform .08s,box-shadow .12s,background .15s;
+    display:inline-flex;align-items:center;gap:var(--s3)}
+  button.go::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--seal);
+    box-shadow:0 0 0 2px var(--ink);flex:none}
+  button.go:hover{background:var(--ink-soft);box-shadow:0 16px 36px -12px oklch(0.2 0.03 70 / .3)}
   button.go:active{transform:translateY(1px)}
-  button.go:disabled{opacity:.6;cursor:wait}
-  .hint{color:var(--muted);font-size:var(--step--1)}
+  button.go:disabled{opacity:.55;cursor:wait}
+  .hint{color:var(--muted);font-size:var(--step--1);font-family:var(--font-mono)}
 
-  /* result */
-  .res-head{display:flex;align-items:center;justify-content:space-between;margin:var(--s6) 0 var(--s2)}
-  .res-head .lbl{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
-  .copy{font-family:var(--font-body);font-size:var(--step-0);font-weight:600;color:var(--muted);background:transparent;
-    border:1px solid var(--border);border-radius:var(--r-ctrl);padding:var(--s2) var(--s4);cursor:pointer;
-    display:inline-flex;align-items:center;gap:var(--s1)}
-  .copy:hover{color:var(--text);border-color:var(--accent)}
-  .result{background:oklch(0.11 0.03 287);border:1px solid oklch(0.30 0.014 287 / .7);border-radius:var(--r-card);
-    box-shadow:var(--sh-soft),inset 0 0 0 1px oklch(0.62 0.15 287 / .34),inset 0 1px 0 oklch(0.72 0.13 287 / .18);
-    padding:clamp(var(--s6),5vw,var(--s8));min-height:min(52vh,480px);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:var(--s6)}
-  .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s3);color:var(--muted);text-align:center;max-width:48ch}
-  .empty .reticle svg{width:clamp(104px,12vw,150px);height:auto;display:block}
-  .empty .eye{font-family:var(--font-mono);font-size:var(--step--1);text-transform:uppercase;letter-spacing:.34em;color:var(--accent);margin-top:var(--s2)}
-  .empty .msg{font-family:var(--font-display);font-weight:500;font-size:var(--step-1);line-height:1.25;color:var(--text);text-wrap:balance}
-  .empty .note{font-size:var(--step--1);color:var(--muted);max-width:42ch}
-  .empty .note code{font-family:var(--font-mono);color:var(--accent)}
-  .load{font-family:var(--font-mono);color:var(--accent);letter-spacing:.4em;font-size:var(--step-2)}
-  .err{color:var(--error);font-family:var(--font-mono);font-size:var(--step--1);text-align:center;max-width:54ch}
+  /* result · the parchment page */
+  .res-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 var(--s3);
+    padding-bottom:var(--s2);border-bottom:1px solid var(--line)}
+  .res-head .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.2em;color:var(--muted)}
+  .copy{font-family:var(--font-body);font-size:var(--step--1);font-weight:600;color:var(--muted);background:transparent;
+    border:1px solid var(--line);border-radius:var(--r-ctrl);padding:var(--s1) var(--s3);cursor:pointer;
+    display:inline-flex;align-items:center;gap:var(--s1);transition:color .12s,border-color .12s}
+  .copy:hover{color:var(--ink);border-color:var(--seal)}
+  .result{background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-card);
+    box-shadow:var(--sh-lift),inset 0 0 0 1px var(--cream-line);
+    padding:clamp(var(--s6),5vw,var(--s8));min-height:min(50vh,440px);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:var(--s5)}
+  .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s3);color:var(--muted);text-align:center;max-width:46ch}
+  .empty .reticle svg{width:clamp(120px,14vw,178px);height:auto;display:block}
+  .empty .eye{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.34em;color:var(--seal);margin-top:var(--s1)}
+  .empty .msg{font-family:var(--font-display);font-weight:500;font-size:var(--step-2);line-height:1.2;
+    color:var(--ink);text-wrap:balance;font-variation-settings:"opsz" 80}
+  .empty .note{font-size:var(--step--1);color:var(--muted);max-width:40ch}
+  .empty .note code{font-family:var(--font-mono);color:var(--seal)}
+  .load{font-family:var(--font-mono);color:var(--seal);letter-spacing:.4em;font-size:var(--step-2)}
+  .err{color:var(--error);font-family:var(--font-mono);font-size:var(--step--1);text-align:center;max-width:54ch;line-height:1.6}
+  .err code{font-family:var(--font-mono);color:var(--ink)}
 
   /* result primitives */
-  .sig-num{font-family:var(--font-display);font-weight:700;font-size:clamp(3.5rem,2rem + 6vw,6.5rem);line-height:.85;
-    color:var(--brand-300);letter-spacing:-.01em}
-  .sig-num.coral{color:var(--accent)}
-  .sig-mono{font-family:var(--font-mono);font-size:clamp(1.05rem,.9rem + 1.1vw,1.75rem);word-break:break-all;
-    text-align:center;color:var(--text);max-width:48ch}
+  .sig-num{font-family:var(--font-display);font-weight:900;font-size:clamp(3.5rem,2rem+6vw,6.5rem);line-height:.85;
+    color:var(--ink);letter-spacing:-.02em;font-variation-settings:"opsz" 144}
+  .sig-num.coral{color:var(--seal)}
+  .sig-mono{font-family:var(--font-mono);font-size:clamp(1.05rem,.9rem+1.1vw,1.75rem);word-break:break-all;
+    text-align:center;color:var(--ink);max-width:48ch;line-height:1.4}
   .chips{display:flex;flex-wrap:wrap;gap:var(--s2);justify-content:center}
-  .chip{font-family:var(--font-mono);font-size:var(--step-1);font-weight:500;background:var(--surface-2);
-    border:1px solid var(--border);color:var(--text);padding:var(--s1) var(--s3);border-radius:var(--r-ctrl);min-width:2.6em;text-align:center}
-  .chip.acc{border-color:var(--brand-500);color:var(--brand-300)}
-  .chip.bonus{border-color:var(--accent);color:var(--accent)}
-  .chip .badge{display:block;font-family:var(--font-body);font-size:.5em;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);margin-top:2px}
+  .chip{font-family:var(--font-mono);font-size:var(--step-0);font-weight:500;background:var(--paper-soft);
+    border:1px solid var(--line);color:var(--ink);padding:var(--s1) var(--s3);border-radius:var(--r-ctrl);min-width:2.6em;text-align:center}
+  .chip.acc{border-color:var(--signal);color:var(--signal);background:var(--warm-white)}
+  .chip.bonus{border-color:var(--seal);color:var(--seal);background:var(--warm-white)}
+  .chip .badge{display:block;font-family:var(--font-body);font-size:.5em;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:2px}
   .sub{color:var(--muted);font-size:var(--step--1);font-family:var(--font-mono);text-align:center}
 
-  /* ===== DATA-VIZ: graphical result objects (ink = the rolled value) ===== */
+  /* ===== ritual objects · ink line-art on parchment ===== */
   .faces{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center}
-  .die{width:72px;height:72px}
-  .die .face{fill:var(--surface-2);stroke:var(--border);stroke-width:1.5}
-  .die.exploded .face{stroke:var(--accent);stroke-width:2.5}
-  .die .pip{fill:var(--brand-300)}
-  .die.exploded .pip{fill:var(--accent)}
-  .die .dnum{font-family:var(--font-display);font-weight:700;font-size:34px;fill:var(--brand-300)}
-  .die.exploded .dnum{fill:var(--accent)}
-  .coinrow{display:flex;flex-wrap:wrap;gap:var(--s2);justify-content:center}
-  .coin{width:56px;height:56px}
-  .coin .rim{fill:var(--n-800);stroke:var(--border);stroke-width:1.5}
-  .coin.heads .disc{fill:var(--brand-600);stroke:var(--brand-400)}
-  .coin.tails .disc{fill:oklch(0.40 0.13 303);stroke:var(--accent)}
-  .coin .glyph{font-family:var(--font-display);font-weight:800;font-size:26px;fill:var(--text)}
-  .cardrow{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center}
-  .pcard{width:92px;height:128px;border-radius:8px;background:var(--n-900);stroke:var(--border);stroke-width:1.5}
-  .pcard .corner{font-family:var(--font-display);font-weight:700;font-size:15px}
-  .pcard .suit{font-family:var(--font-body);font-size:42px;font-weight:700;text-anchor:middle}
-  .pcard.red .corner,.pcard.red .suit{fill:var(--accent)}
-  .pcard.blk .corner,.pcard.blk .suit{fill:var(--brand-300)}
+  .die-wrap svg{width:clamp(140px,11vw,184px);height:auto}
+  .abw svg{width:clamp(150px,12vw,196px);height:auto}
+  .cw svg{width:clamp(108px,8vw,148px);height:auto}
+  .cdw svg{width:clamp(132px,12vw,176px);height:auto}
+  .tw svg{width:clamp(150px,15vw,210px);height:auto}
+  .dw svg{width:clamp(200px,19vw,284px);height:auto}
+  .rw svg{width:clamp(140px,12vw,196px);height:auto}
+  .coww svg{width:clamp(108px,10vw,156px);height:auto}
+  .bw svg,.bwb svg{width:clamp(100px,8vw,134px);height:auto}
+  .drew svg{width:clamp(130px,11vw,180px);height:auto}
+  .wheelw svg{width:clamp(300px,32vw,440px);height:auto}
+  .ic{display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+  .ic svg{width:clamp(240px,22vw,380px);height:auto}
+  .ic .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step-1);color:var(--ink)}
+  .faces svg,.abw svg,.cw svg,.cdw svg,.tw svg,.dw svg,.rw svg,.coww svg,.bw svg,.bwb svg,.drew svg,.wheelw svg,.ic svg{
+    filter:drop-shadow(0 1px 1px oklch(0.2 0.03 70 / .10))}
+  .result svg{display:block}
+  .result .ic svg{margin:0 auto}
+
+  /* coin / card rows share faces wrapper sizing */
+  .coinrow,.cardrow,.row{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center;min-width:0}
+  .tarot{display:flex;flex-direction:column;gap:var(--s2);align-items:center}
+  .tarot .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step--1);color:var(--ink);text-align:center;max-width:14em}
+  .tarot .ori{font-family:var(--font-mono);font-size:var(--step--2);font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+  .tarot .ori.up{color:var(--leaf)}.tarot .ori.rev{color:var(--seal)}
+
   /* bit-grid entropy field */
   .bitgrid{display:grid;gap:2px;justify-content:center}
   .bitgrid .b{width:11px;height:11px;border-radius:1px}
-  .bitgrid .b.on{background:var(--brand-300)}
-  .bitgrid .b.off{background:var(--n-800)}
+  .bitgrid .b.on{background:var(--ink)}
+  .bitgrid .b.off{background:var(--paper-soft);border:1px solid var(--line)}
+
   /* distribution bar chart */
-  .viz-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-card);
-    padding:var(--s5);margin-top:var(--s4);box-shadow:var(--sh-lift)}
-  .viz-card .lbl{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:var(--s1)}
+  .viz-card{background:var(--paper-soft);border:1px solid var(--line);border-radius:var(--r-card);
+    padding:var(--s5);margin-top:var(--s4)}
+  .viz-card .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:var(--s1)}
   .viz-card .cap{color:var(--muted);font-size:var(--step--1);margin-top:var(--s2);font-family:var(--font-mono)}
-  .bars{display:flex;align-items:flex-end;gap:var(--s2);height:120px;padding-top:var(--s3);border-bottom:1px solid var(--border)}
+  .bars{display:flex;align-items:flex-end;gap:var(--s2);height:120px;padding-top:var(--s3);border-bottom:1px solid var(--line)}
   .barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--s1);min-width:0;height:100%;justify-content:flex-end}
-  .barcol .cnt{font-family:var(--font-mono);font-size:var(--step--2);color:var(--text)}
+  .barcol .cnt{font-family:var(--font-mono);font-size:var(--step--2);color:var(--ink)}
   .barcol .bar{width:100%;max-width:46px;background:var(--series-1);border-radius:var(--r-ctrl) var(--r-ctrl) 0 0;min-height:2px}
   .barcol .bar.alt{background:var(--series-2)}
   .barcol .cat{font-family:var(--font-mono);font-size:var(--step--2);color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-  /* tarot / dominoes / roulette / iching primitives */
-  .row{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center}
-  .tarot{width:118px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-card);
-    padding:var(--s4);text-align:center;box-shadow:var(--sh-lift)}
-  .tarot .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step-1);line-height:1.08;min-height:2.8em;display:flex;align-items:center;justify-content:center}
-  .tarot .ori{font-size:var(--step--1);margin-top:var(--s2);font-weight:700;letter-spacing:.1em}
-  .tarot .ori.up{color:var(--success)}.tarot .ori.rev{color:var(--warn)}
-  .dom{display:flex;flex-direction:column;background:var(--surface-2);border:1px solid var(--border);
-    border-radius:var(--r-ctrl);overflow:hidden;font-family:var(--font-display);font-weight:700;font-size:var(--step-3)}
-  .dom .h{padding:var(--s2) var(--s5);text-align:center}.dom .h+.h{border-top:2px solid var(--border)}
-  .rwheel{width:108px;height:108px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-family:var(--font-display);font-weight:700;font-size:var(--step-3);color:#fff;border:3px solid var(--border);box-shadow:var(--sh-lift)}
-  .rwheel.red{background:oklch(0.50 0.19 14)}.rwheel.black{background:oklch(0.22 0.01 287)}.rwheel.green{background:oklch(0.55 0.16 150)}
-  .ic{display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
-  .ic .ln{height:8px;width:160px;border-radius:2px}
-  .ic .ln.yang{background:var(--brand-400)}.ic .ln.yin{background:linear-gradient(90deg,var(--brand-400) 0 44%,transparent 44% 56%,var(--brand-400) 56% 100%)}
-  .ic .ln.chg{box-shadow:0 0 0 2px var(--accent)}
-  .ic .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step-1)}
-
-  /* provenance */
+  /* provenance · the receipt */
   .prov{margin-top:var(--s5)}
-  .prov .lbl{font-size:var(--step--1);text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:var(--s2)}
+  .prov .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:var(--s2)}
   .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--s2)}
-  .pcell{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-ctrl);padding:var(--s2) var(--s3)}
-  .pcell .k{font-size:var(--step--2);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-  .pcell .v{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text);margin-top:2px;word-break:break-all}
-  footer{margin-top:var(--section);text-align:center;color:var(--muted);font-size:var(--step--1)}
-  footer code{font-family:var(--font-mono);color:var(--brand-300)}
+  .pcell{background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-ctrl);padding:var(--s2) var(--s3)}
+  .pcell .k{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .pcell .v{font-family:var(--font-mono);font-size:var(--step--1);color:var(--ink);margin-top:2px;word-break:break-all}
+  footer{margin-top:var(--section);padding-top:var(--s4);border-top:1px solid var(--line);text-align:center;
+    color:var(--muted);font-size:var(--step--2);font-family:var(--font-mono);letter-spacing:.06em}
+  footer code{font-family:var(--font-mono);color:var(--signal)}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  .icopy{width:1em;height:1em;stroke:currentColor;stroke-width:1.5;fill:none}
-  :focus-visible{outline:2px solid var(--brand-400);outline-offset:2px}
+  .icopy{width:1em;height:1em;stroke:currentColor;stroke-width:1.6;fill:none}
+  :focus-visible{outline:2px solid var(--signal);outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-  /* premium result objects — flat vector illustrations keep their inline size */
-  .result svg{display:block}
-  .result .ic svg{margin:0 auto}
-  /* mobile-overflow guard · grid items must not blow out their track (min-width:auto→0) */
-  .bento-head>*,.bento-main>*,.ctrl-row>*{min-width:0}
+  /* overflow guards */
+  .bento-main>*,.ctrl-row>*,.masthead>*{min-width:0}
   .result,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
   .result svg,.row svg,.faces svg,.coinrow svg,.cardrow svg,.viz-card svg{max-width:100%;height:auto}
-  /* soft-shadow elevation (the rolled --sh elevation) lifts result objects off the stage; fills stay flat, zero gradients */
-  .faces svg,.coinrow svg,.cardrow svg,.row svg,.wheelw svg,.drew svg,.ic svg{filter:drop-shadow(0 1px 2px oklch(0.02 0.02 287 / .75)) drop-shadow(0 7px 12px oklch(0.03 0.02 287 / .45))}
-  /* HERO result objects — editorial presence; viewBoxes scale cleanly, flat fills preserved, zero gradients */
-  .die-wrap svg{width:clamp(140px,11vw,188px);height:auto}
-  .abw svg{width:clamp(150px,12vw,200px);height:auto}
-  .cw svg{width:clamp(108px,8vw,150px);height:auto}
-  .cdw svg{width:clamp(140px,12vw,188px);height:auto}
-  .tw svg{width:clamp(210px,19vw,290px);height:auto}
-  .dw svg{width:clamp(220px,19vw,300px);height:auto}
-  .rw svg{width:clamp(150px,12vw,200px);height:auto}
-  .coww svg{width:clamp(120px,10vw,165px);height:auto}
-  .bw svg,.bwb svg{width:clamp(104px,8vw,140px);height:auto}
-  .drew svg{width:clamp(150px,12vw,200px);height:auto}
-  .wheelw svg{width:clamp(380px,42vw,600px);height:auto}
-  .ic svg{width:clamp(260px,24vw,400px);height:auto}
 </style>
 </head>
 <body>
-<span class="deco ring" aria-hidden="true"></span>
-<svg class="deco cross" aria-hidden="true" viewBox="0 0 54 54"><g stroke="oklch(0.72 0.16 303 / .6)" stroke-width="1.5"><path d="M27 4v46M4 27h46"/><circle cx="27" cy="27" r="13" fill="none"/></g></svg>
-<span class="deco ticks" aria-hidden="true"></span>
-<span class="deco grain" aria-hidden="true"></span>
+<svg class="deco mola" aria-hidden="true" viewBox="0 0 240 240">
+  <g fill="none" stroke="#1c1813" stroke-width="1.4">
+    <path d="M120 30 q90 0 90 90 q0 90 -90 90 q-90 0 -90 -90 q0 -90 90 -90 Z"/>
+    <path d="M120 60 q60 0 60 60 q0 60 -60 60 q-60 0 -60 -60 q0 -60 60 -60 Z"/>
+    <path d="M120 90 q30 0 30 30 q0 30 -30 30 q-30 0 -30 -30 q0 -30 30 -30 Z"/>
+    <path d="M40 210 L120 150 L200 210"/>
+  </g>
+</svg>
 
 <div class="wrap">
-  <header class="bento-head">
-    <div class="tile brand">
-      <div class="cascade">
-        <span class="ghost">chance</span><span class="ghost g2">chance</span>
-        <span class="word">chance</span>
-      </div>
-      <div class="tag">phosphor-violet instrument console · chance-rolled · os-csprng</div>
+  <header class="masthead">
+    <div class="brand">
+      <div class="wordmark">chance<em>.</em></div>
+      <div class="tag">a randomness ritual · os-csprng · legit under the hood</div>
     </div>
-    <div class="tile stats">
+    <div class="stats">
       <div class="stat">
-        <div><div class="k">entropy</div><div class="v idle" id="st-ent">armed</div></div>
-        <svg class="spark" id="spk-ent" viewBox="0 0 96 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="k">entropy</div>
+        <div class="v idle" id="st-ent">armed</div>
+        <svg class="spark" id="spk-ent" viewBox="0 0 84 26" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
       <div class="stat">
-        <div><div class="k">latency</div><div class="v idle" id="st-lat">armed</div></div>
-        <svg class="spark" id="spk-lat" viewBox="0 0 96 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="k">latency</div>
+        <div class="v idle" id="st-lat">armed</div>
+        <svg class="spark" id="spk-lat" viewBox="0 0 84 26" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
     </div>
   </header>
@@ -308,32 +284,31 @@
   </div>
 
   <div class="bento-main">
-    <aside class="tile rail">
+    <aside class="rail">
       <h3>methods</h3>
       <nav class="mlist" id="mlist"></nav>
     </aside>
 
-    <main class="tile stage">
-      <div class="snum" id="h-num">01</div>
+    <main class="stage">
+      <div class="snum" id="h-num">method · 01</div>
       <h2 class="sname" id="h-name">Roll dice</h2>
       <p class="sdesc" id="h-desc"></p>
       <form id="form" autocomplete="off" novalidate></form>
       <div class="genrow">
-        <button class="go" id="go" type="button">Generate
+        <button class="go" id="go" type="button">Cast
           <svg class="icopy" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <span class="hint" id="hint">Enter to generate</span>
+        <span class="hint" id="hint">Enter to cast</span>
       </div>
       <div class="res-head">
-        <span class="lbl">result</span>
+        <span class="lbl">the draw</span>
         <button class="copy" id="copy" type="button" hidden>
           <svg class="icopy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg>
           copy</button>
       </div>
       <div class="result" id="result">
-        <div class="empty"><div class="eye">awaiting roll</div><div class="msg">Pick a method and press Generate.</div></div>
+        <div class="empty"><div class="eye">awaiting the cast</div><div class="msg">Pick a method and cast.</div></div>
       </div>
-      <!-- DATA-VIZ: session distribution (honest bars from zero, direct-labeled) -->
       <section class="viz-card" id="viz-dist" hidden aria-label="Session distribution">
         <div class="lbl">session distribution · <span id="viz-n">0</span> draws</div>
         <div class="bars" id="viz-bars" role="img" aria-labelledby="viz-cap"></div>
@@ -341,7 +316,7 @@
         <table class="sr-only" id="viz-table"><caption>Session distribution</caption></table>
       </section>
       <div class="prov" id="prov" hidden>
-        <div class="lbl">provenance</div>
+        <div class="lbl">provenance · the receipt</div>
         <div class="pgrid" id="pgrid"></div>
       </div>
     </main>
@@ -392,8 +367,6 @@ const METHODS=[
  {key:"lots",n:"Draw lots",d:"Sortition — draw lots from a list.",r:"list",
   fields:[{k:"items",label:"options (one per line)",type:"textarea",def:"Go\nStay\nWait"},{k:"count",label:"count",type:"number",def:1,min:1,max:100}]},
 ];
-// API base — relative by default so the page talks to its own `chance serve` (same origin).
-// Override with ?api=<origin> to point at a public backend (it must be CORS-enabled).
 let API_BASE="";
 try{const a=new URLSearchParams(location.search).get("api");if(a)API_BASE=a.replace(/\/+$/,"");}catch(_){}
 const $=id=>document.getElementById(id);
@@ -403,10 +376,8 @@ const eMlist=$("mlist"),eForm=$("form"),eRes=$("result"),eProv=$("prov"),ePgrid=
       eSpkEnt=$("spk-ent"),eSpkLat=$("spk-lat"),
       eViz=$("viz-dist"),eVizBars=$("viz-bars"),eVizN=$("viz-n"),eVizCap=$("viz-cap"),eVizTbl=$("viz-table");
 let current=METHODS[0],lastRaw=null;
-// session state · feeds sparklines + distribution
 const SPARK_MAX=24;
-let entHist=[],latHist=[],dist={};   // dist: {cat:String:count} for current method
-const NUMERIC_DIST=new Set(["roll","flip","int","knucklebones","lottery"]);
+let entHist=[],latHist=[],dist={};
 
 function buildRail(){
   eMlist.innerHTML="";
@@ -462,95 +433,94 @@ function bodyFromForm(){
   return body;
 }
 async function generate(){
-  eGo.disabled=true;eRes.innerHTML=`<div class="load">·· ··</div>`;eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="working…";
+  eGo.disabled=true;eRes.innerHTML=`<div class="load">·· ··</div>`;eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="casting…";
   const url=`${API_BASE}/v1/${current.key}`;
   try{
     const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(bodyFromForm())});
     const txt=await res.text();let data;try{data=JSON.parse(txt);}catch(_){}
     if(!res.ok){
-      if(data&&typeof data==="object")throw new Error(data.error||data.message||JSON.stringify(data)); // real backend error
-      throw new Error("__NO_BACKEND__");                                                                    // non-JSON answer → not the chance API
+      if(data&&typeof data==="object")throw new Error(data.error||data.message||JSON.stringify(data));
+      throw new Error("__NO_BACKEND__");
     }
     if(!data)throw new Error("__NO_BACKEND__");
     lastRaw=data.result;render(data.result,data.provenance||{});
     if(data.provenance){
       track(data.provenance,data.result);
     }
-    eHint.textContent="Enter to generate again";
+    eHint.textContent="Enter to cast again";
   }catch(e){
     const reach=/Failed to fetch|NetworkError|load failed|__NO_BACKEND__/i.test(e.message);
     eRes.innerHTML=reach
-      ?`<div class="err">⚠ No <b>chance</b> backend reachable at <code style="font-family:var(--font-mono);color:var(--accent)">${esc(url)}</code>.<br>This page is a static showcase here — generation needs the live <b>chance serve</b> API.<br>${API_BASE?`Make sure <code style="font-family:var(--font-mono)">${esc(API_BASE)}</code> is up and CORS-enabled.`:`Run it locally with <code style="font-family:var(--font-mono)">chance serve --port 8484</code>.`}</div>`
+      ?`<div class="err">⚠ No <b>chance</b> backend reachable at <code>${esc(url)}</code>.<br>This page is a static showcase here — generation needs the live <b>chance serve</b> API.<br>${API_BASE?`Make sure <code>${esc(API_BASE)}</code> is up and CORS-enabled.`:`Run it locally with <code>chance serve --port 8484</code>.`}</div>`
       :`<div class="err">⚠ ${esc(e.message||"request failed")}</div>`;
     eHint.textContent="error";
   }
   finally{eGo.disabled=false;}
 }
 
-/* ===== SVG generators (data-viz: ink maps to data) ===== */
-const K={b3:"oklch(0.72 0.13 287)",b4:"oklch(0.62 0.15 287)",b5:"oklch(0.54 0.16 287)",b6:"oklch(0.46 0.15 287)",b7:"oklch(0.38 0.12 287)",ac:"oklch(0.72 0.16 303)",n9:"oklch(0.18 0.012 287)",n8:"oklch(0.24 0.014 287)",n7:"oklch(0.30 0.014 287)",n5:"oklch(0.58 0.014 287)",tx:"oklch(0.96 0.005 287)",ik:"oklch(0.16 0.02 287)",lt:"oklch(0.93 0.008 287)",bn:"oklch(0.86 0.01 287)"};
+/* ===== SVG generators · ink line-art on parchment =====
+   K = ink & parchment token map. ink outlines, paper surfaces, paced signal accents. */
+const K={b3:"#0b3d91",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#b3261e",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",lf:"#1f7a3f",bl:"#0b3d91",ps:"#efe6d2",pd:"#e2d4b6",reef:"#007a86"};
 const SVGNS=' xmlns="http://www.w3.org/2000/svg"';
-// Elder Futhark rune name → unicode glyph
 const RUNES={fehu:"ᚠ",uruz:"ᚢ",thurisaz:"ᚦ",ansuz:"ᚨ",raido:"ᚱ",kenaz:"ᚲ",gebo:"ᚷ",wunjo:"ᚹ",hagalaz:"ᚺ",nauthiz:"ᚾ",isa:"ᛁ",jera:"ᛃ",eihwaz:"ᛇ",perthro:"ᛈ",algiz:"ᛉ",sowilo:"ᛋ",tiwaz:"ᛏ",berkano:"ᛒ",ehwaz:"ᛖ",mannaz:"ᛗ",laguz:"ᛚ",ingwaz:"ᛜ",dagaz:"ᛞ",othala:"ᛟ"};
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const ROMAN=["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI"];
 const EU_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 const RED_SET=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-// pip helper for the isometric die top face (3×3 map)
+// pip helper · ink pips engraved into an ivory face
 function pipsOn(v,cx,cy,col,sc){
   const dx=10*sc,dy=6.5*sc,r=2.3*sc;
   const map={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
   return (map[v]||[]).map(i=>{const c=i%3,rr=(i/3|0);const x=cx+(c-1)*dx,y=cy+(rr-1)*dy;
-    return `<circle cx="${(x+1.8).toFixed(1)}" cy="${(y+1.8).toFixed(1)}" r="${(r+2.0).toFixed(1)}" fill="${K.ik}" opacity="0.8"/>`+
-           `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+0.6).toFixed(1)}" fill="${K.b7}" opacity="0.95"/>`+
+    return `<circle cx="${(x+1.8).toFixed(1)}" cy="${(y+1.8).toFixed(1)}" r="${(r+1.7).toFixed(1)}" fill="${K.b7}" opacity="0.6"/>`+
+           `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+0.5).toFixed(1)}" fill="${K.ik}" opacity="0.18"/>`+
            `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${col}"/>`+
-           `<circle cx="${(x-r*0.45).toFixed(1)}" cy="${(y-r*0.45).toFixed(1)}" r="${(r*0.5).toFixed(1)}" fill="${K.b3}" opacity="0.95"/>`;
+           `<circle cx="${(x-r*0.4).toFixed(1)}" cy="${(y-r*0.4).toFixed(1)}" r="${(r*0.42).toFixed(1)}" fill="${K.b4}" opacity="0.7"/>`;
   }).join("");
 }
 function dieSVG(value,size,exploded){
   const v=Number(value),ex=!!exploded,sz=Number(size)||6;
-  const tF=ex?K.b3:K.b4,lF=ex?"oklch(0.62 0.15 303)":K.b5,rF=ex?K.ac:K.b6;
+  const tF=ex?K.ac:K.b4,lF=ex?"#e8c9c4":K.b5,rF=ex?"#d9b3ad":K.b6;
   const top="50,12 80,30 50,48 20,30",left="20,30 50,48 50,84 20,66",right="80,30 50,48 50,84 80,66";
+  const ink=ex?K.ac:K.ik;
   let center;
-  if(sz===6&&v>=1&&v<=6){center=pipsOn(v,50,30,K.lt,0.95);}
-  else{center=`<text x="50" y="31" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="18" font-weight="700" fill="${K.lt}">${esc(String(v))}</text><text x="66" y="41" text-anchor="middle" font-family="DM Mono" font-size="5" fill="${K.lt}" opacity="0.8">d${esc(String(sz))}</text>`;}
+  if(sz===6&&v>=1&&v<=6){center=pipsOn(v,50,30,ex?K.b4:K.ik,0.95);}
+  else{center=`<text x="50" y="31" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="19" font-weight="700" fill="${ex?K.b4:K.ik}">${esc(String(v))}</text><text x="66" y="41" text-anchor="middle" font-family="JetBrains Mono" font-size="5" fill="${K.n5}" opacity="0.85">d${esc(String(sz))}</text>`;}
   return `<svg${SVGNS} width="58" height="56" viewBox="0 0 100 96">`+
-    `<ellipse cx="50" cy="91" rx="28" ry="3.6" fill="oklch(0.04 0.015 287)" opacity="0.55"/>`+
-    `<polygon points="${left}" fill="${lF}" stroke="${K.n7}" stroke-width="0.7"/>`+
-    `<polygon points="${right}" fill="${rF}" stroke="${K.n7}" stroke-width="0.7"/>`+
-    `<polygon points="${top}" fill="${tF}" stroke="${K.n7}" stroke-width="0.9"/>`+
-    // machined bevel — bold light crest (upper-left light), edge accents, grounding silhouette + contact pool
-    `<polyline points="20,30 50,12 80,30" fill="none" stroke="${ex?K.lt:K.b3}" stroke-width="1.7" stroke-linejoin="round" opacity="0.85"/>`+
-    `<line x1="26" y1="30" x2="49" y2="17" stroke="${K.lt}" stroke-width="0.6" opacity="0.42"/>`+
-    `<line x1="20" y1="30" x2="20" y2="66" stroke="${ex?K.lt:K.b3}" stroke-width="0.9" opacity="0.4"/>`+
-    `<line x1="80" y1="30" x2="80" y2="66" stroke="${K.ik}" stroke-width="1.1" opacity="0.45"/>`+
-    `<polyline points="20,66 50,84 80,66" fill="none" stroke="${K.ik}" stroke-width="1.5" stroke-linejoin="round" opacity="0.65"/>`+
+    `<ellipse cx="50" cy="91" rx="28" ry="3.4" fill="${K.b7}" opacity="0.55"/>`+
+    `<polygon points="${left}" fill="${lF}" stroke="${ink}" stroke-width="0.8"/>`+
+    `<polygon points="${right}" fill="${rF}" stroke="${ink}" stroke-width="0.8"/>`+
+    `<polygon points="${top}" fill="${tF}" stroke="${ink}" stroke-width="1"/>`+
+    `<polyline points="20,30 50,12 80,30" fill="none" stroke="${ink}" stroke-width="1.7" stroke-linejoin="round" opacity="0.9"/>`+
+    `<line x1="26" y1="30" x2="49" y2="17" stroke="${K.ik}" stroke-width="0.6" opacity="0.28"/>`+
+    `<line x1="20" y1="30" x2="20" y2="66" stroke="${K.ik}" stroke-width="0.9" opacity="0.35"/>`+
+    `<line x1="80" y1="30" x2="80" y2="66" stroke="${K.ik}" stroke-width="1.1" opacity="0.4"/>`+
+    `<polyline points="20,66 50,84 80,66" fill="none" stroke="${K.ik}" stroke-width="1.5" stroke-linejoin="round" opacity="0.55"/>`+
     center+`</svg>`;
 }
 function coinSVG(face){
   const h=String(face).toLowerCase()[0]==="h";
-  const field=h?K.b5:"oklch(0.50 0.16 303)";
+  const field=h?K.b5:K.b6;
   let emblem;
   if(h){
-    let rays="";for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;const x1=(32+Math.cos(a)*17).toFixed(1),y1=(32+Math.sin(a)*17).toFixed(1),x2=(32+Math.cos(a)*22.5).toFixed(1),y2=(32+Math.sin(a)*22.5).toFixed(1);rays+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${K.lt}" stroke-width="1.4" stroke-linecap="round"/>`;}
-    emblem=rays+`<circle cx="32" cy="32" r="14" fill="none" stroke="${K.lt}" stroke-width="1.2"/><circle cx="32" cy="32" r="3.2" fill="${K.lt}"/>`;
+    let rays="";for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;const x1=(32+Math.cos(a)*17).toFixed(1),y1=(32+Math.sin(a)*17).toFixed(1),x2=(32+Math.cos(a)*22.5).toFixed(1),y2=(32+Math.sin(a)*22.5).toFixed(1);rays+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${K.ik}" stroke-width="1.4" stroke-linecap="round"/>`;}
+    emblem=rays+`<circle cx="32" cy="32" r="14" fill="none" stroke="${K.ik}" stroke-width="1.2"/><circle cx="32" cy="32" r="3.2" fill="${K.ik}"/>`;
   }else{
-    emblem=`<circle cx="32" cy="32" r="13" fill="none" stroke="${K.lt}" stroke-width="1.3"/><line x1="32" y1="15" x2="32" y2="49" stroke="${K.lt}" stroke-width="1.2"/><line x1="15" y1="32" x2="49" y2="32" stroke="${K.lt}" stroke-width="1.2"/><circle cx="32" cy="32" r="2.6" fill="${K.lt}"/>`;
+    emblem=`<circle cx="32" cy="32" r="13" fill="none" stroke="${K.ik}" stroke-width="1.3"/><line x1="32" y1="15" x2="32" y2="49" stroke="${K.ik}" stroke-width="1.2"/><line x1="15" y1="32" x2="49" y2="32" stroke="${K.ik}" stroke-width="1.2"/><circle cx="32" cy="32" r="2.6" fill="${K.ik}"/>`;
   }
   let reed="";for(let i=0;i<32;i++){const a=(i/32)*Math.PI*2;const x1=(32+Math.cos(a)*29.3).toFixed(2),y1=(32+Math.sin(a)*29.3).toFixed(2),x2=(32+Math.cos(a)*30.7).toFixed(2),y2=(32+Math.sin(a)*30.7).toFixed(2);reed+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${K.n7}" stroke-width="0.7"/>`;}
   return `<svg${SVGNS} width="46" height="46" viewBox="0 0 64 64">`+
     `<circle cx="32" cy="32" r="30" fill="${K.n8}" stroke="${K.n7}" stroke-width="1.4"/>`+
     reed+
     `<circle cx="32" cy="32" r="27" fill="${field}"/>`+
-    `<circle cx="32" cy="32" r="24" fill="none" stroke="${K.n9}" stroke-width="1.6" stroke-dasharray="1.5 2.2"/>`+
+    `<circle cx="32" cy="32" r="24" fill="none" stroke="${K.n7}" stroke-width="1.4" stroke-dasharray="1.5 2.2"/>`+
     emblem+`</svg>`;
 }
-// playing-card pip layout (canonical 2–10); pips below mid rotated 180° for authenticity
 function pipLayout(n,sym,col){
   const P={Lt:[33,40],Ct:[46,40],Rt:[59,40],Lu:[33,54],Cu:[46,54],Ru:[59,54],Lm:[33,66],Cm:[46,66],Rm:[59,66],Ld:[33,78],Cd:[46,78],Rd:[59,78],Lb:[33,92],Cb:[46,92],Rb:[59,92]};
   const LAY={2:["Ct","Cb"],3:["Ct","Cm","Cb"],4:["Lt","Rt","Lb","Rb"],5:["Lt","Rt","Cm","Lb","Rb"],6:["Lt","Rt","Lm","Rm","Lb","Rb"],7:["Lt","Rt","Cu","Lm","Rm","Lb","Rb"],8:["Lt","Rt","Cu","Lm","Rm","Cd","Lb","Rb"],9:["Lt","Rt","Lu","Ru","Cm","Ld","Rd","Lb","Rb"],10:["Lt","Rt","Lu","Cu","Ru","Ld","Cd","Rd","Lb","Rb"]};
   const list=LAY[n];if(!list)return "";
-  return list.map(k=>{const[x,y]=P[k];const rot=y>66?` transform="rotate(180 ${x} ${y})"`:"";return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="17" font-weight="700" fill="${col}"${rot}>${sym}</text>`;}).join("");
+  return list.map(k=>{const[x,y]=P[k];const rot=y>66?` transform="rotate(180 ${x} ${y})"`:"";return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-family="Inter" font-size="17" font-weight="700" fill="${col}"${rot}>${sym}</text>`;}).join("");
 }
 function cardSVG(label){
   const s=String(label);let rk=s,suSym="";
@@ -560,13 +530,13 @@ function cardSVG(label){
   if(!suSym)return null;
   const red=(suSym==="♥"||suSym==="♦"),col=red?K.ac:K.ik,rkUp=rk.toUpperCase();
   let center;
-  if(rkUp==="A"){center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="46" font-weight="700" fill="${col}">${suSym}</text>`;}
-  else if(/^[JQK]$/.test(rkUp)){center=`<rect x="26" y="44" width="40" height="42" rx="4" fill="none" stroke="${col}" stroke-width="1.4"/><text x="46" y="60" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="46" y="79" text-anchor="middle" dominant-baseline="central" font-family="Spline Sans" font-size="15" font-weight="700" fill="${col}">${suSym}</text>`;}
+  if(rkUp==="A"){center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Inter" font-size="46" font-weight="700" fill="${col}">${suSym}</text>`;}
+  else if(/^[JQK]$/.test(rkUp)){center=`<rect x="26" y="44" width="40" height="42" rx="4" fill="none" stroke="${col}" stroke-width="1.4"/><text x="46" y="60" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="22" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="46" y="79" text-anchor="middle" dominant-baseline="central" font-family="Inter" font-size="15" font-weight="700" fill="${col}">${suSym}</text>`;}
   else if(/^[2-9]$/.test(rkUp)||rkUp==="10"){center=pipLayout(Number(rkUp),suSym,col);}
-  else{center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" fill="${col}">${esc(rkUp)}</text>`;}
-  const corner=`<text x="8" y="17" font-family="Unbounded" font-size="13" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="8" y="29" font-family="Spline Sans" font-size="11" font-weight="700" fill="${col}">${suSym}</text>`;
+  else{center=`<text x="46" y="64" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="20" fill="${col}">${esc(rkUp)}</text>`;}
+  const corner=`<text x="8" y="17" font-family="Fraunces" font-size="13" font-weight="700" fill="${col}">${esc(rkUp)}</text><text x="8" y="29" font-family="Inter" font-size="11" font-weight="700" fill="${col}">${suSym}</text>`;
   return `<svg${SVGNS} width="66" height="92" viewBox="0 0 92 128">`+
-    `<rect x="0.75" y="0.75" width="90.5" height="126.5" rx="8" fill="${K.lt}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<rect x="0.75" y="0.75" width="90.5" height="126.5" rx="8" fill="${K.b4}" stroke="${K.n7}" stroke-width="1.2"/>`+
     `<rect x="4.5" y="4.5" width="83" height="119" rx="5.5" fill="none" stroke="${K.n7}" stroke-width="0.5" opacity="0.5"/>`+
     corner+`<g transform="rotate(180 46 64)">${corner}</g>`+center+`</svg>`;
 }
@@ -575,32 +545,32 @@ function runeSVG(str){
   const nm=(s.match(/^([a-z]+)/i)||["",""])[1].toLowerCase();
   const glyph=RUNES[nm]||"ᛟ";
   const rot=reversed?` transform="rotate(180 36 40)"`:"";
-  const stoneBase=`<path d="M14 32.5 Q11 15.5 30 13.5 Q48 11.5 57 19.5 Q67 28.5 64 44.5 Q61 62.5 42 65.5 Q22 68.5 15 55.5 Q9 44.5 14 32.5 Z" fill="${K.b7}"/>`;
-  const stone=`<path d="M14 30 Q11 13 30 11 Q48 9 57 17 Q67 26 64 42 Q61 60 42 63 Q22 66 15 53 Q9 42 14 30 Z" fill="${K.b6}" stroke="${K.n7}" stroke-width="1.2"/>`;
+  const stoneBase=`<path d="M14 32.5 Q11 15.5 30 13.5 Q48 11.5 57 19.5 Q67 28.5 64 44.5 Q61 62.5 42 65.5 Q22 68.5 15 55.5 Q9 44.5 14 32.5 Z" fill="${K.pd||K.b6}"/>`;
+  const stone=`<path d="M14 30 Q11 13 30 11 Q48 9 57 17 Q67 26 64 42 Q61 60 42 63 Q22 66 15 53 Q9 42 14 30 Z" fill="${K.bn}" stroke="${K.n7}" stroke-width="1.2"/>`;
   return `<svg${SVGNS} width="50" height="62" viewBox="0 0 70 86">`+stoneBase+stone+
-    `<text x="36" y="40"${rot} text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="30" font-weight="700" fill="${K.b3}">${glyph}</text>`+
-    `<text x="35" y="74" text-anchor="middle" font-family="DM Mono" font-size="7.5" fill="${K.tx}">${esc(nm||"rune")}</text>`+
-    (reversed?`<text x="35" y="82" text-anchor="middle" font-family="DM Mono" font-size="6.5" fill="${K.ac}">rev</text>`:"")+`</svg>`;
+    `<text x="36" y="40"${rot} text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="30" font-weight="700" fill="${K.ik}">${glyph}</text>`+
+    `<text x="35" y="74" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="${K.tx}">${esc(nm||"rune")}</text>`+
+    (reversed?`<text x="35" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="${K.ac}">rev</text>`:"")+`</svg>`;
 }
 function astragalusSVG(value){
   const v=Number(value);
   const body=`<path d="M22 14 Q13 19 15 32 Q8 42 12 54 Q15 68 28 76 Q42 83 55 78 Q67 72 68 58 Q70 42 64 31 Q60 17 47 13 Q34 10 22 14 Z" fill="${K.bn}" stroke="${K.n7}" stroke-width="1.2"/>`;
-  const grooves=`<path d="M15 36 Q42 32 67 38" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.35"/><path d="M12 54 Q42 50 69 56" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.3"/>`;
+  const grooves=`<path d="M15 36 Q42 32 67 38" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.4"/><path d="M12 54 Q42 50 69 56" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.35"/>`;
   return `<svg${SVGNS} width="60" height="66" viewBox="0 0 84 92">`+body+grooves+
-    `<circle cx="42" cy="46" r="15" fill="${K.n7}" opacity="0.55"/>`+
-    `<text x="42" y="47" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(v))}</text>`+
+    `<circle cx="42" cy="46" r="15" fill="${K.b7}" opacity="0.5"/>`+
+    `<text x="42" y="47" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(v))}</text>`+
     `</svg>`;
 }
 function dominoPips(n,cx,cy,col){
   const o=13,r=3.6;
   const map={0:[],1:[[0,0]],2:[[-o,-o],[o,o]],3:[[-o,-o],[0,0],[o,o]],4:[[-o,-o],[o,-o],[-o,o],[o,o]],5:[[-o,-o],[o,-o],[0,0],[-o,o],[o,o]],6:[[-o,-o],[-o,0],[-o,o],[o,-o],[o,0],[o,o]]};
-  return (map[n]||[]).map(([dx,dy])=>`<circle cx="${cx+dx}" cy="${cy+dy}" r="${(r+1.1).toFixed(1)}" fill="${K.b7}" opacity="0.45"/><circle cx="${cx+dx}" cy="${cy+dy}" r="${r}" fill="${col}"/>`).join("");
+  return (map[n]||[]).map(([dx,dy])=>`<circle cx="${cx+dx}" cy="${cy+dy}" r="${(r+1).toFixed(1)}" fill="${K.b7}" opacity="0.45"/><circle cx="${cx+dx}" cy="${cy+dy}" r="${r}" fill="${col}"/>`).join("");
 }
 function dominoSVG(left,right){
   const L=Number(left),R=Number(right);
-  const half=(n,cx)=>(n>=0&&n<=6)?dominoPips(n,cx,30,K.ik):`<text x="${cx}" y="31" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(n))}</text>`;
+  const half=(n,cx)=>(n>=0&&n<=6)?dominoPips(n,cx,30,K.ik):`<text x="${cx}" y="31" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="22" font-weight="700" fill="${K.ik}">${esc(String(n))}</text>`;
   return `<svg${SVGNS} width="108" height="54" viewBox="0 0 120 60">`+
-    `<rect x="1.5" y="1.5" width="117" height="57" rx="7" fill="${K.lt}" stroke="${K.n7}" stroke-width="1.3"/>`+
+    `<rect x="1.5" y="1.5" width="117" height="57" rx="7" fill="${K.b4}" stroke="${K.n7}" stroke-width="1.3"/>`+
     `<rect x="3.5" y="3.5" width="113" height="53" rx="5.5" fill="none" stroke="${K.b7}" stroke-width="0.6" opacity="0.5"/>`+
     `<line x1="60" y1="9" x2="60" y2="51" stroke="${K.n7}" stroke-width="1.3"/>`+
     half(L,30)+half(R,90)+`</svg>`;
@@ -619,29 +589,30 @@ function minorPipPos(n){
   return map[n]||[];
 }
 function tarotEmblem(i){
-  const a=K.ac,b=K.b3,c=K.b4,d=K.n9,e=K.b6,f=K.lt,ik=K.ik;
+  // manuscript illumination: seal-red hero + signal-blue support, ink linework on parchment
+  const a=K.ac,b=K.bl,c=K.reef||K.bl,d=K.ps,e=K.b6,f=K.b4,ik=K.ik;
   switch(i){
-    case 0:return `<g stroke="${a}" stroke-width="1.3" stroke-linecap="round"><line x1="80" y1="50" x2="80" y2="46"/><line x1="89" y1="58" x2="93" y2="58"/><line x1="71" y1="58" x2="67" y2="58"/><line x1="74" y1="52" x2="71" y2="49"/><line x1="86" y1="52" x2="89" y2="49"/></g><circle cx="80" cy="58" r="6.5" fill="${a}"/><circle cx="80" cy="58" r="3" fill="${b}"/><path d="M12 116 L44 94 L70 116 L62 122 L16 122 Z" fill="${e}" stroke="${d}" stroke-width="1"/><line x1="22" y1="116" x2="58" y2="116" stroke="${d}" stroke-width="0.7" opacity="0.5"/><circle cx="50" cy="80" r="5" fill="${f}"/><rect x="47.5" y="85" width="5" height="15" rx="1.5" fill="${f}"/><line x1="52.5" y1="88" x2="61" y2="78" stroke="${b}" stroke-width="1.5"/><circle cx="62" cy="77" r="3" fill="${a}"/><ellipse cx="40" cy="110" rx="4" ry="2.4" fill="${b}"/>`;
-    case 1:return `<circle cx="50" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><circle cx="70" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><rect x="30" y="98" width="60" height="9" rx="2" fill="${e}" stroke="${d}" stroke-width="1"/><line x1="40" y1="98" x2="40" y2="82" stroke="${b}" stroke-width="2.2" stroke-linecap="round"/><path d="M52 98 L52 84 M49 87 L55 87" stroke="${b}" stroke-width="1.8" stroke-linecap="round"/><circle cx="64" cy="88" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="64" cy="88" r="1.2" fill="${b}"/><rect x="77" y="82" width="6" height="16" fill="none" stroke="${b}" stroke-width="1.6"/>`;
-    case 2:return `<rect x="26" y="54" width="13" height="60" rx="2" fill="${ik}"/><rect x="81" y="54" width="13" height="60" rx="2" fill="${b}"/><rect x="23" y="50" width="19" height="6" rx="1" fill="${e}"/><rect x="78" y="50" width="19" height="6" rx="1" fill="${e}"/><rect x="42" y="84" width="36" height="30" fill="${e}" opacity="0.6" stroke="${b}" stroke-width="0.7" stroke-opacity="0.5"/><line x1="51" y1="84" x2="51" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.65"/><line x1="60" y1="84" x2="60" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.65"/><line x1="69" y1="84" x2="69" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.65"/><path d="M60 80 m-10 0 a10 10 0 1 0 17 7 a8 8 0 1 1 -17 -7 Z" fill="${a}"/>`;
+    case 0:return `<g stroke="${a}" stroke-width="1.3" stroke-linecap="round"><line x1="80" y1="50" x2="80" y2="46"/><line x1="89" y1="58" x2="93" y2="58"/><line x1="71" y1="58" x2="67" y2="58"/><line x1="74" y1="52" x2="71" y2="49"/><line x1="86" y1="52" x2="89" y2="49"/></g><circle cx="80" cy="58" r="6.5" fill="${a}"/><circle cx="80" cy="58" r="3" fill="${b}"/><path d="M12 116 L44 94 L70 116 L62 122 L16 122 Z" fill="${e}" stroke="${ik}" stroke-width="1"/><line x1="22" y1="116" x2="58" y2="116" stroke="${ik}" stroke-width="0.7" opacity="0.5"/><circle cx="50" cy="80" r="5" fill="${f}"/><rect x="47.5" y="85" width="5" height="15" rx="1.5" fill="${f}"/><line x1="52.5" y1="88" x2="61" y2="78" stroke="${b}" stroke-width="1.5"/><circle cx="62" cy="77" r="3" fill="${a}"/><ellipse cx="40" cy="110" rx="4" ry="2.4" fill="${b}"/>`;
+    case 1:return `<circle cx="50" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><circle cx="70" cy="60" r="6.5" fill="none" stroke="${a}" stroke-width="2.8"/><rect x="30" y="98" width="60" height="9" rx="2" fill="${e}" stroke="${ik}" stroke-width="1"/><line x1="40" y1="98" x2="40" y2="82" stroke="${b}" stroke-width="2.2" stroke-linecap="round"/><path d="M52 98 L52 84 M49 87 L55 87" stroke="${b}" stroke-width="1.8" stroke-linecap="round"/><circle cx="64" cy="88" r="3.5" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="64" cy="88" r="1.2" fill="${b}"/><rect x="77" y="82" width="6" height="16" fill="none" stroke="${b}" stroke-width="1.6"/>`;
+    case 2:return `<rect x="26" y="54" width="13" height="60" rx="2" fill="${ik}"/><rect x="81" y="54" width="13" height="60" rx="2" fill="${b}"/><rect x="23" y="50" width="19" height="6" rx="1" fill="${e}"/><rect x="78" y="50" width="19" height="6" rx="1" fill="${e}"/><rect x="42" y="84" width="36" height="30" fill="${e}" opacity="0.7" stroke="${b}" stroke-width="0.7" stroke-opacity="0.6"/><line x1="51" y1="84" x2="51" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.7"/><line x1="60" y1="84" x2="60" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.7"/><line x1="69" y1="84" x2="69" y2="114" stroke="${b}" stroke-width="0.9" opacity="0.7"/><path d="M60 80 m-10 0 a10 10 0 1 0 17 7 a8 8 0 1 1 -17 -7 Z" fill="${a}"/>`;
     case 3:return `<g fill="${a}"><circle cx="50" cy="54" r="1.8"/><circle cx="60" cy="52" r="1.8"/><circle cx="70" cy="54" r="1.8"/></g><path d="M46 58 Q60 52 74 58" fill="none" stroke="${b}" stroke-width="1.2"/><g stroke="${b}" stroke-width="1.4" stroke-linecap="round" fill="none"><path d="M40 72 q4 -5 8 0 M44 72 q4 -5 8 0"/><line x1="42" y1="72" x2="42" y2="100"/><line x1="46" y1="72" x2="46" y2="100"/></g><circle cx="64" cy="76" r="11" fill="none" stroke="${a}" stroke-width="2.6"/><circle cx="64" cy="76" r="2.5" fill="${a}"/><line x1="64" y1="87" x2="64" y2="100" stroke="${a}" stroke-width="2.6"/><line x1="56" y1="92" x2="72" y2="92" stroke="${a}" stroke-width="2.6"/>`;
     case 4:return `<path d="M44 60 L50 54 L56 60 L60 52 L64 60 L70 54 L76 60 L76 66 L44 66 Z" fill="${a}"/><rect x="42" y="62" width="36" height="52" fill="none" stroke="${b}" stroke-width="2.4"/><rect x="42" y="62" width="36" height="6" fill="${e}"/><circle cx="60" cy="86" r="7" fill="${b}"/><rect x="58" y="93" width="4" height="13" fill="${b}"/><rect x="55" y="102" width="10" height="4" rx="1" fill="${b}"/>`;
-    case 5:return `<rect x="30" y="56" width="8" height="52" fill="${d}"/><rect x="82" y="56" width="8" height="52" fill="${d}"/><path d="M48 54 h24 v6 h-24 z M52 48 h16 v6 h-16 z M56 42 h8 v6 h-8 z" fill="${b}"/><g stroke="${a}" stroke-width="1.6" fill="none"><circle cx="54" cy="92" r="3"/><circle cx="66" cy="92" r="3"/><line x1="54" y1="95" x2="66" y2="89"/></g>`;
+    case 5:return `<rect x="30" y="56" width="8" height="52" fill="${ik}"/><rect x="82" y="56" width="8" height="52" fill="${ik}"/><path d="M48 54 h24 v6 h-24 z M52 48 h16 v6 h-16 z M56 42 h8 v6 h-8 z" fill="${b}"/><g stroke="${a}" stroke-width="1.6" fill="none"><circle cx="54" cy="92" r="3"/><circle cx="66" cy="92" r="3"/><line x1="54" y1="95" x2="66" y2="89"/></g>`;
     case 6:return `<circle cx="60" cy="54" r="6" fill="${b}"/><g stroke="${a}" stroke-width="1" stroke-linecap="round"><line x1="60" y1="45" x2="60" y2="41"/><line x1="69" y1="54" x2="73" y2="54"/><line x1="51" y1="54" x2="47" y2="54"/><line x1="66" y1="48" x2="69" y2="45"/><line x1="54" y1="48" x2="51" y2="45"/></g><circle cx="48" cy="86" r="4" fill="${f}"/><rect x="46" y="90" width="4" height="16" rx="1" fill="${f}"/><circle cx="72" cy="86" r="4" fill="${f}"/><rect x="70" y="90" width="4" height="16" rx="1" fill="${f}"/><path d="M60 96 c-5 0 -7 4 -7 6 c0 -2 -2 -6 -7 -6 c-4 0 -5 4 -5 6 c0 6 12 11 12 11 s12 -5 12 -11 c0 -2 -1 -6 -5 -6 Z" fill="${a}"/>`;
-    case 7:return `<path d="M42 58 h36 v8 h-36 z" fill="${b}"/><g fill="${a}"><circle cx="50" cy="62" r="1.2"/><circle cx="60" cy="62" r="1.2"/><circle cx="70" cy="62" r="1.2"/></g><rect x="44" y="66" width="32" height="22" rx="2" fill="${e}" stroke="${d}" stroke-width="0.8"/><path d="M34 96 Q30 86 40 82 L48 86 M86 96 Q90 86 80 82 L72 86" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="34" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="86" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/>`;
-    case 8:return `<path d="M48 54 q-6 0 -6 5 t6 5 q6 0 6 -5 t-6 -5 M72 54 q6 0 6 5 t-6 5 q-6 0 -6 -5 t6 -5" fill="none" stroke="${b}" stroke-width="2"/><circle cx="60" cy="86" r="11" fill="${a}"/><path d="M51 80 q-3 -5 -6 -2 M69 80 q3 -5 6 -2" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="56" cy="84" r="1.4" fill="${d}"/><circle cx="64" cy="84" r="1.4" fill="${d}"/><path d="M57 89 q3 3 6 0" fill="none" stroke="${d}" stroke-width="1"/>`;
-    case 9:return `<path d="M60 56 q-12 0 -14 16 q-2 14 6 26 l16 0 q8 -12 6 -26 q-2 -16 -14 -16 Z" fill="${e}" stroke="${d}" stroke-width="0.9"/><line x1="74" y1="58" x2="74" y2="108" stroke="${b}" stroke-width="2" stroke-linecap="round"/><rect x="66" y="78" width="9" height="12" rx="2" fill="${f}" stroke="${b}" stroke-width="1"/><circle cx="70.5" cy="84" r="3" fill="${a}"/>`;
+    case 7:return `<path d="M42 58 h36 v8 h-36 z" fill="${b}"/><g fill="${a}"><circle cx="50" cy="62" r="1.2"/><circle cx="60" cy="62" r="1.2"/><circle cx="70" cy="62" r="1.2"/></g><rect x="44" y="66" width="32" height="22" rx="2" fill="${e}" stroke="${ik}" stroke-width="0.8"/><path d="M34 96 Q30 86 40 82 L48 86 M86 96 Q90 86 80 82 L72 86" fill="none" stroke="${b}" stroke-width="1.6"/><circle cx="34" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="86" cy="100" r="5" fill="none" stroke="${a}" stroke-width="1.6"/>`;
+    case 8:return `<path d="M48 54 q-6 0 -6 5 t6 5 q6 0 6 -5 t-6 -5 M72 54 q6 0 6 5 t-6 5 q-6 0 -6 -5 t6 -5" fill="none" stroke="${b}" stroke-width="2"/><circle cx="60" cy="86" r="11" fill="${a}"/><path d="M51 80 q-3 -5 -6 -2 M69 80 q3 -5 6 -2" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="56" cy="84" r="1.4" fill="${f}"/><circle cx="64" cy="84" r="1.4" fill="${f}"/><path d="M57 89 q3 3 6 0" fill="none" stroke="${f}" stroke-width="1"/>`;
+    case 9:return `<path d="M60 56 q-12 0 -14 16 q-2 14 6 26 l16 0 q8 -12 6 -26 q-2 -16 -14 -16 Z" fill="${e}" stroke="${ik}" stroke-width="0.9"/><line x1="74" y1="58" x2="74" y2="108" stroke="${b}" stroke-width="2" stroke-linecap="round"/><rect x="66" y="78" width="9" height="12" rx="2" fill="${f}" stroke="${b}" stroke-width="1"/><circle cx="70.5" cy="84" r="3" fill="${a}"/>`;
     case 10:return `<circle cx="60" cy="84" r="18" fill="none" stroke="${b}" stroke-width="2.4"/><circle cx="60" cy="84" r="13" fill="none" stroke="${a}" stroke-width="1"/><circle cx="60" cy="84" r="4" fill="${e}"/><g stroke="${b}" stroke-width="1.6"><line x1="60" y1="66" x2="60" y2="102"/><line x1="42" y1="84" x2="78" y2="84"/><line x1="47" y1="71" x2="73" y2="97"/><line x1="73" y1="71" x2="47" y2="97"/></g>`;
     case 11:return `<line x1="60" y1="52" x2="60" y2="104" stroke="${b}" stroke-width="2"/><line x1="48" y1="58" x2="72" y2="58" stroke="${b}" stroke-width="1.8"/><path d="M44 64 q-6 6 0 12 q6 -6 0 -12 M76 64 q6 6 0 12 q-6 6 0 -12" fill="none" stroke="${a}" stroke-width="1.4"/><line x1="44" y1="58" x2="44" y2="64" stroke="${b}" stroke-width="1"/><line x1="76" y1="58" x2="76" y2="64" stroke="${b}" stroke-width="1"/><path d="M54 104 h12 l-2 4 h-8 z" fill="${e}"/>`;
     case 12:return `<line x1="32" y1="56" x2="88" y2="56" stroke="${b}" stroke-width="2.2" stroke-linecap="round"/><line x1="36" y1="56" x2="36" y2="112" stroke="${b}" stroke-width="1.8"/><line x1="84" y1="56" x2="84" y2="112" stroke="${b}" stroke-width="1.8"/><line x1="60" y1="56" x2="60" y2="72" stroke="${a}" stroke-width="1.8"/><g transform="rotate(180 60 92)"><rect x="58" y="78" width="4" height="16" rx="1.5" fill="${f}"/><circle cx="60" cy="74" r="4" fill="${f}"/><line x1="58" y1="82" x2="52" y2="88" stroke="${f}" stroke-width="1.6" stroke-linecap="round"/><line x1="62" y1="82" x2="68" y2="88" stroke="${f}" stroke-width="1.6" stroke-linecap="round"/></g><circle cx="60" cy="72" r="6.5" fill="none" stroke="${a}" stroke-width="1.3" opacity="0.5"/>`;
-    case 13:return `<path d="M48 72 q12 -10 24 0 q2 10 -4 14 l0 6 q-8 4 -16 0 l0 -6 q-6 -4 -4 -14 Z" fill="${f}" stroke="${d}" stroke-width="0.9"/><circle cx="54" cy="78" r="2.4" fill="${d}"/><circle cx="66" cy="78" r="2.4" fill="${d}"/><path d="M58 86 h4 M57 90 h6" stroke="${d}" stroke-width="1"/><path d="M40 100 q10 -6 22 0 q-6 6 -22 4 Z" fill="${a}"/><line x1="78" y1="58" x2="84" y2="110" stroke="${b}" stroke-width="2"/><path d="M78 58 q14 0 14 12" fill="none" stroke="${b}" stroke-width="2"/>`;
+    case 13:return `<path d="M48 72 q12 -10 24 0 q2 10 -4 14 l0 6 q-8 4 -16 0 l0 -6 q-6 -4 -4 -14 Z" fill="${f}" stroke="${ik}" stroke-width="0.9"/><circle cx="54" cy="78" r="2.4" fill="${ik}"/><circle cx="66" cy="78" r="2.4" fill="${ik}"/><path d="M58 86 h4 M57 90 h6" stroke="${ik}" stroke-width="1"/><path d="M40 100 q10 -6 22 0 q-6 6 -22 4 Z" fill="${a}"/><line x1="78" y1="58" x2="84" y2="110" stroke="${b}" stroke-width="2"/><path d="M78 58 q14 0 14 12" fill="none" stroke="${b}" stroke-width="2"/>`;
     case 14:return `<path d="M40 54 q-6 8 -14 6 M80 54 q6 8 14 6" fill="none" stroke="${b}" stroke-width="1.4"/><path d="M48 64 l-4 10 q4 4 8 0 z M72 64 l4 10 q-4 4 -8 0 z" fill="${e}"/><path d="M52 76 q8 -4 16 0 M54 82 q6 -3 12 0" fill="none" stroke="${a}" stroke-width="1.4"/><path d="M56 54 h8 l-2 4 h-4 z" fill="${a}"/>`;
     case 15:return `<path d="M44 62 L60 88 L76 62 Z" fill="${ik}"/><path d="M44 62 L38 52 M76 62 L82 52" fill="none" stroke="${a}" stroke-width="2.6" stroke-linecap="round"/><path d="M60 64 L67 74 L60 70 L53 74 Z" fill="${a}"/><circle cx="52" cy="70" r="1.4" fill="${b}"/><circle cx="68" cy="70" r="1.4" fill="${b}"/><circle cx="48" cy="94" r="4" fill="none" stroke="${b}" stroke-width="1.4"/><circle cx="72" cy="94" r="4" fill="none" stroke="${b}" stroke-width="1.4"/><path d="M52 94 h16" stroke="${b}" stroke-width="1.4"/>`;
-    case 16:return `<rect x="46" y="62" width="28" height="50" fill="${e}" stroke="${d}" stroke-width="1"/><path d="M44 62 L44 56 L49 56 L49 60 L54 60 L54 56 L60 56 L60 60 L66 60 L66 56 L71 56 L71 60 L76 60 L76 62 Z" fill="${b}"/><rect x="52" y="70" width="5" height="7" fill="${d}"/><rect x="63" y="70" width="5" height="7" fill="${d}"/><path d="M57 98 L57 112 L63 112 L63 98 Q60 94 57 98 Z" fill="${d}"/><path d="M33 42 L42 52 L36 54 L50 62" fill="none" stroke="${a}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="42" r="1.8" fill="${a}"/><circle cx="80" cy="64" r="2" fill="${a}"/><circle cx="83" cy="70" r="1.4" fill="${b}"/>`;
+    case 16:return `<rect x="46" y="62" width="28" height="50" fill="${e}" stroke="${ik}" stroke-width="1"/><path d="M44 62 L44 56 L49 56 L49 60 L54 60 L54 56 L60 56 L60 60 L66 60 L66 56 L71 56 L71 60 L76 60 L76 62 Z" fill="${b}"/><rect x="52" y="70" width="5" height="7" fill="${ik}"/><rect x="63" y="70" width="5" height="7" fill="${ik}"/><path d="M57 98 L57 112 L63 112 L63 98 Q60 94 57 98 Z" fill="${ik}"/><path d="M33 42 L42 52 L36 54 L50 62" fill="none" stroke="${a}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="42" r="1.8" fill="${a}"/><circle cx="80" cy="64" r="2" fill="${a}"/><circle cx="83" cy="70" r="1.4" fill="${b}"/>`;
     case 17:return `<g fill="${b}"><circle cx="44" cy="62" r="1.8"/><circle cx="76" cy="62" r="1.8"/><circle cx="38" cy="74" r="1.8"/><circle cx="82" cy="74" r="1.8"/><circle cx="48" cy="56" r="1.8"/><circle cx="72" cy="56" r="1.8"/><circle cx="60" cy="52" r="1.8"/></g><path d="M60 64 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.5 -7 3.5 1.5 -7.5 -5.5 -5 7.5 -1 z" fill="${a}"/><path d="M50 100 q4 4 0 8 M70 100 q-4 4 0 8" fill="none" stroke="${b}" stroke-width="1.4"/>`;
-    case 18:return `<path d="M60 58 m-10 0 a10 10 0 1 0 18 7 a7.5 7.5 0 1 1 -18 -7 Z" fill="${a}"/><circle cx="57" cy="58" r="1.2" fill="${d}"/><path d="M55 64 q3 2 6 0" stroke="${d}" stroke-width="0.8" fill="none"/><rect x="34" y="66" width="8" height="24" fill="${b}"/><rect x="78" y="66" width="8" height="24" fill="${b}"/><path d="M44 94 q8 -4 32 0 q-4 6 -32 4 Z" fill="${e}"/><ellipse cx="48" cy="92" rx="3" ry="2" fill="${b}"/><ellipse cx="72" cy="92" rx="3" ry="2" fill="${b}"/>`;
-    case 19:return `<g stroke="${a}" stroke-width="1.8" stroke-linecap="round"><line x1="60" y1="56" x2="60" y2="49"/><line x1="60" y1="92" x2="60" y2="99"/><line x1="40" y1="74" x2="33" y2="74"/><line x1="80" y1="74" x2="87" y2="74"/><line x1="46" y1="60" x2="41" y2="55"/><line x1="74" y1="60" x2="79" y2="55"/><line x1="46" y1="88" x2="41" y2="93"/><line x1="74" y1="88" x2="79" y2="93"/></g><circle cx="60" cy="74" r="11" fill="${b}"/><circle cx="56" cy="72" r="1.2" fill="${d}"/><circle cx="64" cy="72" r="1.2" fill="${d}"/><path d="M56 78 q4 3 8 0" stroke="${d}" stroke-width="0.9" fill="none"/><rect x="34" y="98" width="52" height="5" fill="${e}"/><g fill="${a}"><circle cx="40" cy="98" r="2.5"/><circle cx="80" cy="98" r="2.5"/></g>`;
-    case 20:return `<circle cx="60" cy="60" r="5" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="60" cy="66" r="2.8" fill="${f}"/><path d="M57 68 Q44 62 37 72 Q46 75 58 73 Z" fill="${a}"/><path d="M63 68 Q76 62 83 72 Q74 75 62 73 Z" fill="${a}"/><path d="M53 78 L48 104 L56 108 L64 108 L72 104 L67 78 Z" fill="${b}" stroke="${d}" stroke-width="0.8"/><ellipse cx="60" cy="107" rx="13.5" ry="3.4" fill="none" stroke="${a}" stroke-width="2.2"/><line x1="55" y1="76" x2="65" y2="76" stroke="${a}" stroke-width="2.2" stroke-linecap="round"/>`;
+    case 18:return `<path d="M60 58 m-10 0 a10 10 0 1 0 18 7 a7.5 7.5 0 1 1 -18 -7 Z" fill="${a}"/><circle cx="57" cy="58" r="1.2" fill="${f}"/><path d="M55 64 q3 2 6 0" stroke="${f}" stroke-width="0.8" fill="none"/><rect x="34" y="66" width="8" height="24" fill="${b}"/><rect x="78" y="66" width="8" height="24" fill="${b}"/><path d="M44 94 q8 -4 32 0 q-4 6 -32 4 Z" fill="${e}"/><ellipse cx="48" cy="92" rx="3" ry="2" fill="${b}"/><ellipse cx="72" cy="92" rx="3" ry="2" fill="${b}"/>`;
+    case 19:return `<g stroke="${a}" stroke-width="1.8" stroke-linecap="round"><line x1="60" y1="56" x2="60" y2="49"/><line x1="60" y1="92" x2="60" y2="99"/><line x1="40" y1="74" x2="33" y2="74"/><line x1="80" y1="74" x2="87" y2="74"/><line x1="46" y1="60" x2="41" y2="55"/><line x1="74" y1="60" x2="79" y2="55"/><line x1="46" y1="88" x2="41" y2="93"/><line x1="74" y1="88" x2="79" y2="93"/></g><circle cx="60" cy="74" r="11" fill="${b}"/><circle cx="56" cy="72" r="1.2" fill="${f}"/><circle cx="64" cy="72" r="1.2" fill="${f}"/><path d="M56 78 q4 3 8 0" stroke="${f}" stroke-width="0.9" fill="none"/><rect x="34" y="98" width="52" height="5" fill="${e}"/><g fill="${a}"><circle cx="40" cy="98" r="2.5"/><circle cx="80" cy="98" r="2.5"/></g>`;
+    case 20:return `<circle cx="60" cy="60" r="5" fill="none" stroke="${a}" stroke-width="1.6"/><circle cx="60" cy="66" r="2.8" fill="${f}"/><path d="M57 68 Q44 62 37 72 Q46 75 58 73 Z" fill="${a}"/><path d="M63 68 Q76 62 83 72 Q74 75 62 73 Z" fill="${a}"/><path d="M53 78 L48 104 L56 108 L64 108 L72 104 L67 78 Z" fill="${b}" stroke="${ik}" stroke-width="0.8"/><ellipse cx="60" cy="107" rx="13.5" ry="3.4" fill="none" stroke="${a}" stroke-width="2.2"/><line x1="55" y1="76" x2="65" y2="76" stroke="${a}" stroke-width="2.2" stroke-linecap="round"/>`;
     case 21:return `<ellipse cx="60" cy="84" rx="22" ry="26" fill="none" stroke="${b}" stroke-width="2.2"/><ellipse cx="60" cy="84" rx="17" ry="21" fill="none" stroke="${a}" stroke-width="1" opacity="0.7"/><path d="M60 72 q-6 0 -6 6 q0 6 6 12 q6 -6 6 -12 q0 -6 -6 -6 Z" fill="${a}"/><g fill="${b}"><circle cx="40" cy="60" r="2.5"/><circle cx="80" cy="60" r="2.5"/><circle cx="40" cy="108" r="2.5"/><circle cx="80" cy="108" r="2.5"/></g>`;
     default:return `<circle cx="60" cy="80" r="12" fill="none" stroke="${b}" stroke-width="2"/>`;
   }
@@ -651,9 +622,9 @@ function tarotSVG(name,upright){
   const idx=MAJOR.indexOf(nm);
   let inner;
   if(idx>=0){
-    inner=`<path d="M60 48 q-24 0 -24 36 q0 36 24 36 q24 0 24 -36 q0 -36 -24 -36 Z" fill="${K.b6}" fill-opacity="0.45" stroke="${K.b3}" stroke-width="0.8"/>`+
+    inner=`<path d="M60 48 q-24 0 -24 36 q0 36 24 36 q24 0 24 -36 q0 -36 -24 -36 Z" fill="${K.ps}" fill-opacity="0.6" stroke="${K.bl}" stroke-width="0.8"/>`+
       tarotEmblem(idx)+
-      `<text x="60" y="40" text-anchor="middle" font-family="Unbounded" font-size="11" font-weight="700" fill="${K.ac}">${ROMAN[idx]||""}</text>`;
+      `<text x="60" y="40" text-anchor="middle" font-family="Fraunces" font-size="12" font-weight="700" fill="${K.ac}">${ROMAN[idx]||""}</text>`;
   }else{
     let art="";
     const mm=nm.match(/^(.+?)\s+of\s+(\w+)\s*$/i);
@@ -662,21 +633,21 @@ function tarotSVG(name,upright){
       const suitKey=({wands:"wands",wand:"wands",cups:"cups",cup:"cups",swords:"swords",sword:"swords",pentacles:"pentacles",pentacle:"pentacles",coins:"pentacles",coin:"pentacles"})[(mm[2]||"").toLowerCase()]||"";
       const court=/^(page|knight|queen|king)$/i.test(what);
       if(court){
-        art=`<rect x="38" y="56" width="44" height="44" fill="none" stroke="${K.b3}" stroke-width="1.6"/><text x="60" y="76" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" font-weight="700" fill="${K.ac}">${esc(what[0].toUpperCase())}</text>`+(suitKey?tarotSuit(suitKey,60,108,K.b3,0.7):"");
+        art=`<rect x="38" y="56" width="44" height="44" fill="none" stroke="${K.bl}" stroke-width="1.6"/><text x="60" y="76" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="20" font-weight="700" fill="${K.ac}">${esc(what[0].toUpperCase())}</text>`+(suitKey?tarotSuit(suitKey,60,108,K.bl,0.7):"");
       }else{
         const numMap={ace:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
         let n=numMap[what.toLowerCase()];if(n==null&&/^\d+$/.test(what))n=Number(what);
-        if(n!=null&&suitKey){art=n===1?tarotSuit(suitKey,60,82,K.b3,1.4):minorPipPos(n).map(([x,y])=>tarotSuit(suitKey,x,y,K.b3,0.6)).join("");}
-        else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="14" fill="${K.b3}">${esc(what)}</text>`;}
+        if(n!=null&&suitKey){art=n===1?tarotSuit(suitKey,60,82,K.bl,1.4):minorPipPos(n).map(([x,y])=>tarotSuit(suitKey,x,y,K.bl,0.6)).join("");}
+        else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="14" fill="${K.bl}">${esc(what)}</text>`;}
       }
-    }else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="12" fill="${K.b3}">${esc(nm)}</text>`;}
+    }else{art=`<text x="60" y="82" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="12" fill="${K.bl}">${esc(nm)}</text>`;}
     inner=art;
   }
   const wrap=up?inner:`<g transform="rotate(180 60 84)">${inner}</g>`;
-  const cardName=`<text x="60" y="156" text-anchor="middle" font-family="Unbounded" font-size="${nm.length>16?6.5:7.5}" fill="${K.tx}">${esc(nm)}</text>`;
+  const cardName=`<text x="60" y="156" text-anchor="middle" font-family="Fraunces" font-size="${nm.length>16?6.5:7.5}" fill="${K.ik}">${esc(nm)}</text>`;
   return `<svg${SVGNS} width="88" height="124" viewBox="0 0 120 168">`+
     `<rect x="1" y="1" width="118" height="166" rx="9" fill="${K.n9}" stroke="${K.n7}" stroke-width="1.3"/>`+
-    `<rect x="6" y="6" width="108" height="156" rx="6" fill="none" stroke="${K.b3}" stroke-width="1"/><rect x="8.5" y="8.5" width="103" height="151" rx="4.5" fill="none" stroke="${K.ac}" stroke-width="0.6"/>`+
+    `<rect x="6" y="6" width="108" height="156" rx="6" fill="none" stroke="${K.bl}" stroke-width="1"/><rect x="8.5" y="8.5" width="103" height="151" rx="4.5" fill="none" stroke="${K.ac}" stroke-width="0.6"/>`+
     wrap+cardName+`</svg>`;
 }
 function annularWedge(cx,cy,R,r,a0,a1){
@@ -691,52 +662,52 @@ function wheelSVG(number,color,variant){
   for(let i=0;i<n;i++){
     const num=EU_ORDER[i];
     const a0=(i/n)*Math.PI*2-Math.PI/2-Math.PI/n,a1=a0+(Math.PI*2)/n,amid=(a0+a1)/2;
-    const fill=num===0?K.b6:(RED_SET.has(num)?K.ac:K.n9);
+    const fill=num===0?K.lf:(RED_SET.has(num)?K.ac:K.ik);
     const isWin=num===win;
-    wedges+=`<path d="${annularWedge(cx,cy,R,r,a0,a1)}" fill="${fill}" stroke="${K.n7}" stroke-width="${isWin?2.2:0.6}"/>`;
+    wedges+=`<path d="${annularWedge(cx,cy,R,r,a0,a1)}" fill="${fill}" stroke="${K.n9}" stroke-width="${isWin?2.2:0.6}"/>`;
     const lr=(R+r)/2,lx=cx+Math.cos(amid)*lr,ly=cy+Math.sin(amid)*lr;
-    labels+=`<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-family="DM Mono" font-size="5.5" fill="${K.tx}">${num}</text>`;
-    if(isWin){const bx=cx+Math.cos(amid)*(R-4),by=cy+Math.sin(amid)*(R-4);wedges+=`<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="3" fill="${K.tx}" stroke="${K.ik}" stroke-width="0.8"/>`;}
+    labels+=`<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono" font-size="5.5" font-weight="500" fill="${K.n9}">${num}</text>`;
+    if(isWin){const bx=cx+Math.cos(amid)*(R-4),by=cy+Math.sin(amid)*(R-4);wedges+=`<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="3" fill="${K.n9}" stroke="${K.ik}" stroke-width="0.8"/>`;}
   }
   return `<svg${SVGNS} width="200" height="200" viewBox="0 0 124 124">`+
-    `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="${K.ik}" stroke-width="1.2"/>`+
     wedges+labels+
-    `<circle cx="${cx}" cy="${cy}" r="${r-1}" fill="${K.n9}" stroke="${K.n7}" stroke-width="0.8"/>`+
-    `<circle cx="${cx}" cy="${cy}" r="7" fill="${K.b5}" stroke="${K.n7}" stroke-width="0.8"/>`+
+    `<circle cx="${cx}" cy="${cy}" r="${r-1}" fill="${K.ps}" stroke="${K.ik}" stroke-width="0.8"/>`+
+    `<circle cx="${cx}" cy="${cy}" r="7" fill="${K.ik}" stroke="${K.ik}" stroke-width="0.8"/>`+
     `</svg>`;
 }
 function ballSVG(number,accent){
   const ring=accent?`<circle cx="28" cy="28" r="27" fill="none" stroke="${K.ac}" stroke-width="2"/>`:"";
   return `<svg${SVGNS} width="46" height="46" viewBox="0 0 56 56">`+ring+
     `<circle cx="28" cy="28" r="25" fill="${K.b5}" stroke="${K.n7}" stroke-width="1.2"/>`+
-    `<ellipse cx="21" cy="20" rx="12" ry="8" fill="${K.b3}" opacity="0.35"/>`+
-    `<text x="28" y="30" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="18" font-weight="700" fill="${K.lt}">${esc(String(number))}</text>`+
+    `<ellipse cx="21" cy="20" rx="12" ry="8" fill="${K.b4}" opacity="0.45"/>`+
+    `<text x="28" y="30" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="18" font-weight="700" fill="${K.ik}">${esc(String(number))}</text>`+
     `</svg>`;
 }
 function cowrieSVG(open){
   const o=!!open;
-  const body=`<path d="M6 25 Q8 8 30 6 Q52 8 54 25 Q52 42 30 44 Q8 42 6 25 Z" fill="${o?K.ac:K.b6}" stroke="${K.n7}" stroke-width="1"/>`;
+  const body=`<path d="M6 25 Q8 8 30 6 Q52 8 54 25 Q52 42 30 44 Q8 42 6 25 Z" fill="${o?K.ac:K.bn}" stroke="${K.n7}" stroke-width="1"/>`;
   let slit;
   if(o){let lines="";for(let i=0;i<7;i++){const t=i/6,x=12+t*36,yc=25-Math.sin(t*Math.PI)*3;lines+=`<line x1="${x.toFixed(1)}" y1="${(yc-4).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(yc+4).toFixed(1)}" stroke="${K.n9}" stroke-width="1.2" stroke-linecap="round"/>`;}slit=lines;}
-  else{slit=`<path d="M12 25 Q30 19 48 25" fill="none" stroke="${K.n9}" stroke-width="3" opacity="0.25"/>`;}
-  return `<svg${SVGNS} width="44" height="36" viewBox="0 0 60 50">`+body+`<path d="M9 40 Q30 48 51 40" fill="none" stroke="${K.n9}" stroke-width="2.5" opacity="0.16"/>`+slit+`</svg>`;
+  else{slit=`<path d="M12 25 Q30 19 48 25" fill="none" stroke="${K.n7}" stroke-width="3" opacity="0.3"/>`;}
+  return `<svg${SVGNS} width="44" height="36" viewBox="0 0 60 50">`+body+`<path d="M9 40 Q30 48 51 40" fill="none" stroke="${K.n7}" stroke-width="2.5" opacity="0.2"/>`+slit+`</svg>`;
 }
 function dreidelSVG(str){
   const glyph=(String(str).match(/^[\u0590-\u05FF a-zA-Z]/)||["?"])[0].trim()||"?";
   return `<svg${SVGNS} width="54" height="70" viewBox="0 0 70 90">`+
-    `<rect x="30" y="6" width="10" height="8" fill="${K.b7}" stroke="${K.n7}" stroke-width="1"/>`+
-    `<polygon points="16,16 54,16 54,52 16,52" fill="${K.b6}" stroke="${K.n7}" stroke-width="1.2"/>`+
-    `<polygon points="16,16 24,16 24,52 16,52" fill="${K.b7}"/>`+
-    `<polygon points="16,52 54,52 35,80" fill="${K.b7}" stroke="${K.n7}" stroke-width="1.2"/>`+
-    `<text x="35" y="36" text-anchor="middle" dominant-baseline="central" font-family="Unbounded" font-size="20" font-weight="700" fill="${K.lt}">${esc(glyph)}</text>`+
+    `<rect x="30" y="6" width="10" height="8" fill="${K.b6}" stroke="${K.n7}" stroke-width="1"/>`+
+    `<polygon points="16,16 54,16 54,52 16,52" fill="${K.bn}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<polygon points="16,16 24,16 24,52 16,52" fill="${K.b6}"/>`+
+    `<polygon points="16,52 54,52 35,80" fill="${K.b6}" stroke="${K.n7}" stroke-width="1.2"/>`+
+    `<text x="35" y="36" text-anchor="middle" dominant-baseline="central" font-family="Fraunces" font-size="20" font-weight="700" fill="${K.ik}">${esc(glyph)}</text>`+
     `</svg>`;
 }
 function ichingSVG(lines){
   const barW=100,x0=20,barH=9,gap=5,rows=(lines||[]).slice().reverse();
   let y=6,out="";
   rows.forEach((l,i)=>{
-    if(l.yang){out+=`<rect x="${x0}" y="${y}" width="${barW}" height="${barH}" rx="1.5" fill="${K.b4}"/>`;}
-    else{const segW=(barW-14)/2;out+=`<rect x="${x0}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.b4}"/><rect x="${(x0+segW+14).toFixed(1)}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.b4}"/>`;}
+    if(l.yang){out+=`<rect x="${x0}" y="${y}" width="${barW}" height="${barH}" rx="1.5" fill="${K.ik}"/>`;}
+    else{const segW=(barW-14)/2;out+=`<rect x="${x0}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.ik}"/><rect x="${(x0+segW+14).toFixed(1)}" y="${y}" width="${segW.toFixed(1)}" height="${barH}" rx="1.5" fill="${K.ik}"/>`;}
     if(l.changing){out+=`<circle cx="${x0+barW+8}" cy="${y+barH/2}" r="3.2" fill="none" stroke="${K.ac}" stroke-width="1.6"/>`;}
     y+=barH+gap;
     if(i===2)y+=6;
@@ -745,31 +716,28 @@ function ichingSVG(lines){
   return `<svg${SVGNS} width="150" height="${h.toFixed(0)}" viewBox="0 0 150 ${h.toFixed(0)}">${out}</svg>`;
 }
 function sparkSVG(svg,vals,color){
-  if(!vals.length){svg.innerHTML=`<line x1="3" y1="28" x2="93" y2="28" stroke="${color}" stroke-width="1.2" stroke-dasharray="1.5 3" stroke-linecap="round" opacity="0.4"/>`;return;}
-  const W=96,H=34,n=vals.length;
+  if(!vals.length){svg.innerHTML=`<line x1="3" y1="21" x2="81" y2="21" stroke="${color}" stroke-width="1.2" stroke-dasharray="1.5 3" stroke-linecap="round" opacity="0.4"/>`;return;}
+  const W=84,H=26,n=vals.length;
   const mn=Math.min(...vals),mx=Math.max(...vals),span=(mx-mn)||1;
   const pad=span<1e-9?H/2:3;
   const pts=vals.map((v,i)=>{const x=n===1?W/2:(i/(n-1))*W;const y=H-pad-((v-mn)/span)*(H-pad*2);return `${x.toFixed(1)},${y.toFixed(1)}`;}).join(" ");
-  const area=n>1?`<polygon fill="${color}" points="0,${H} ${pts} ${W},${H}" opacity="0.12"/>`:"";
+  const area=n>1?`<polygon fill="${color}" points="0,${H} ${pts} ${W},${H}" opacity="0.14"/>`:"";
   svg.innerHTML=area+`<polyline fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>`+
     (n>1?`<circle cx="${(W).toFixed(1)}" cy="${pts.split(' ').pop().split(',')[1]}" r="2" fill="${color}"/>`:"");
 }
 function bitsGrid(hex){
-  // hex string → bit cells (8 per byte)
   const clean=hex.replace(/[^0-9a-fA-F]/g,"");
   const bytes=[];for(let i=0;i+1<clean.length;i+=2)bytes.push(parseInt(clean.slice(i,i+2),16));
-  const wrap=document.createDocumentFragment();
   const grid=node("div","bitgrid");
   const perRow=Math.min(32,Math.max(8,bytes.length*2));let cells=0;
   grid.style.gridTemplateColumns=`repeat(${perRow},11px)`;
   bytes.forEach(b=>{for(let j=7;j>=0;j--){const on=(b>>j)&1;const c=node("span","b "+(on?"on":"off"));grid.appendChild(c);cells++;}});
-  // density caption
   const ones=bytes.reduce((a,b)=>a+Array.from({length:8}).filter((_,j)=>(b>>j)&1).length,0);
   const total=bytes.length*8;
   return {grid,ones,total};
 }
 
-/* ===== renderers R (graphical objects first, text last) ===== */
+/* ===== renderers ===== */
 const R={
   dice(r){
     eRes.appendChild(node("div","sig-num",String(r.total)));
@@ -808,11 +776,13 @@ const R={
   mono(r){eRes.appendChild(node("div","sig-mono",String(r)));},
   list(r){const a=Array.isArray(r)?r:[r];if(!a.length){eRes.appendChild(empty("no results"));return;}eRes.appendChild(mkChips(a.map(s=>({txt:String(s)}))));},
   tarot(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
-    a.forEach(c=>row.appendChild(wrapHTML(tarotSVG(c.name,c.upright),"tw")));eRes.appendChild(row);},
+    a.forEach(c=>{const w=node("div","tarot");w.appendChild(wrapHTML(tarotSVG(c.name,c.upright),"tw"));w.appendChild(node("div","nm",c.name));w.appendChild(node("div","ori "+(c.upright?"up":"rev"),c.upright?"upright":"reversed"));row.appendChild(w);});eRes.appendChild(row);},
   dominoes(r){const a=Array.isArray(r)?r:[r];const row=node("div","row");
     a.forEach(d=>row.appendChild(wrapHTML(dominoSVG(d.left,d.right),"dw")));eRes.appendChild(row);},
-  roulette(r){eRes.appendChild(wrapHTML(wheelSVG(r.number,r.color,r.variant),"wheelw"));
-    eRes.appendChild(node("div","sub",`${esc(String(r.color))} · ${esc(String(r.variant))} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`));},
+  roulette(r){const col=String(r.color);const hex=col==="green"?K.lf:col==="red"?K.ac:K.ik;
+    const big=node("div","sig-num",String(r.number));big.style.color=hex;eRes.appendChild(big);
+    eRes.appendChild(wrapHTML(wheelSVG(r.number,r.color,r.variant),"wheelw"));
+    eRes.appendChild(node("div","sub",`${esc(col)} · ${esc(String(r.variant))} · house edge ${Number(r.house_edge_percent).toFixed(2)}%`));},
   lottery(r){const row=node("div","row");(r.numbers||[]).forEach(n=>row.appendChild(wrapHTML(ballSVG(n),"bw")));eRes.appendChild(row);
     if(r.bonus!=null){const w=node("div","row");w.style.alignItems="center";w.style.gap="var(--s2)";
       w.appendChild(node("span","sub","bonus"));w.appendChild(wrapHTML(ballSVG(r.bonus,true),"bwb"));eRes.appendChild(w);}},
@@ -832,23 +802,21 @@ const R={
   iching(r){const ic=node("div","ic");const hex=node("div");hex.innerHTML=ichingSVG(r.lines||[]);
     ic.appendChild(hex);ic.appendChild(node("div","nm",`${r.primary} — ${r.primary_name}`));
     if(r.transformed)ic.appendChild(node("div","sub",`→ transforming to ${r.transformed}`));eRes.appendChild(ic);},
-  default(r){eRes.appendChild(node("div","sig-mono",typeof r==="string"?r:JSON.stringify(r,null,2)));}
+  default(r){eRes.appendChild(node("div","sig-mono",typeof r==="string"?r:JSON.stringify(r,null,2)));},
 };
 function render(result,prov){eRes.innerHTML="";(R[current.r]||R.default)(result);if(prov&&Object.keys(prov).length)renderProv(prov);eCopy.hidden=false;}
+const NUMERIC_DIST=new Set(["roll","flip","int","knucklebones","lottery"]);
 
 /* ===== session tracking: sparklines + distribution ===== */
 function track(prov,result){
-  // sparklines
   if(prov.entropy_bits!=null){entHist.push(Number(prov.entropy_bits));if(entHist.length>SPARK_MAX)entHist.shift();
     eEnt.classList.remove("idle");eEnt.innerHTML=Number(prov.entropy_bits).toFixed(1)+"<small>bits</small>";}
   if(prov.latency_ms!=null){latHist.push(Number(prov.latency_ms));if(latHist.length>SPARK_MAX)latHist.shift();
     eLat.classList.remove("idle");eLat.innerHTML=Number(prov.latency_ms).toFixed(2)+"<small>ms</small>";}
   sparkSVG(eSpkEnt,entHist,"var(--series-1)");sparkSVG(eSpkLat,latHist,"var(--series-2)");
-  // distribution (only for methods with comparable categorical/numeric output)
   if(NUMERIC_DIST.has(current.key))feedDist(result);
 }
 function distCats(result){
-  // returns array of string categories for this draw
   switch(current.key){
     case "flip":return(Array.isArray(result)?result:[result]).map(s=>/head/i.test(s)?"heads":"tails");
     case "roll":return(result.rolls||[]).map(d=>String(d.value));
@@ -865,7 +833,6 @@ function renderDist(){
   const keys=Object.keys(dist);const n=keys.reduce((a,k)=>a+dist[k],0);
   if(n<2){eViz.hidden=true;return;}
   eViz.hidden=false;eVizN.textContent=String(n);
-  // numeric keys → sort numerically & cap bins; else by count desc
   let entries=keys.map(k=>[k,dist[k]]);
   const allNum=entries.every(e=>/^-?\d+$/.test(e[0]));
   if(allNum){entries.sort((a,b)=>Number(a[0])-Number(b[0]));
@@ -877,24 +844,21 @@ function renderDist(){
     col.appendChild(node("span","cnt",String(e[1])));
     const bar=node("div","bar"+(i%2?" alt":""));bar.style.height=(e[1]/max*100).toFixed(1)+"%";col.appendChild(bar);
     col.appendChild(node("span","cat",e[0]));eVizBars.appendChild(col);});
-  // caption: fairness takeaway
   const counts=entries.map(e=>e[1]);const lo=Math.min(...counts),hi=Math.max(...counts),mean=n/entries.length;
   eVizCap.textContent=`${entries.length} bucket${entries.length>1?"s":""} · range ${lo}–${hi} of mean ${mean.toFixed(1)} · ${hi-lo<=Math.max(1,mean*0.25)?"tight → looks uniform":"spread → small-sample noise"}`;
-  // accessible table
   eVizTbl.innerHTML="<caption>Session distribution</caption>";
   const trh=node("tr");["bucket","count"].forEach(h=>trh.appendChild(node("th",null,h)));eVizTbl.appendChild(trh);
   entries.forEach(e=>{const tr=node("tr");tr.appendChild(node("td",null,e[0]));tr.appendChild(node("td",null,String(e[1])));eVizTbl.appendChild(tr);});
 }
-
 function renderProv(p){const rows=[["source",p.source],["kind",p.source_kind],["entropy",p.entropy_bits!=null?Number(p.entropy_bits).toFixed(1)+" bits":null],["latency",p.latency_ms!=null?Number(p.latency_ms).toFixed(2)+" ms":null],["seed",p.seed||"—"],["request",p.request_id],["time",p.timestamp]].filter(r=>r[1]!=null);
   ePgrid.innerHTML="";rows.forEach(([k,v])=>{const c=node("div","pcell");c.innerHTML=`<div class="k">${k}</div><div class="v">${esc(String(v))}</div>`;ePgrid.appendChild(c);});eProv.hidden=false;}
 function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
 function wrapHTML(html,cls){const d=document.createElement("span");if(cls)d.className=cls;d.innerHTML=html;return d;}
 function mkChips(items){const c=node("div","chips");items.forEach(it=>{const s=node("span","chip"+(it.cls?" "+it.cls:""));s.textContent=it.txt;if(it.badge){const b=node("span","badge",it.badge);s.appendChild(b);}c.appendChild(s);});return c;}
-function empty(t){const e=node("div","empty");const a=K.ac,b=K.b4,c=K.b5;
+function empty(t){const e=node("div","empty");const a=K.ac;
   e.innerHTML=`<div class="reticle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">`+
-    `<circle cx="60" cy="60" r="50" fill="none" stroke="${c}" stroke-width="1" opacity="0.45"/>`+
-    `<circle cx="60" cy="60" r="34" fill="none" stroke="${b}" stroke-width="1.3" opacity="0.7"/>`+
+    `<circle cx="60" cy="60" r="50" fill="none" stroke="${K.n7}" stroke-width="1" opacity="0.6"/>`+
+    `<circle cx="60" cy="60" r="34" fill="none" stroke="${K.ik}" stroke-width="1.3" opacity="0.75"/>`+
     `<circle cx="60" cy="60" r="3.6" fill="${a}"/>`+
     `<g stroke="${a}" stroke-width="1.5" stroke-linecap="round">`+
     `<line x1="60" y1="8" x2="60" y2="20"/><line x1="60" y1="100" x2="60" y2="112"/>`+
@@ -902,13 +866,13 @@ function empty(t){const e=node("div","empty");const a=K.ac,b=K.b4,c=K.b5;
     `<line x1="26" y1="26" x2="33" y2="33"/><line x1="87" y1="87" x2="94" y2="94"/>`+
     `<line x1="94" y1="26" x2="87" y2="33"/><line x1="33" y1="87" x2="26" y2="94"/></g>`+
     `</svg></div>`+
-    `<div class="eye">awaiting roll</div>`+
+    `<div class="eye">awaiting the cast</div>`+
     `<div class="msg">${esc(t)}</div>`+
     `<div class="note">Every byte is rolled live by <code>chance</code> — then visualized.</div>`;
   return e;}
 function resetOut(){
-  eRes.innerHTML="";eRes.appendChild(empty("Pick a method and press Generate."));
-  eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="Enter to generate";lastRaw=null;
+  eRes.innerHTML="";eRes.appendChild(empty("Pick a method and cast."));
+  eProv.hidden=true;eCopy.hidden=true;eViz.hidden=true;eHint.textContent="Enter to cast";lastRaw=null;
   eEnt.textContent="armed";eLat.textContent="armed";eEnt.classList.add("idle");eLat.classList.add("idle");
   entHist=[];latHist=[];dist={};sparkSVG(eSpkEnt,[],"var(--series-1)");sparkSVG(eSpkLat,[],"var(--series-2)");
 }
