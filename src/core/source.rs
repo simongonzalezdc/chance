@@ -12,6 +12,8 @@ pub enum SourceError {
     InvalidSource(String),
     #[error("unsupported operation for source {src}: {operation}")]
     UnsupportedOperation { src: String, operation: String },
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
 }
 
 /// A generic source of randomness.

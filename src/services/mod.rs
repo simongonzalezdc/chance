@@ -8,6 +8,23 @@ use crate::sources::create_source;
 use dto::*;
 use std::time::Instant;
 
+/// Enforce a server-side cap on an untrusted request field. Rejects before any
+/// allocation or source work runs so attacker-controlled bounds cannot drive
+/// loops or allocations.
+fn require_in_range<T: PartialOrd + std::fmt::Display>(
+    name: &str,
+    val: T,
+    lo: T,
+    hi: T,
+) -> Result<(), SourceError> {
+    if val < lo || val > hi {
+        return Err(SourceError::InvalidInput(format!(
+            "{name} {val} is out of range {lo}..={hi}"
+        )));
+    }
+    Ok(())
+}
+
 pub fn make_source(req: &SourceRequest) -> Result<Box<dyn Source>, SourceError> {
     let name = req.source.as_deref().unwrap_or("os-csprng");
     create_source(name, req.seed.as_deref())
@@ -69,6 +86,7 @@ fn entropy_bits_dice(notation: &str) -> f64 {
 }
 
 pub fn roll(req: &RollRequest) -> Result<ApiResponse<RollResultDto>, SourceError> {
+    require_in_range("notation_len", req.notation.len(), 1usize, 256usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let result = roll_dice(source.as_mut(), &req.notation)?;
@@ -98,6 +116,7 @@ pub fn roll(req: &RollRequest) -> Result<ApiResponse<RollResultDto>, SourceError
 }
 
 pub fn flip(req: &FlipRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    require_in_range("times", req.times, 1u64, 1_000_000u64)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let flips = flip_n(source.as_mut(), req.times)?;
@@ -111,6 +130,7 @@ pub fn flip(req: &FlipRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
 }
 
 pub fn draw(req: &DrawRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    require_in_range("count", req.count, 1usize, 52usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let cards = draw_cards(source.as_mut(), req.count)?;
@@ -128,6 +148,22 @@ pub fn draw(req: &DrawRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
 }
 
 pub fn pick(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    if req.items.is_empty() {
+        return Err(SourceError::InvalidInput("cannot pick from an empty list".to_string()));
+    }
+    if req.items.len() > 100_000 {
+        return Err(SourceError::InvalidInput(format!(
+            "cannot pick from {} items (max 100000)",
+            req.items.len()
+        )));
+    }
+    if req.count < 1 || req.count > req.items.len() {
+        return Err(SourceError::InvalidInput(format!(
+            "cannot pick {} from {} available items",
+            req.count,
+            req.items.len()
+        )));
+    }
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let winners = pick_distinct(source.as_mut(), &req.items, req.count)?;
@@ -144,6 +180,7 @@ pub fn pick(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
 }
 
 pub fn shuffle(req: &ShuffleRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    require_in_range("items_len", req.items.len(), 0usize, 100_000usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let mut items = req.items.clone();
@@ -174,6 +211,7 @@ pub fn integer(req: &IntRequest) -> Result<ApiResponse<i64>, SourceError> {
 }
 
 pub fn bytes(req: &BytesRequest) -> Result<ApiResponse<String>, SourceError> {
+    require_in_range("count", req.count, 1usize, 1_048_576usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let bytes = random_bytes(source.as_mut(), req.count)?;
@@ -203,6 +241,7 @@ pub fn uuid(req: &UuidRequest) -> Result<ApiResponse<String>, SourceError> {
 }
 
 pub fn password(req: &PasswordRequest) -> Result<ApiResponse<String>, SourceError> {
+    require_in_range("length", req.length, 1usize, 1024usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let options = PasswordOptions {
@@ -225,6 +264,7 @@ pub fn password(req: &PasswordRequest) -> Result<ApiResponse<String>, SourceErro
 }
 
 pub fn runes(req: &RunesRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    require_in_range("count", req.count, 1usize, 24usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let runes = draw_runes(source.as_mut(), req.count)?;
@@ -266,6 +306,7 @@ pub fn iching(req: &IchingRequest) -> Result<ApiResponse<IchingResultDto>, Sourc
 }
 
 pub fn tarot(req: &TarotRequest) -> Result<ApiResponse<Vec<TarotCardDto>>, SourceError> {
+    require_in_range("count", req.count, 1usize, 78usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let cards = draw_tarot(source.as_mut(), req.count)?;
@@ -285,6 +326,8 @@ pub fn tarot(req: &TarotRequest) -> Result<ApiResponse<Vec<TarotCardDto>>, Sourc
 }
 
 pub fn dominoes(req: &DominoesRequest) -> Result<ApiResponse<Vec<DominoDto>>, SourceError> {
+    require_in_range("set", req.set, 0u8, 18u8)?;
+    require_in_range("count", req.count, 1usize, 1000usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let dominoes = draw_dominoes(source.as_mut(), req.set, req.count)?;
@@ -328,6 +371,11 @@ pub fn roulette(req: &RouletteRequest) -> Result<ApiResponse<RouletteResultDto>,
 }
 
 pub fn lottery(req: &LotteryRequest) -> Result<ApiResponse<LotteryResultDto>, SourceError> {
+    require_in_range("pool", req.pool, 1u8, 99u8)?;
+    require_in_range("pick", req.pick, 1usize, 20usize)?;
+    if let Some(bonus_pool) = req.bonus_pool {
+        require_in_range("bonus_pool", bonus_pool, 1u8, 99u8)?;
+    }
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let result = draw_lottery(source.as_mut(), req.pool, req.pick, req.bonus_pool)?;
@@ -349,6 +397,7 @@ pub fn lottery(req: &LotteryRequest) -> Result<ApiResponse<LotteryResultDto>, So
 }
 
 pub fn knucklebones(req: &KnucklebonesRequest) -> Result<ApiResponse<Vec<u8>>, SourceError> {
+    require_in_range("count", req.count, 1usize, 1000usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let result = cast_knucklebones(source.as_mut(), req.count)?;
@@ -377,6 +426,7 @@ pub fn teetotum(req: &TeetotumRequest) -> Result<ApiResponse<String>, SourceErro
 }
 
 pub fn cowrie(req: &CowrieRequest) -> Result<ApiResponse<CowrieResultDto>, SourceError> {
+    require_in_range("shells", req.shells, 1usize, 64usize)?;
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let result = cast_cowrie(source.as_mut(), req.shells)?;
@@ -395,6 +445,22 @@ pub fn cowrie(req: &CowrieRequest) -> Result<ApiResponse<CowrieResultDto>, Sourc
 }
 
 pub fn lots(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
+    if req.items.is_empty() {
+        return Err(SourceError::InvalidInput("cannot draw lots from an empty list".to_string()));
+    }
+    if req.items.len() > 100_000 {
+        return Err(SourceError::InvalidInput(format!(
+            "cannot draw lots from {} items (max 100000)",
+            req.items.len()
+        )));
+    }
+    if req.count < 1 || req.count > req.items.len() {
+        return Err(SourceError::InvalidInput(format!(
+            "cannot draw {} lots from {} available items",
+            req.count,
+            req.items.len()
+        )));
+    }
     let start = Instant::now();
     let mut source = make_source(&req.source)?;
     let winners = draw_lots(source.as_mut(), &req.items, req.count)?;
@@ -419,4 +485,42 @@ pub fn health() -> serde_json::Value {
         "status": "ok",
         "timestamp": chrono::Utc::now().to_rfc3339(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::SourceError;
+
+    #[test]
+    fn bytes_count_over_cap_rejected() {
+        let req = BytesRequest {
+            source: SourceRequest::default(),
+            count: 1_048_577,
+            encoding: "hex".to_string(),
+        };
+        let err = bytes(&req).unwrap_err();
+        assert!(matches!(err, SourceError::InvalidInput(_)));
+    }
+
+    #[test]
+    fn cowrie_shells_over_cap_rejected() {
+        let req = CowrieRequest {
+            source: SourceRequest::default(),
+            shells: 65,
+        };
+        let err = cowrie(&req).unwrap_err();
+        assert!(matches!(err, SourceError::InvalidInput(_)));
+    }
+
+    #[test]
+    fn pick_count_exceeds_items_rejected() {
+        let req = ListRequest {
+            source: SourceRequest::default(),
+            items: vec!["a".to_string()],
+            count: 5,
+        };
+        let err = pick(&req).unwrap_err();
+        assert!(matches!(err, SourceError::InvalidInput(_)));
+    }
 }

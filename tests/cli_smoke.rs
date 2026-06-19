@@ -2,11 +2,10 @@
 // pick/shuffle, source creation, and seed parsing.
 // Covers happy paths and adversarial inputs.
 
-use chance::core::source::Source;
 use chance::core::range::{
     uniform_u64_inclusive, uniform_i64_inclusive, uniform_u64_lemire, uniform_entropy_bits,
 };
-use chance::methods::dice::parser::{parse, ParseError};
+use chance::methods::dice::parser::parse;
 use chance::methods::dice::ast::{Expr, Sign, Term, DiceTerm, DieSize};
 use chance::methods::pick::{pick_one, pick_distinct};
 use chance::sources::{create_source, parse_seed, OsCsprng};

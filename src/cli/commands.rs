@@ -81,7 +81,7 @@ pub enum Commands {
         min: i64,
 
         /// Maximum value (inclusive).
-        #[arg(short, long, default_value = "100")]
+        #[arg(short = 'M', long, default_value = "100")]
         max: i64,
     },
 
