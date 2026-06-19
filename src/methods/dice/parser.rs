@@ -225,6 +225,14 @@ impl<'a> Parser<'a> {
                     Comparator::Lt
                 }
             }
+            '!' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Comparator::Ne
+                } else {
+                    return Err(ParseError::UnexpectedChar('!', self.pos - 1));
+                }
+            }
             '=' => Comparator::Eq,
             c => return Err(ParseError::UnexpectedChar(c, self.pos - 1)),
         };

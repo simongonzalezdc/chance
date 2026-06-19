@@ -38,31 +38,3 @@ pub fn pick_distinct<T: Clone>(
     Ok(result)
 }
 
-/// Weighted pick using the alias method would be ideal, but for small lists
-/// a simple cumulative-sum approach with rejection-free sampling works.
-pub fn pick_weighted<T: Clone>(
-    source: &mut dyn Source,
-    items: &[(T, u64)],
-) -> Result<T, crate::core::SourceError> {
-    if items.is_empty() {
-        return Err(crate::core::SourceError::GenerationFailed(
-            "cannot pick from empty weighted list".to_string(),
-        ));
-    }
-    let total: u64 = items.iter().map(|(_, w)| w).sum();
-    if total == 0 {
-        return Err(crate::core::SourceError::GenerationFailed(
-            "total weight must be > 0".to_string(),
-        ));
-    }
-    let target = uniform_u64_inclusive(source, 1, total)?;
-    let mut acc = 0u64;
-    for (item, weight) in items {
-        acc += weight;
-        if target <= acc {
-            return Ok(item.clone());
-        }
-    }
-    // Fallback (should not happen).
-    Ok(items.last().unwrap().0.clone())
-}

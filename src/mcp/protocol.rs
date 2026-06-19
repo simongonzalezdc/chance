@@ -75,37 +75,6 @@ pub struct JsonRpcError {
     pub data: Option<Value>,
 }
 
-#[derive(Debug, Serialize)]
-pub struct InitializeResult {
-    pub protocol_version: String,
-    pub capabilities: ServerCapabilities,
-    pub server_info: ServerInfo,
-}
-
-#[derive(Debug, Serialize)]
-pub struct ServerCapabilities {
-    pub tools: ToolsCapability,
-}
-
-#[derive(Debug, Serialize)]
-pub struct ToolsCapability {
-    pub list_changed: bool,
-}
-
-#[derive(Debug, Serialize)]
-pub struct ServerInfo {
-    pub name: String,
-    pub version: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct InitializeParams {
-    pub protocol_version: String,
-    #[serde(default)]
-    pub capabilities: Option<Value>,
-    #[serde(default)]
-    pub client_info: Option<Value>,
-}
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Tool {
@@ -115,10 +84,6 @@ pub struct Tool {
     pub input_schema: Value,
 }
 
-#[derive(Debug, Serialize)]
-pub struct ToolsListResult {
-    pub tools: Vec<Tool>,
-}
 
 #[derive(Debug, Deserialize)]
 pub struct CallToolParams {

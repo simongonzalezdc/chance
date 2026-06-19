@@ -91,14 +91,3 @@ pub fn draw_cards(
     Ok(deck.into_iter().take(count).collect())
 }
 
-/// Draw `count` cards from a deck that may already be partially drawn.
-pub fn draw_from_deck(
-    source: &mut dyn Source,
-    deck: &mut Vec<Card>,
-    count: usize,
-) -> Result<Vec<Card>, crate::core::SourceError> {
-    let count = count.min(deck.len());
-    shuffle_deck(source, deck)?;
-    let drawn: Vec<Card> = deck.drain(..count).collect();
-    Ok(drawn)
-}

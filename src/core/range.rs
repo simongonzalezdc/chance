@@ -183,4 +183,27 @@ mod tests {
             );
         }
     }
+
+    /// N3: distribution sanity for the primary `uniform_u64_lemire` path over a
+    /// non-power-of-two span (100 buckets) — the exact case where naive modulo
+    /// reduction would introduce bias. 1M draws, each bucket within 5% of 10000.
+    #[test]
+    fn test_uniform_u64_inclusive_distribution_100_buckets() {
+        let mut src = OsCsprng::new();
+        let mut counts = [0u64; 100];
+        for _ in 0..1_000_000 {
+            let v = uniform_u64_inclusive(&mut src, 0, 99).unwrap();
+            counts[v as usize] += 1;
+        }
+        for (bucket, &c) in counts.iter().enumerate() {
+            let deviation = ((c as i64) - 10_000).unsigned_abs() as f64 / 10_000.0;
+            assert!(
+                deviation <= 0.05,
+                "bucket {} count {} deviates {:.2}% from 10000 (>5%)",
+                bucket,
+                c,
+                deviation * 100.0
+            );
+        }
+    }
 }
