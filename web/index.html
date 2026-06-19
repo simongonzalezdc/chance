@@ -8,29 +8,28 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ===== Ephemeris — a celestial almanac for randomness. =====
-     Inspired by the owner's taste PATTERNS (warm tactile paper, ink structure,
-     editorial type confidence, paced flat color, geometric craft, two-color
-     discipline) — NOT a copy of any existing brand. chance's own identity:
-     fate read in the cosmos; an ephemeris/astrolabe language bridges the ancient
-     divination half (astrology, the original oracle) and the modern measurement
-     half (astronomy / quantum). Iron-gall oxblood + antique gold + vermilion on
-     aged paper. NO gradients, NO purple, NO reef-teal/SaaS-blue. */
+  /* ===== MERIDIAN — an antiquarian observatory of chance. =====
+     A 1780 copperplate treatise on probability, laid out as a precision celestial
+     instrument. Fate read off the meridian. Iron-gall ink + antique gold +
+     vermilion + oxblood on aged paper; engraved hairlines, registration ticks,
+     Fraunces copperplate display. NO gradients, NO purple, NO reef-teal/SaaS-blue,
+     NO green. Flat, paced, warm. Offline-first; GSAP is optional enhancement only. */
   :root{
-    /* paper foundation */
-    --paper:#f4ecdb; --paper-soft:#efe6d2; --warm-white:#fbf6ea; --cream-line:#fff7e6;
-    --ink:#1c1813; --ink-soft:#2a241c; --muted:#7a6f60; --line:#d4c4a3;
+    /* paper + ink foundation */
+    --paper:#efe4cd; --paper-soft:#e8dabb; --paper-veil:#e2d2af; --warm-white:#f6eed9;
+    --plate:#f4ecd6; --cream-line:#fbf4e2;
+    --ink:#17130d; --ink-soft:#2c2419; --muted:#635740; --rule:#cdbb95; --rule-soft:#dccba6;
     /* signal · paced, flat, spatially separated (never blended into purple) */
-    --signal:#7a2418; --reef:#8a6400; --seal:#c1351b; --gold:#a87810; --leaf:#a87810;
+    --signal:#6e1f14; --reef:#7d5a00; --seal:#bf3417; --gold:#9c6f0c; --leaf:#9c6f0c;
     --color-bg:var(--paper); --surface-1:var(--paper-soft); --surface-2:var(--warm-white);
-    --border:var(--line); --text:var(--ink-soft);
-    --primary-fill:var(--ink); --primary-ink:var(--warm-white);
+    --border:var(--rule); --text:var(--ink-soft);
+    --primary-fill:var(--signal); --primary-ink:var(--warm-white);
     --success:var(--leaf); --error:var(--seal); --warn:var(--gold);
-    /* type · Fraunces (editorial serif) + Inter (UI/numerals) + JetBrains Mono (notation/provenance) */
+    /* type · Fraunces (copperplate display) + Inter (UI) + JetBrains Mono (notation/provenance) */
     --font-display:"Fraunces",Georgia,"Times New Roman",serif;
     --font-body:"Inter",system-ui,-apple-system,sans-serif;
     --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
-    /* scale · Perfect Fifth 1.500, calm */
+    /* scale · Perfect Fifth 1.500 */
     --step--2:clamp(0.68rem,0.66rem+0.1vw,0.75rem);
     --step--1:clamp(0.8rem,0.78rem+0.12vw,0.9rem);
     --step-0:1rem; --step-1:clamp(1.3rem,1.2rem+0.4vw,1.5rem);
@@ -41,128 +40,142 @@
     --measure:62ch;
     --s1:0.5rem;--s2:0.75rem;--s3:1rem;--s4:1.5rem;--s5:2rem;--s6:2.5rem;--s7:3.5rem;--s8:5rem;
     --section:clamp(2.5rem,2rem+3vw,5rem);
-    --r-ctrl:5px; --r-card:14px;
-    --sh-soft:0 12px 32px -12px oklch(0.28 0.03 70 / .20);
-    --sh-lift:0 2px 8px -3px oklch(0.28 0.03 70 / .14);
+    --r-ctrl:3px; --r-card:3px;
+    --sh-soft:0 10px 26px -12px rgba(23,19,13,.20);
+    --sh-lift:0 1px 4px -2px rgba(23,19,13,.14);
     --series-1:var(--signal); --series-2:var(--seal);
-    --series-3:var(--reef); --series-4:var(--muted);
+    --series-3:var(--reef); --series-4:var(--gold);
   }
   *{box-sizing:border-box}
   html{font-size:100%;-webkit-text-size-adjust:100%}
   [hidden]{display:none!important}
   body{margin:0;min-height:100dvh;background:var(--color-bg);color:var(--text);
     font-family:var(--font-body);font-size:var(--step-0);line-height:1.6;font-synthesis:none;
-    -webkit-font-smoothing:antialiased;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"lnum","tnum";
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
     background-blend-mode:multiply}
-  /* Mola geometric decoration — nested arch/triangle construction as structure, not confetti */
-  .deco{position:fixed;pointer-events:none;z-index:0}
-  .deco.mola{top:-40px;right:-50px;width:240px;height:240px;opacity:.22}
-  .deco.rule{bottom:0;left:0;right:0;height:1px;background:var(--line);opacity:.6}
-  .wrap{max-width:1080px;margin:0 auto;padding:var(--s7) var(--s5) var(--s8);position:relative;z-index:1}
+
+  /* ===== engraved armillary-sphere backdrop (pure SVG+CSS, rotates slowly) ===== */
+  .armilla{position:fixed;left:50%;top:50%;width:min(150vmin,1180px);height:min(150vmin,1180px);
+    transform:translate(-50%,-50%);z-index:1;pointer-events:none;opacity:.95}
+  .armilla-spin{transform-box:fill-box;transform-origin:50% 50%;animation:armilla 180s linear infinite}
+  @keyframes armilla{to{transform:rotate(360deg)}}
+  .wrap{max-width:1080px;margin:0 auto;padding:var(--s7) var(--s5) var(--s8);position:relative;z-index:2}
 
   /* ===== masthead ===== */
   .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s5);
-    padding-bottom:var(--s4);margin-bottom:var(--s5);border-bottom:1px solid var(--ink)}
+    padding-bottom:var(--s3);margin-bottom:var(--s4);position:relative}
+  .masthead::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
+    border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);opacity:.85}
   .brand{display:flex;flex-direction:column;gap:var(--s1)}
+  .brand .kicker{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
+    letter-spacing:.32em;color:var(--signal);opacity:.85}
   .brand .wordmark{font-family:var(--font-display);font-weight:900;font-size:var(--step-5);
-    line-height:.82;letter-spacing:-.025em;color:var(--ink);font-variation-settings:"opsz" 120}
+    line-height:.82;letter-spacing:-.03em;color:var(--ink);font-variation-settings:"opsz" 144;margin-top:.1em}
   .brand .wordmark em{font-style:italic;font-weight:500;color:var(--gold)}
   .brand .tag{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
-    letter-spacing:.22em;color:var(--ink-soft);opacity:.7;margin-top:var(--s2)}
-  /* stat readouts · huge number → tiny label rhythm */
-  .stats{display:flex;gap:var(--s6);align-items:flex-end}
-  .stat{text-align:right}
+    letter-spacing:.2em;color:var(--muted);margin-top:var(--s1)}
+  /* dial readouts */
+  .stats{display:flex;gap:var(--s5);align-items:flex-end}
+  .stat{text-align:right;min-width:7.5em;border:1px solid var(--rule);padding:var(--s2) var(--s3);
+    background:rgba(246,238,217,.5)}
   .stat .k{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.18em;color:var(--muted)}
   .stat .v{font-family:var(--font-display);font-weight:600;font-size:var(--step-2);color:var(--gold);
     line-height:1;margin-top:var(--s1);font-variation-settings:"opsz" 80}
-  .stat .v small{font-family:var(--font-mono);font-size:.42em;color:var(--muted);margin-left:3px;
+  .stat .v small{font-family:var(--font-mono);font-size:.4em;color:var(--muted);margin-left:3px;
     font-weight:500;letter-spacing:.05em}
   .stat .v.idle{font-family:var(--font-mono);font-size:var(--step--1);font-weight:500;
-    text-transform:uppercase;letter-spacing:.22em;color:var(--muted)}
-  .spark{width:84px;height:26px;display:block;margin-top:var(--s1);margin-left:auto}
+    text-transform:uppercase;letter-spacing:.2em;color:var(--muted)}
+  .spark{width:84px;height:22px;display:block;margin-top:var(--s1);margin-left:auto}
 
   /* source + seed controls */
-  .ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-bottom:var(--s5)}
+  .ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-bottom:var(--s4)}
   label.fld{display:flex;flex-direction:column;gap:var(--s1)}
   label.fld>span{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.16em;color:var(--muted)}
-  select,input,textarea{font-family:var(--font-body);font-size:var(--step-0);color:var(--ink-soft);
-    background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-ctrl);
+  select,input,textarea{font-family:var(--font-body);font-size:var(--step-0);color:var(--ink);
+    background:var(--warm-white);border:1px solid var(--rule);border-radius:var(--r-ctrl);
     padding:var(--s2) var(--s3);outline:none;width:100%;transition:border-color .15s,box-shadow .15s}
-  select:focus,input:focus,textarea:focus{border-color:var(--signal);box-shadow:0 0 0 3px oklch(0.27 0.10 264 / .16)}
+  select:focus,input:focus,textarea:focus{border-color:var(--signal);box-shadow:0 0 0 3px rgba(110,31,20,.16)}
   select{cursor:pointer;appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231c1813' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2317130d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right var(--s2) center;padding-right:var(--s6)}
   textarea{resize:vertical;font-family:var(--font-mono);font-size:var(--step--1);line-height:1.5}
 
-  /* ===== main · method rail + ritual stage ===== */
-  .bento-main{display:grid;grid-template-columns:240px 1fr;gap:var(--s6);align-items:start}
+  /* ===== main · method index + ritual stage ===== */
+  .bento-main{display:grid;grid-template-columns:236px 1fr;gap:var(--s6);align-items:start}
   @media (max-width:880px){.bento-main{grid-template-columns:1fr}.ctrl-row{grid-template-columns:1fr}.masthead{flex-direction:column;align-items:flex-start}}
 
   aside.rail{position:sticky;top:var(--s3)}
   .rail h3{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
-    letter-spacing:.2em;color:var(--muted);margin:0 0 var(--s3)}
-  .mlist{display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--line)}
+    letter-spacing:.2em;color:var(--muted);margin:0 0 var(--s2)}
+  .mlist{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
   .mbtn{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:var(--s3);width:100%;text-align:left;
-    background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink-soft);
-    padding:var(--s2) var(--s1);cursor:pointer;font-family:var(--font-body);transition:background .12s,color .12s}
+    background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--ink-soft);
+    padding:var(--s2) var(--s2) var(--s2) var(--s1);cursor:pointer;font-family:var(--font-body);
+    transition:background .12s,color .12s,padding .12s}
   .mbtn .num{font-family:var(--font-mono);font-weight:500;font-size:var(--step--2);line-height:1;
     color:var(--muted);min-width:1.9em;letter-spacing:.04em}
   .mbtn .nm{font-size:var(--step--1);font-weight:500}
-  .mbtn:hover{background:var(--paper-soft);color:var(--ink)}
+  .mbtn:hover{background:var(--paper-soft);color:var(--ink);padding-left:var(--s3)}
   .mbtn:hover .num{color:var(--signal)}
-  .mbtn.active{background:var(--warm-white);color:var(--ink);box-shadow:inset 4px 0 0 var(--seal);font-weight:600}
+  .mbtn.active{background:var(--warm-white);color:var(--ink);box-shadow:inset 3px 0 0 var(--seal);font-weight:600;padding-left:var(--s4)}
   .mbtn.active .nm{font-weight:600}
   .mbtn.active .num{color:var(--seal);font-weight:600}
   .mbtn:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
 
   /* ritual stage */
-  main.stage{min-height:60vh}
+  main.stage{min-height:60vh;position:relative}
   .snum{font-family:var(--font-mono);font-weight:500;font-size:var(--step--2);line-height:1;color:var(--muted);
     letter-spacing:.22em;text-transform:uppercase;margin-bottom:var(--s2)}
-  .sname{font-family:var(--font-display);font-weight:600;font-size:var(--step-3);line-height:1.05;
-    text-wrap:balance;margin:var(--s1) 0 var(--s2);color:var(--ink);font-variation-settings:"opsz" 90}
+  .sname{font-family:var(--font-display);font-weight:600;font-size:var(--step-3);line-height:1.04;
+    text-wrap:balance;margin:var(--s1) 0 var(--s2);color:var(--ink);font-variation-settings:"opsz" 96}
   .sdesc{color:var(--muted);max-width:var(--measure);margin:0 0 var(--s5);font-size:var(--step--1)}
 
   form .grid-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--s4)}
   .check{display:flex;align-items:center;gap:var(--s2);min-height:2.8rem}
-  .switch{position:relative;width:44px;height:24px;background:var(--paper-soft);border:1px solid var(--line);
+  .switch{position:relative;width:42px;height:22px;background:var(--paper-soft);border:1px solid var(--rule);
     border-radius:999px;cursor:pointer;flex:none;transition:background .15s,border-color .15s}
-  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
     background:var(--muted);transition:transform .15s,background .15s}
   .switch.on{background:var(--signal);border-color:var(--signal)}
   .switch.on::after{transform:translateX(20px);background:var(--warm-white)}
 
-  .genrow{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);margin-bottom:var(--s6);flex-wrap:wrap}
+  .genrow{display:flex;align-items:center;gap:var(--s4);margin-top:var(--s5);margin-bottom:var(--s5);flex-wrap:wrap}
   button.go{font-family:var(--font-body);font-size:var(--step-1);font-weight:700;letter-spacing:-.005em;
     color:var(--primary-ink);background:var(--primary-fill);border:1px solid var(--ink);
     border-radius:var(--r-ctrl);padding:var(--s3) var(--s6);cursor:pointer;
     box-shadow:var(--sh-soft);transition:transform .08s,box-shadow .12s,background .15s;
     display:inline-flex;align-items:center;gap:var(--s3)}
-  button.go::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--seal);
-    box-shadow:0 0 0 2px var(--ink);flex:none}
-  button.go:hover{background:var(--ink-soft);box-shadow:0 16px 36px -12px oklch(0.2 0.03 70 / .3)}
+  button.go::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--seal);
+    box-shadow:0 0 0 2px var(--warm-white);flex:none}
+  button.go:hover{background:var(--ink);box-shadow:0 14px 30px -12px rgba(110,31,20,.34)}
   button.go:active{transform:translateY(1px)}
   button.go:disabled{opacity:.55;cursor:wait}
   .hint{color:var(--muted);font-size:var(--step--1);font-family:var(--font-mono)}
 
-  /* result · the parchment page */
-  .res-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 var(--s3);
-    padding-bottom:var(--s2);border-bottom:1px solid var(--line)}
+  /* result · the engraved reading plate */
+  .res-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 var(--s3)}
   .res-head .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.2em;color:var(--muted)}
   .copy{font-family:var(--font-body);font-size:var(--step--1);font-weight:600;color:var(--muted);background:transparent;
-    border:1px solid var(--line);border-radius:var(--r-ctrl);padding:var(--s1) var(--s3);cursor:pointer;
+    border:1px solid var(--rule);border-radius:var(--r-ctrl);padding:var(--s1) var(--s3);cursor:pointer;
     display:inline-flex;align-items:center;gap:var(--s1);transition:color .12s,border-color .12s}
   .copy:hover{color:var(--ink);border-color:var(--seal)}
-  .result{background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-card);
-    box-shadow:var(--sh-lift),inset 0 0 0 1px var(--cream-line);
-    padding:clamp(var(--s6),5vw,var(--s8));min-height:min(50vh,440px);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:var(--s5)}
+  /* the plate: double-keyline engraved frame + corner registration ticks */
+  .plate{position:relative;background:var(--plate);border:1px solid var(--rule);
+    box-shadow:inset 0 0 0 4px var(--plate),inset 0 0 0 5px var(--rule),var(--sh-lift);
+    padding:var(--s2);margin-bottom:var(--s4)}
+  .plate::before,.plate::after{content:"";position:absolute;pointer-events:none;width:100%;height:100%;left:0;top:0}
+  .plate::before{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 1v12M1 7h12' stroke='%2317130d' stroke-width='1'/%3E%3C/svg%3E") top 7px left 7px/14px 14px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 1v12M1 7h12' stroke='%2317130d' stroke-width='1'/%3E%3C/svg%3E") top 7px right 7px/14px 14px no-repeat}
+  .plate::after{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 1v12M1 7h12' stroke='%2317130d' stroke-width='1'/%3E%3C/svg%3E") bottom 7px left 7px/14px 14px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 1v12M1 7h12' stroke='%2317130d' stroke-width='1'/%3E%3C/svg%3E") bottom 7px right 7px/14px 14px no-repeat}
+  .result{background:var(--cream-line);min-height:min(52vh,460px);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:var(--s5);padding:clamp(var(--s5),4vw,var(--s7));text-align:center}
   .empty{display:flex;flex-direction:column;align-items:center;gap:var(--s3);color:var(--muted);text-align:center;max-width:46ch}
-  .empty .reticle svg{width:clamp(120px,14vw,178px);height:auto;display:block}
+  .empty .reticle svg{width:clamp(108px,12vw,158px);height:auto;display:block}
   .empty .eye{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;
     letter-spacing:.34em;color:var(--seal);margin-top:var(--s1)}
   .empty .msg{font-family:var(--font-display);font-weight:500;font-size:var(--step-2);line-height:1.2;
@@ -181,34 +194,33 @@
     text-align:center;color:var(--ink);max-width:48ch;line-height:1.4}
   .chips{display:flex;flex-wrap:wrap;gap:var(--s2);justify-content:center}
   .chip{font-family:var(--font-mono);font-size:var(--step-0);font-weight:500;background:var(--paper-soft);
-    border:1px solid var(--line);color:var(--ink);padding:var(--s1) var(--s3);border-radius:var(--r-ctrl);min-width:2.6em;text-align:center}
+    border:1px solid var(--rule);color:var(--ink);padding:var(--s1) var(--s3);border-radius:var(--r-ctrl);min-width:2.6em;text-align:center}
   .chip.acc{border-color:var(--signal);color:var(--signal);background:var(--warm-white)}
   .chip.bonus{border-color:var(--seal);color:var(--seal);background:var(--warm-white)}
   .chip .badge{display:block;font-family:var(--font-body);font-size:.5em;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:2px}
   .sub{color:var(--muted);font-size:var(--step--1);font-family:var(--font-mono);text-align:center}
 
-  /* ===== ritual objects · ink line-art on parchment ===== */
+  /* ===== ritual objects · ink line-art on the plate ===== */
   .faces{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center}
-  .die-wrap svg{width:clamp(140px,11vw,184px);height:auto}
+  .die-wrap svg{width:clamp(132px,10vw,172px);height:auto}
   .abw svg{width:clamp(150px,12vw,196px);height:auto}
-  .cw svg{width:clamp(108px,8vw,148px);height:auto}
-  .cdw svg{width:clamp(132px,12vw,176px);height:auto}
+  .cw svg{width:clamp(100px,7vw,136px);height:auto}
+  .cdw svg{width:clamp(126px,11vw,168px);height:auto}
   .tw svg{width:clamp(150px,15vw,210px);height:auto}
   .dw svg{width:clamp(200px,19vw,284px);height:auto}
-  .rw svg{width:clamp(140px,12vw,196px);height:auto}
-  .coww svg{width:clamp(108px,10vw,156px);height:auto}
-  .bw svg,.bwb svg{width:clamp(100px,8vw,134px);height:auto}
-  .drew svg{width:clamp(130px,11vw,180px);height:auto}
-  .wheelw svg{width:clamp(300px,32vw,440px);height:auto}
+  .rw svg{width:clamp(132px,11vw,182px);height:auto}
+  .coww svg{width:clamp(104px,9vw,148px);height:auto}
+  .bw svg,.bwb svg{width:clamp(96px,7vw,128px);height:auto}
+  .drew svg{width:clamp(126px,11vw,174px);height:auto}
+  .wheelw svg{width:clamp(290px,30vw,420px);height:auto}
   .ic{display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
-  .ic svg{width:clamp(240px,22vw,380px);height:auto}
+  .ic svg{width:clamp(230px,21vw,360px);height:auto}
   .ic .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step-1);color:var(--ink)}
   .faces svg,.abw svg,.cw svg,.cdw svg,.tw svg,.dw svg,.rw svg,.coww svg,.bw svg,.bwb svg,.drew svg,.wheelw svg,.ic svg{
-    filter:drop-shadow(0 1px 1px oklch(0.2 0.03 70 / .10))}
+    filter:drop-shadow(0 1px 1px rgba(23,19,13,.10))}
   .result svg{display:block}
   .result .ic svg{margin:0 auto}
 
-  /* coin / card rows share faces wrapper sizing */
   .coinrow,.cardrow,.row{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center;min-width:0}
   .tarot{display:flex;flex-direction:column;gap:var(--s2);align-items:center}
   .tarot .nm{font-family:var(--font-display);font-weight:600;font-size:var(--step--1);color:var(--ink);text-align:center;max-width:14em}
@@ -219,80 +231,76 @@
   .bitgrid{display:grid;gap:2px;justify-content:center}
   .bitgrid .b{width:11px;height:11px;border-radius:1px}
   .bitgrid .b.on{background:var(--ink)}
-  .bitgrid .b.off{background:var(--paper-soft);border:1px solid var(--line)}
+  .bitgrid .b.off{background:var(--paper-soft);border:1px solid var(--rule)}
 
   /* distribution bar chart */
-  .viz-card{background:var(--paper-soft);border:1px solid var(--line);border-radius:var(--r-card);
+  .viz-card{background:var(--paper-soft);border:1px solid var(--rule);border-left:3px solid var(--signal);
     padding:var(--s5);margin-top:var(--s4)}
   .viz-card .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:var(--s1)}
   .viz-card .cap{color:var(--muted);font-size:var(--step--1);margin-top:var(--s2);font-family:var(--font-mono)}
-  .bars{display:flex;align-items:flex-end;gap:var(--s2);height:120px;padding-top:var(--s3);border-bottom:1px solid var(--line)}
+  .bars{display:flex;align-items:flex-end;gap:var(--s2);height:120px;padding-top:var(--s3);border-bottom:1px solid var(--rule)}
   .barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--s1);min-width:0;height:100%;justify-content:flex-end}
   .barcol .cnt{font-family:var(--font-mono);font-size:var(--step--2);color:var(--ink)}
-  .barcol .bar{width:100%;max-width:46px;background:var(--series-1);border-radius:var(--r-ctrl) var(--r-ctrl) 0 0;min-height:2px}
+  .barcol .bar{width:100%;max-width:46px;background:var(--series-1);min-height:2px}
   .barcol .bar.alt{background:var(--series-2)}
   .barcol .cat{font-family:var(--font-mono);font-size:var(--step--2);color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-  /* provenance · the receipt */
+  /* provenance · the stamped receipt */
   .prov{margin-top:var(--s5)}
   .prov .lbl{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:var(--s2)}
   .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--s2)}
-  .pcell{background:var(--warm-white);border:1px solid var(--line);border-radius:var(--r-ctrl);padding:var(--s2) var(--s3)}
+  .pcell{background:var(--warm-white);border:1px solid var(--rule);padding:var(--s2) var(--s3);position:relative}
   .pcell .k{font-family:var(--font-mono);font-size:var(--step--2);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
   .pcell .v{font-family:var(--font-mono);font-size:var(--step--1);color:var(--ink);margin-top:2px;word-break:break-all}
-  footer{margin-top:var(--section);padding-top:var(--s4);border-top:1px solid var(--line);text-align:center;
+  footer{margin-top:var(--section);padding-top:var(--s4);border-top:1px solid var(--rule);text-align:center;
     color:var(--muted);font-size:var(--step--2);font-family:var(--font-mono);letter-spacing:.06em}
   footer code{font-family:var(--font-mono);color:var(--signal)}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .icopy{width:1em;height:1em;stroke:currentColor;stroke-width:1.6;fill:none}
   :focus-visible{outline:2px solid var(--signal);outline-offset:2px}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.armilla-spin{animation:none!important}.mbtn,.sig-num,.die-wrap svg,.wheelw svg,.tarot .tw{transform:none!important}}
   /* overflow guards */
   .bento-main>*,.ctrl-row>*,.masthead>*{min-width:0}
-  .result,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
+  .result,.plate,.row,.faces,.coinrow,.cardrow,.viz-card,.mlist{min-width:0}
   .result svg,.row svg,.faces svg,.coinrow svg,.cardrow svg,.viz-card svg{max-width:100%;height:auto}
-  /* ===== living cosmos backdrop (WebGL star chart) + motion primitives ===== */
-  #cosmos{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.72}
-  .rail-cursor{position:absolute;left:0;top:0;width:3px;background:var(--seal);border-radius:3px;
-    opacity:0;pointer-events:none;z-index:3}
+  .rail-cursor{position:absolute;left:0;top:0;width:3px;background:var(--seal);opacity:0;pointer-events:none;z-index:3}
   .mbtn,.sig-num,.die-wrap svg,.wheelw svg,.tarot .tw{will-change:transform}
-  /* perspective for 3D card flips */
   .tarot{perspective:700px}
-  @media (prefers-reduced-motion:reduce){#cosmos{display:none}*.wspin{transform:none!important}}
 </style>
-<script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
-</script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 </head>
 <body>
-<svg class="deco mola" aria-hidden="true" viewBox="0 0 240 240">
-  <g fill="none" stroke="#1c1813" stroke-width="1.2">
-    <circle cx="120" cy="120" r="94"/>
-    <ellipse cx="120" cy="120" rx="94" ry="32" transform="rotate(-22 120 120)"/>
-    <line x1="26" y1="120" x2="214" y2="120"/>
-    <line x1="120" y1="26" x2="120" y2="214"/>
+<svg class="armilla" aria-hidden="true" viewBox="0 0 800 800">
+  <g class="armilla-spin" fill="none" stroke="#17130d" stroke-linecap="round">
+    <circle cx="400" cy="400" r="324" stroke-width="1.8" opacity="0.34"/>
+    <circle cx="400" cy="400" r="338" stroke-width="7" stroke-dasharray="1.5 13.5" opacity="0.13"/>
+    <ellipse cx="400" cy="400" rx="324" ry="116" stroke-width="1.2" opacity="0.28"/>
+    <ellipse cx="400" cy="400" rx="324" ry="116" stroke-width="1.1" opacity="0.18" transform="rotate(66.5 400 400)"/>
+    <ellipse cx="400" cy="400" rx="294" ry="104" stroke-width="0.9" opacity="0.14"/>
+    <ellipse cx="400" cy="400" rx="252" ry="88" stroke-width="0.9" opacity="0.12"/>
+    <ellipse cx="400" cy="400" rx="324" ry="54" stroke-width="0.9" opacity="0.16"/>
+    <line x1="400" y1="76" x2="400" y2="724" stroke-width="1.4" opacity="0.32"/>
+    <circle cx="400" cy="76" r="6.5" stroke-width="1.4" opacity="0.55"/>
+    <circle cx="400" cy="724" r="6.5" stroke-width="1.4" opacity="0.55"/>
+    <circle cx="400" cy="400" r="4.5" fill="#17130d" stroke="none" opacity="0.6"/>
   </g>
-  <g stroke="#1c1813" stroke-width="0.8">
-    <polyline points="64,58 92,82 126,70 156,96 140,128 172,142" fill="none"/>
-    <circle cx="64" cy="58" r="2.2" fill="#1c1813"/>
-    <circle cx="92" cy="82" r="2.8" fill="#1c1813"/>
-    <circle cx="126" cy="70" r="2" fill="#1c1813"/>
-    <circle cx="156" cy="96" r="3" fill="#1c1813"/>
-    <circle cx="140" cy="128" r="2" fill="#1c1813"/>
-    <circle cx="172" cy="142" r="2.4" fill="#1c1813"/>
-  </g>
-  <g fill="#1c1813">
-    <path d="M194 56 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z"/>
-    <path d="M58 176 l1.6 4 l4 1.6 l-4 1.6 l-1.6 4 l-1.6 -4 l-4 -1.6 l4 -1.6 z"/>
-    <path d="M150 40 l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 z"/>
+  <g stroke="#17130d" stroke-width="0.7" opacity="0.28" fill="#17130d">
+    <polyline points="250,210 300,250 348,232 392,278" fill="none"/>
+    <polyline points="470,180 512,236 560,212 604,262" fill="none"/>
+    <polyline points="210,540 262,512 300,560 352,540" fill="none"/>
+    <polyline points="500,560 552,540 600,586 648,560" fill="none"/>
+    <circle cx="250" cy="210" r="2"/><circle cx="300" cy="250" r="2.4"/><circle cx="348" cy="232" r="1.8"/><circle cx="392" cy="278" r="2"/>
+    <circle cx="470" cy="180" r="2"/><circle cx="512" cy="236" r="2.2"/><circle cx="560" cy="212" r="1.8"/><circle cx="604" cy="262" r="2.2"/>
+    <circle cx="210" cy="540" r="1.8"/><circle cx="262" cy="512" r="2"/><circle cx="300" cy="560" r="2.2"/><circle cx="352" cy="540" r="1.8"/>
+    <circle cx="500" cy="560" r="2"/><circle cx="552" cy="540" r="2.2"/><circle cx="600" cy="586" r="1.8"/><circle cx="648" cy="560" r="2"/>
+    <circle cx="180" cy="380" r="1.6"/><circle cx="620" cy="360" r="1.8"/><circle cx="640" cy="440" r="1.6"/><circle cx="160" cy="440" r="1.8"/>
   </g>
 </svg>
-<canvas id="cosmos" aria-hidden="true"></canvas>
 
 <div class="wrap">
   <header class="masthead">
     <div class="brand">
+      <div class="kicker">Meridian · antiquarian observatory of chance</div>
       <div class="wordmark">chance<em>.</em></div>
       <div class="tag">a randomness ritual · os-csprng · legit under the hood</div>
     </div>
@@ -317,7 +325,7 @@
 
   <div class="bento-main">
     <aside class="rail">
-      <h3>methods</h3>
+      <h3>index</h3>
       <nav class="mlist" id="mlist"></nav>
     </aside>
 
@@ -338,8 +346,10 @@
           <svg class="icopy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg>
           copy</button>
       </div>
-      <div class="result" id="result">
-        <div class="empty"><div class="eye">awaiting the cast</div><div class="msg">Pick a method and cast.</div></div>
+      <div class="plate">
+        <div class="result" id="result">
+          <div class="empty"><div class="eye">awaiting the cast</div><div class="msg">Pick a method and cast.</div></div>
+        </div>
       </div>
       <section class="viz-card" id="viz-dist" hidden aria-label="Session distribution">
         <div class="lbl">session distribution · <span id="viz-n">0</span> draws</div>
@@ -491,8 +501,8 @@ async function generate(){
 }
 
 /* ===== SVG generators · ink woodcut line-art on aged almanac paper =====
-   K = Ephemeris token map. ink structure, paper surfaces, oxblood + vermilion + gold signals. */
-const K={b3:"#7a2418",b4:"#fbf6ea",b5:"#efe6d2",b6:"#e2d4b6",b7:"#d4c4a3",ac:"#c1351b",n9:"#fbf6ea",n8:"#efe6d2",n7:"#d4c4a3",n5:"#7a6f60",tx:"#2a241c",ik:"#1c1813",lt:"#1c1813",bn:"#ece2c8",bl:"#7a2418",ps:"#efe6d2",pd:"#e2d4b6",reef:"#8a6400",gd:"#a87810"};
+   K = Meridian token map. iron-gall ink structure, paper surfaces, oxblood + vermilion + gold signals. */
+const K={b3:"#6e1f14",b4:"#f6eed9",b5:"#e8dabb",b6:"#e2d2af",b7:"#cdbb95",ac:"#bf3417",n9:"#f6eed9",n8:"#e8dabb",n7:"#cdbb95",n5:"#7c6f54",tx:"#2c2419",ik:"#17130d",lt:"#17130d",bn:"#e8dcc0",bl:"#6e1f14",ps:"#e8dabb",pd:"#e2d2af",reef:"#7d5a00",gd:"#9c6f0c"};
 const SVGNS=' xmlns="http://www.w3.org/2000/svg"';
 const RUNES={fehu:"ᚠ",uruz:"ᚢ",thurisaz:"ᚦ",ansuz:"ᚨ",raido:"ᚱ",kenaz:"ᚲ",gebo:"ᚷ",wunjo:"ᚹ",hagalaz:"ᚺ",nauthiz:"ᚾ",isa:"ᛁ",jera:"ᛃ",eihwaz:"ᛇ",perthro:"ᛈ",algiz:"ᛉ",sowilo:"ᛋ",tiwaz:"ᛏ",berkano:"ᛒ",ehwaz:"ᛖ",mannaz:"ᛗ",laguz:"ᛚ",ingwaz:"ᛜ",dagaz:"ᛞ",othala:"ᛟ"};
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
@@ -923,15 +933,15 @@ buildRail();renderForm();resetOut();loadSources();
 </script>
 <script type="module">
 "use strict";
-/* chance · SOTA visuals layer. CDN libraries (Three.js WebGL cosmos + GSAP motion) are
-   PROGRESSIVE ENHANCEMENT. Core app (cast / fetch / render) is fully functional without
-   them; if a CDN is unreachable, every enhancement is skipped and the page still works. */
+/* chance · MERIDIAN visuals layer.
+   The engraved armillary-sphere backdrop is PURE SVG+CSS (no JS, renders offline).
+   GSAP motion is PROGRESSIVE ENHANCEMENT: if the CDN is unreachable every
+   enhancement no-ops and the core cast/fetch/render still works. */
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const G = window.gsap || null;
 const $ = id => document.getElementById(id);
 const eRes = $('result'), eGo = $('go'), eMlist = $('mlist');
 
-/* ---------- GSAP motion orchestration (runs sync; no-op if gsap absent) ---------- */
 if (G && !reduce) {
   (function motion(){
     function countUp(el){
@@ -945,33 +955,29 @@ if (G && !reduce) {
       const kids = Array.from(eRes.children); if(!kids.length) return;
       G.killTweensOf(eRes); G.killTweensOf(kids);
       kids.forEach(el => { if(el.classList && el.classList.contains('sig-num')) countUp(el); });
-      G.fromTo(kids, {autoAlpha:0, y:22, scale:0.96},
-        {autoAlpha:1, y:0, scale:1, duration:0.6, stagger:0.07, ease:'power3.out', clearProps:'transform,opacity,visibility'});
-      // dice tumble in
+      // stamped impression: the reading settles onto the plate
+      G.fromTo(kids, {autoAlpha:0, y:18, scale:0.955},
+        {autoAlpha:1, y:0, scale:1, duration:0.62, stagger:0.07, ease:'power3.out', clearProps:'transform,opacity,visibility'});
       const dice = eRes.querySelectorAll('.die-wrap svg');
       if(dice.length) G.fromTo(dice, {rotation:-30, y:-46, opacity:0},
         {rotation:0, y:0, opacity:1, duration:0.7, stagger:0.08, ease:'back.out(1.5)', clearProps:'all'});
-      // roulette deceleration spin to the winning pocket
       const spin = eRes.querySelector('.wspin');
       if(spin){ G.set(spin, {svgOrigin:'62 62'}); G.fromTo(spin, {rotation:-1440},
         {rotation:0, duration:2.2, ease:'power3.out'}); }
-      // tarot manuscript-card flip reveal
       const cards = eRes.querySelectorAll('.tarot .tw');
       if(cards.length) G.fromTo(cards, {rotationY:-92, opacity:0},
         {rotationY:0, opacity:1, duration:0.7, stagger:0.12, ease:'back.out(1.3)', clearProps:'all'});
     }
-    // wrap generate → button press feedback + post-render reveal
     const origGen = window.generate;
     if(typeof origGen === 'function'){
       const wrapped = function(){
-        G.to(eGo, {scale:0.95, duration:0.09, yoyo:true, repeat:1, ease:'power1.inOut'});
+        G.to(eGo, {scale:0.96, duration:0.09, yoyo:true, repeat:1, ease:'power1.inOut'});
         const p = origGen.apply(this, arguments);
         if(p && p.then) p.then(animateReveal);
         return p;
       };
       window.generate = wrapped; eGo.onclick = wrapped;
     }
-    // animate sparkline draw on update
     const origSpark = window.sparkSVG;
     if(typeof origSpark === 'function'){
       window.sparkSVG = function(svg, vals, color){
@@ -984,7 +990,6 @@ if (G && !reduce) {
         G.to(line, {strokeDashoffset:0, duration:0.6, ease:'power2.out'});
       };
     }
-    // sliding active-method cursor on the rail
     const rail = document.querySelector('aside.rail');
     if(rail){
       rail.style.position = 'relative';
@@ -1000,83 +1005,7 @@ if (G && !reduce) {
     }
   })();
 }
-
-/* ---------- living cosmos backdrop (Three.js WebGL star chart on the parchment) ---------- */
-/* dynamic import → resilient: if three fails to load, this simply no-ops. */
-if(!reduce) import('three').then(THREE => {
-  const canvas = document.getElementById('cosmos'); if(!canvas) return;
-  let renderer;
-  try{ renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, preserveDrawingBuffer:true, powerPreference:'high-performance'}); }
-  catch(e){ return; }
-  const PR = Math.min(window.devicePixelRatio || 1, 2);
-  renderer.setPixelRatio(PR);
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 100);
-  camera.position.set(0, 0, 11);
-  function resize(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
-  resize(); addEventListener('resize', resize);
-  // soft round star sprite (canvas texture — not a CSS gradient)
-  function dotTex(){
-    const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
-    const g = x.createRadialGradient(32,32,0,32,32,32);
-    g.addColorStop(0,'rgba(255,251,240,1)'); g.addColorStop(.3,'rgba(255,251,240,.85)');
-    g.addColorStop(.65,'rgba(255,251,240,.15)'); g.addColorStop(1,'rgba(255,251,240,0)');
-    x.fillStyle = g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c);
-  }
-  // ink + warm-gold star chart — dots DARKER than the paper, like an old celestial atlas (normal blend)
-  const COL = { ink:[0.110,0.094,0.074], gold:[0.659,0.470,0.063], seal:[0.476,0.141,0.094], amber:[0.500,0.300,0.050] };
-  const palette = [COL.ink,COL.ink,COL.ink,COL.ink,COL.ink,COL.gold,COL.gold,COL.seal,COL.amber,COL.amber];
-  const N = 1700;
-  const pos=new Float32Array(N*3), col=new Float32Array(N*3), sz=new Float32Array(N), al=new Float32Array(N);
-  for(let i=0;i<N;i++){
-    pos[i*3]=(Math.random()*2-1)*11; pos[i*3+1]=(Math.random()*2-1)*11; pos[i*3+2]=-7-Math.random()*7;
-    const c=palette[(Math.random()*palette.length)|0]; col[i*3]=c[0]; col[i*3+1]=c[1]; col[i*3+2]=c[2];
-    sz[i]=3.2+Math.random()*Math.random()*7.5; al[i]=0.55+Math.random()*0.4;
-  }
-  // nebula dust: large faint warm motes
-  const M=18, pos2=new Float32Array(M*3), col2=new Float32Array(M*3), sz2=new Float32Array(M), al2=new Float32Array(M);
-  const neb=[COL.gold,COL.amber,COL.gold];
-  for(let i=0;i<M;i++){
-    pos2[i*3]=(Math.random()*2-1)*10; pos2[i*3+1]=(Math.random()*2-1)*10; pos2[i*3+2]=-8-Math.random()*6;
-    const c=neb[(Math.random()*neb.length)|0]; col2[i*3]=c[0]; col2[i*3+1]=c[1]; col2[i*3+2]=c[2];
-    sz2[i]=22+Math.random()*34; al2[i]=0.05+Math.random()*0.07;
-  }
-  function mkGeo(P,C,S,A){
-    const g=new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(P,3));
-    g.setAttribute('aColor', new THREE.BufferAttribute(C,3));
-    g.setAttribute('aSize', new THREE.BufferAttribute(S,1));
-    g.setAttribute('aAlpha', new THREE.BufferAttribute(A,1));
-    return g;
-  }
-  const mat = new THREE.ShaderMaterial({
-    uniforms:{ uTex:{value:dotTex()}, uPR:{value:PR} },
-    vertexShader:`uniform float uPR; attribute vec3 aColor; attribute float aSize; attribute float aAlpha;
-      varying vec3 vC; varying float vA;
-      void main(){ vC=aColor; vA=aAlpha; vec4 mv=modelViewMatrix*vec4(position,1.0);
-      gl_PointSize=aSize*uPR*(30.0/max(-mv.z,0.001)); gl_Position=projectionMatrix*mv; }`,
-    fragmentShader:`uniform sampler2D uTex; varying vec3 vC; varying float vA;
-      void main(){ vec4 t=texture2D(uTex,gl_PointCoord); gl_FragColor=vec4(vC, t.a*vA); }`,
-    transparent:true, depthWrite:false
-  });
-  const group = new THREE.Group();
-  group.add(new THREE.Points(mkGeo(pos2,col2,sz2,al2), mat));
-  group.add(new THREE.Points(mkGeo(pos,col,sz,al), mat));
-  scene.add(group);
-  let tx=0, ty=0, cx=0, cy=0, visible=true;
-  addEventListener('pointermove', e => { tx=(e.clientX/innerWidth-0.5); ty=(e.clientY/innerHeight-0.5); }, {passive:true});
-  document.addEventListener('visibilitychange', () => visible = !document.hidden);
-  function frame(){
-    requestAnimationFrame(frame);
-    if(!visible) return;
-    group.rotation.y += 0.00032; group.rotation.x += 0.00012;
-    cx += (tx-cx)*0.04; cy += (ty-cy)*0.04;
-    camera.position.x = cx*1.4; camera.position.y = -cy*1.1; camera.lookAt(0,0,0);
-    renderer.render(scene, camera);
-  }
-  window.__cosmos='ok';
-  frame();
-}).catch(e => { window.__cosmos='catch:'+(e&&e.message||e); });
+window.__meridian = 'motion:' + (G ? (reduce ? 'reduced' : 'on') : 'no-gsap');
 </script>
 </body>
 </html>
