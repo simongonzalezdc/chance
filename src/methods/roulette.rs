@@ -22,7 +22,7 @@ fn roulette_color(number: u8, variant: &str) -> &'static str {
     if variant == "american" && number == 37 {
         return "green"; // 00 represented as 37
     }
-    // European/French red numbers.
+    // European red numbers.
     let reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
     if reds.contains(&number) {
         "red"
@@ -31,6 +31,13 @@ fn roulette_color(number: u8, variant: &str) -> &'static str {
     }
 }
 
+/// Spin a roulette wheel.
+///
+/// Only `american` (0 and 00, ~5.26% house edge) and `european` (single zero,
+/// ~2.70% house edge) are implemented. Any other `variant` string — including
+/// the previously-advertised `french` — falls back to the single-zero european
+/// wheel. La Partage is NOT implemented, so `french` is intentionally not
+/// advertised as a distinct variant by the MCP/API schemas.
 pub fn spin_roulette(
     source: &mut dyn Source,
     variant: &str,
@@ -52,4 +59,48 @@ pub fn spin_roulette(
         variant: variant_label,
         house_edge_percent: edge,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::sources::OsCsprng;
+
+    #[test]
+    fn american_and_european_in_range() {
+        let mut src = OsCsprng::new();
+        for _ in 0..200 {
+            let eu = spin_roulette(&mut src, "european").unwrap();
+            assert!(eu.number <= 36, "european number out of range: {}", eu.number);
+            assert_eq!(eu.variant, "european");
+            assert_eq!(eu.house_edge_percent, 2.70);
+
+            let am = spin_roulette(&mut src, "american").unwrap();
+            assert!(am.number <= 37, "american number out of range: {}", am.number);
+            assert_eq!(am.variant, "american");
+            assert_eq!(am.house_edge_percent, 5.26);
+        }
+    }
+
+    /// Honesty: a previously-advertised `french` (or any unrecognized) variant
+    /// is treated as european and never as a distinct La-Partage variant.
+    #[test]
+    fn unrecognized_variant_falls_back_to_european() {
+        let mut src = OsCsprng::new();
+        for v in ["french", "european", "FRENCH", "", "xyz"] {
+            let r = spin_roulette(&mut src, v).unwrap();
+            assert_eq!(r.variant, "european", "variant {:?} must map to european", v);
+            assert_eq!(r.house_edge_percent, 2.70);
+            assert!(r.number <= 36);
+        }
+    }
+
+    #[test]
+    fn zero_and_double_zero_coloring() {
+        // 0 is green on both wheels; 37 (00) is green only on american.
+        assert_eq!(roulette_color(0, "european"), "green");
+        assert_eq!(roulette_color(0, "american"), "green");
+        assert_eq!(roulette_color(37, "american"), "green");
+        assert_eq!(roulette_color(37, "european"), "black");
+    }
 }

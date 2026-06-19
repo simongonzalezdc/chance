@@ -81,7 +81,13 @@ impl Mixer {
             match source.fill_bytes(&mut out) {
                 Ok(_) => outputs.push(out),
                 Err(e) => {
-                    eprintln!("mixer warning: source {} failed: {}", source.name(), e);
+                    // W10: structured log instead of stderr; the mixer keeps
+                    // going on the remaining healthy sources.
+                    tracing::warn!(
+                        source = %source.name(),
+                        error = %e,
+                        "mixer source failed; continuing with remaining sources"
+                    );
                 }
             }
         }
@@ -117,11 +123,35 @@ impl Source for Mixer {
         self.ensure_buffer(buf)
     }
 
+    /// W2: honest aggregation of the underlying sources' self-reported health.
+    /// Previously this reported `Healthy` as soon as *any* single source was up
+    /// (silent degradation). Now:
+    /// - all healthy            -> `Healthy`,
+    /// - any non-healthy but at least one usable -> `Degraded`,
+    /// - every source down / empty -> `Unavailable`.
+    ///
+    /// This aggregates each sub-source's `health()`; it does not run a live
+    /// `fill_bytes` probe (the `Source::health` contract is `&self`, so a probe
+    /// would require interior mutability). The dedicated `/v1/health` endpoint
+    /// in `services::health` performs the live per-source probes.
     fn health(&self) -> SourceHealth {
-        if self.sources.iter().any(|s| s.health() == SourceHealth::Healthy) {
-            SourceHealth::Healthy
-        } else {
+        if self.sources.is_empty() {
+            return SourceHealth::Unavailable;
+        }
+        let all_unavailable = self
+            .sources
+            .iter()
+            .all(|s| s.health() == SourceHealth::Unavailable);
+        let any_unhealthy = self
+            .sources
+            .iter()
+            .any(|s| s.health() != SourceHealth::Healthy);
+        if all_unavailable {
             SourceHealth::Unavailable
+        } else if any_unhealthy {
+            SourceHealth::Degraded
+        } else {
+            SourceHealth::Healthy
         }
     }
 }
@@ -129,7 +159,29 @@ impl Source for Mixer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::{SourceError, SourceHealth, SourceKind};
     use crate::sources::OsCsprng;
+
+    /// A source that always reports itself unavailable, used to exercise the
+    /// mixer's health aggregation without depending on a real broken source.
+    struct AlwaysDown;
+    impl Source for AlwaysDown {
+        fn name(&self) -> String {
+            "always-down".to_string()
+        }
+        fn kind(&self) -> SourceKind {
+            SourceKind::Csprng
+        }
+        fn generate_u64(&mut self) -> Result<u64, SourceError> {
+            Err(SourceError::Unavailable("down".to_string()))
+        }
+        fn fill_bytes(&mut self, _: &mut [u8]) -> Result<(), SourceError> {
+            Err(SourceError::Unavailable("down".to_string()))
+        }
+        fn health(&self) -> SourceHealth {
+            SourceHealth::Unavailable
+        }
+    }
 
     fn two_os_mixer() -> Mixer {
         let sources: Vec<Box<dyn Source>> = vec![
@@ -154,5 +206,32 @@ mod tests {
         // A real CSPRNG-mixed buffer of 200 bytes is astronomically unlikely
         // to be all zeros; this guards against a no-op / wrong-length path.
         assert!(buf.iter().any(|&b| b != 0), "buffer should not be all zeros");
+    }
+
+    /// W2: a mixer with one healthy and one unavailable source must report
+    /// `Degraded`, not silently `Healthy`.
+    #[test]
+    fn health_degraded_when_any_source_is_down() {
+        let sources: Vec<Box<dyn Source>> = vec![
+            Box::new(OsCsprng::new()),
+            Box::new(AlwaysDown),
+        ];
+        let mixer = Mixer::new(sources, "degraded-mixer");
+        assert_eq!(mixer.health(), SourceHealth::Degraded);
+    }
+
+    /// W2: a mixer of only healthy sources is `Healthy`.
+    #[test]
+    fn health_healthy_when_all_sources_healthy() {
+        let mixer = two_os_mixer();
+        assert_eq!(mixer.health(), SourceHealth::Healthy);
+    }
+
+    /// W2: a mixer where every source is down is `Unavailable`.
+    #[test]
+    fn health_unavailable_when_all_sources_down() {
+        let sources: Vec<Box<dyn Source>> = vec![Box::new(AlwaysDown), Box::new(AlwaysDown)];
+        let mixer = Mixer::new(sources, "dead-mixer");
+        assert_eq!(mixer.health(), SourceHealth::Unavailable);
     }
 }

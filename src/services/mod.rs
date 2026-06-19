@@ -30,6 +30,17 @@ pub fn make_source(req: &SourceRequest) -> Result<Box<dyn Source>, SourceError> 
     create_source(name, req.seed.as_deref())
 }
 
+/// Map a [`SourceHealth`](crate::core::SourceHealth) onto the lowercase string
+/// used in provenance / health JSON (`healthy` / `degraded` / `unavailable`).
+fn health_status_str(h: crate::core::SourceHealth) -> &'static str {
+    use crate::core::SourceHealth;
+    match h {
+        SourceHealth::Healthy => "healthy",
+        SourceHealth::Degraded => "degraded",
+        SourceHealth::Unavailable => "unavailable",
+    }
+}
+
 pub fn build_provenance(source: &dyn Source, entropy_bits: f64, latency_ms: f64) -> Provenance {
     Provenance {
         source: source.name(),
@@ -39,6 +50,9 @@ pub fn build_provenance(source: &dyn Source, entropy_bits: f64, latency_ms: f64)
         request_id: generate_request_id(),
         seed: source.seed(),
         latency_ms,
+        // Self-reported health of *this* response's source. Live network
+        // probing is exposed separately via [`health`].
+        source_health: health_status_str(source.health()).to_string(),
     }
 }
 
@@ -59,6 +73,17 @@ mod hex {
         }
         s
     }
+}
+
+/// Shannon entropy (in bits) of drawing `k` *distinct* items from a set of
+/// `n` (sampling **without** replacement): `log2(n! / (n-k)!) =
+/// sum_{i=0}^{k-1} log2(n - i)`. For a full permutation pass `k == n` to get
+/// `log2(n!)`. `k` is capped at `n` so the index never underflows (you cannot
+/// draw more distinct items than exist), which keeps callers such as lottery
+/// that only validate `pick <= 20` panic-free when `pick > pool`.
+fn log2_permutations(n: usize, k: usize) -> f64 {
+    let k = k.min(n);
+    (0..k).map(|i| ((n - i) as f64).log2()).sum()
 }
 
 fn entropy_bits_dice(notation: &str) -> f64 {
@@ -141,7 +166,7 @@ pub fn draw(req: &DrawRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
         result: out,
         provenance: build_provenance(
             source.as_ref(),
-            req.count as f64 * (52.0f64.log2()),
+            log2_permutations(52, req.count),
             latency,
         ),
     })
@@ -173,7 +198,7 @@ pub fn pick(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
         result: winners,
         provenance: build_provenance(
             source.as_ref(),
-            (req.items.len() as f64).log2() * req.count as f64,
+            log2_permutations(req.items.len(), req.count),
             latency,
         ),
     })
@@ -191,7 +216,7 @@ pub fn shuffle(req: &ShuffleRequest) -> Result<ApiResponse<Vec<String>>, SourceE
         result: items,
         provenance: build_provenance(
             source.as_ref(),
-            (req.items.len() as f64).log2() * req.items.len() as f64,
+            log2_permutations(req.items.len(), req.items.len()),
             latency,
         ),
     })
@@ -321,7 +346,7 @@ pub fn tarot(req: &TarotRequest) -> Result<ApiResponse<Vec<TarotCardDto>>, Sourc
 
     Ok(ApiResponse {
         result: out,
-        provenance: build_provenance(source.as_ref(), req.count as f64 * 78f64.log2(), latency),
+        provenance: build_provenance(source.as_ref(), log2_permutations(78, req.count), latency),
     })
 }
 
@@ -345,7 +370,7 @@ pub fn dominoes(req: &DominoesRequest) -> Result<ApiResponse<Vec<DominoDto>>, So
         result: out,
         provenance: build_provenance(
             source.as_ref(),
-            req.count as f64 * set_size.log2(),
+            crate::services::log2_permutations(set_size as usize, req.count),
             latency,
         ),
     })
@@ -390,7 +415,7 @@ pub fn lottery(req: &LotteryRequest) -> Result<ApiResponse<LotteryResultDto>, So
         result: dto,
         provenance: build_provenance(
             source.as_ref(),
-            req.pick as f64 * (req.pool as f64).log2(),
+            log2_permutations(req.pool as usize, req.pick),
             latency,
         ),
     })
@@ -470,7 +495,7 @@ pub fn lots(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
         result: winners,
         provenance: build_provenance(
             source.as_ref(),
-            (req.items.len() as f64).log2() * req.count as f64,
+            log2_permutations(req.items.len(), req.count),
             latency,
         ),
     })
@@ -481,10 +506,78 @@ pub fn source_names() -> Vec<String> {
 }
 
 pub fn health() -> serde_json::Value {
+    let names = crate::sources::source_names();
+    let mut sources = serde_json::Map::new();
+    let mut all_healthy = true;
+
+    for &name in names {
+        // `mix` is a composite that needs a sub-source spec, so probe it with a
+        // representative healthy pairing rather than the bare (unconstructable)
+        // name `mix`.
+        let probe_name = if name == "mix" {
+            "mix:os-csprng,chacha20"
+        } else {
+            name
+        };
+        let status = probe_source(name, probe_name);
+        if status != "healthy" {
+            all_healthy = false;
+        }
+        sources.insert(
+            name.to_string(),
+            serde_json::Value::String(status.to_string()),
+        );
+    }
+
     serde_json::json!({
-        "status": "ok",
+        "status": if all_healthy { "ok" } else { "degraded" },
+        "sources": sources,
         "timestamp": chrono::Utc::now().to_rfc3339(),
     })
+}
+
+/// Probe one source by name inside a short timeout. Constructs the source via
+/// the normal [`make_source`] path and runs a single 8-byte `fill_bytes` probe.
+/// Returns a stable status string for the health map:
+/// - `healthy`     — constructed and produced bytes,
+/// - `unavailable` — constructed but the probe returned an error,
+/// - `unreachable` — the probe did not finish within the timeout (e.g. a
+///                   network beacon with no connectivity).
+fn probe_source(display_name: &str, source_name: &str) -> &'static str {
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    let key = source_name.to_string();
+    let (tx, rx) = mpsc::channel::<Result<(), SourceError>>();
+
+    let handle = std::thread::Builder::new()
+        .name(format!("chance-probe-{display_name}"))
+        .spawn(move || {
+            let outcome = (|| {
+                let req = SourceRequest {
+                    source: Some(key.clone()),
+                    seed: None,
+                };
+                let mut src = make_source(&req)?;
+                let mut buf = [0u8; 8];
+                src.fill_bytes(&mut buf)?;
+                Ok::<(), SourceError>(())
+            })();
+            // `send` only fails if the receiver was dropped (timeout path),
+            // in which case there is nothing useful to do.
+            let _ = tx.send(outcome);
+        });
+
+    if handle.is_err() {
+        return "unavailable";
+    }
+
+    match rx.recv_timeout(Duration::from_millis(800)) {
+        Ok(Ok(())) => "healthy",
+        Ok(Err(_)) => "unavailable",
+        Err(mpsc::RecvTimeoutError::Timeout) => "unreachable",
+        Err(mpsc::RecvTimeoutError::Disconnected) => "unavailable",
+    }
 }
 
 #[cfg(test)]
@@ -522,5 +615,84 @@ mod tests {
         };
         let err = pick(&req).unwrap_err();
         assert!(matches!(err, SourceError::InvalidInput(_)));
+    }
+
+    /// W2: `health()` must actually probe sources and return an honest overall
+    /// status with a non-empty per-source map (not a static `{"status":"ok"}`).
+    #[test]
+    fn health_probes_each_source() {
+        let h = health();
+        let status = h["status"].as_str().expect("status present");
+        assert!(
+            status == "ok" || status == "degraded",
+            "overall status must be ok or degraded, got {status}"
+        );
+        let sources = h["sources"].as_object().expect("sources is an object");
+        assert!(!sources.is_empty(), "sources map must be non-empty");
+        // The OS CSPRNG is always locally available and must be healthy.
+        assert_eq!(sources["os-csprng"].as_str(), Some("healthy"));
+        // Every per-source value is one of the documented statuses.
+        for (_, v) in sources {
+            let s = v.as_str().expect("source status is a string");
+            assert!(
+                matches!(s, "healthy" | "degraded" | "unavailable" | "unreachable"),
+                "unexpected source status {s}"
+            );
+        }
+    }
+
+    /// W7: shuffling a 52-card deck yields exactly log2(52!) bits of entropy
+    /// (true without-replacement accounting), within float tolerance.
+    #[test]
+    fn shuffle_entropy_is_log2_factorial() {
+        let items: Vec<String> = (0..52).map(|i| i.to_string()).collect();
+        let req = ShuffleRequest {
+            source: SourceRequest::default(),
+            items,
+        };
+        let resp = shuffle(&req).expect("shuffle should succeed");
+        let expected: f64 = (1..=52).map(|i| (i as f64).log2()).sum();
+        assert!(
+            (resp.provenance.entropy_bits - expected).abs() < 1e-6,
+            "shuffle entropy {} != log2(52!) {}",
+            resp.provenance.entropy_bits,
+            expected
+        );
+        // Provenance now carries the source's self-reported health.
+        assert_eq!(resp.provenance.source_health, "healthy");
+    }
+
+    /// W7: picking 2 distinct items from 4 is log2(4) + log2(3), i.e. the
+    /// permutation entropy log2(4P2) — not the with-replacement 2*log2(4).
+    #[test]
+    fn pick_entropy_is_permutation() {
+        let items: Vec<String> = vec!["a", "b", "c", "d"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        let req = ListRequest {
+            source: SourceRequest::default(),
+            items,
+            count: 2,
+        };
+        let resp = pick(&req).expect("pick should succeed");
+        let expected = (4.0f64).log2() + (3.0f64).log2();
+        assert!(
+            (resp.provenance.entropy_bits - expected).abs() < 1e-9,
+            "pick(2 from 4) entropy {} != log2(4)+log2(3) {}",
+            resp.provenance.entropy_bits,
+            expected
+        );
+    }
+
+    /// W7: `log2_permutations` directly. log2(5P2) = log2(5)+log2(4) and a full
+    /// permutation of 3 is log2(3!) = log2(6).
+    #[test]
+    fn log2_permutations_helper_is_correct() {
+        assert!((log2_permutations(5, 2) - ((5.0f64).log2() + (4.0f64).log2())).abs() < 1e-9);
+        assert!((log2_permutations(3, 3) - (6.0f64).log2()).abs() < 1e-9);
+        // k > n caps at n, never underflows.
+        assert!((log2_permutations(3, 10) - (6.0f64).log2()).abs() < 1e-9);
+        assert_eq!(log2_permutations(0, 0), 0.0);
     }
 }

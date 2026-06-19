@@ -40,6 +40,15 @@ impl Source for OsCsprng {
         Ok(())
     }
 
+    /// W2: `OsRng` is reported as unconditionally healthy. A failure from the
+    /// underlying `getrandom` syscall would indicate a fundamental OS fault
+    /// (no entropy pool / kernel RNG not initialized) that a synthetic probe
+    /// here cannot recover from and that would already surface as an error from
+    /// `generate_u64`/`fill_bytes`. So rather than run a throwaway probe whose
+    /// only signal duplicates the next real request, we return `Healthy` and
+    /// let the actual generation calls report any failure. (Live end-to-end
+    /// probing of every source, including this one, lives in
+    /// `services::health`, which exercises the real `fill_bytes` path.)
     fn health(&self) -> SourceHealth {
         SourceHealth::Healthy
     }

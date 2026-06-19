@@ -36,21 +36,33 @@ pub fn roll_dice(source: &mut dyn Source, notation: &str) -> Result<RollResult, 
 
 fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::core::SourceError> {
     let Expr::Sum(terms) = expr;
-    let mut total = 0i64;
+    let mut total: i128 = 0;
     let mut all_rolls = Vec::new();
     let mut all_dropped = Vec::new();
-    let mut modifier_total = 0i64;
+    let mut modifier_total: i128 = 0;
     let mut success_count: Option<u64> = None;
 
     for (sign, term) in terms {
-        let sign_mult = if *sign == Sign::Plus { 1 } else { -1 };
+        let sign_mult: i64 = if *sign == Sign::Plus { 1 } else { -1 };
         match term {
             Term::Number(n) => {
-                modifier_total += sign_mult * n;
+                modifier_total = modifier_total
+                    .checked_add((sign_mult as i128) * (*n as i128))
+                    .ok_or_else(|| {
+                        crate::core::SourceError::GenerationFailed(
+                            "dice total overflow".into(),
+                        )
+                    })?;
             }
             Term::Dice(dice) => {
                 let result = roll_die_term(source, dice)?;
-                total += sign_mult * result.total;
+                total = total
+                    .checked_add((sign_mult as i128) * (result.total as i128))
+                    .ok_or_else(|| {
+                        crate::core::SourceError::GenerationFailed(
+                            "dice total overflow".into(),
+                        )
+                    })?;
                 all_rolls.extend(result.rolls);
                 all_dropped.extend(result.dropped);
                 if let Some(sc) = result.success_count {
@@ -60,20 +72,41 @@ fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::c
         }
     }
 
-    total += modifier_total;
+    total = total
+        .checked_add(modifier_total)
+        .ok_or_else(|| crate::core::SourceError::GenerationFailed("dice total overflow".into()))?;
+
+    let total_i64 = i64::try_from(total)
+        .map_err(|_| crate::core::SourceError::GenerationFailed("dice total out of i64 range".into()))?;
+    let modifier_total_i64 = i64::try_from(modifier_total).map_err(|_| {
+        crate::core::SourceError::GenerationFailed("dice total out of i64 range".into())
+    })?;
 
     Ok(RollResult {
-        total,
+        total: total_i64,
         rolls: all_rolls,
         dropped: all_dropped,
-        modifier_total,
+        modifier_total: modifier_total_i64,
         success_count,
     })
 }
 
 fn roll_die_term(source: &mut dyn Source, dice: &DiceTerm) -> Result<RollResult, crate::core::SourceError> {
+    // Guard against degenerate inputs that would overflow the accumulator or
+    // spin for an unbounded number of rolls. This cap is enforced at the method
+    // level so direct callers (not just the API, which caps per-field) are safe.
+    if dice.count > 10_000 {
+        return Err(crate::core::SourceError::GenerationFailed(
+            "dice count per term exceeds 10000".to_string(),
+        ));
+    }
     let (size, fudge) = match dice.size {
-        DieSize::Sides(n) => (n as i64, false),
+        DieSize::Sides(n) => (
+            i64::try_from(n).map_err(|_| {
+                crate::core::SourceError::GenerationFailed("die size exceeds i64".into())
+            })?,
+            false,
+        ),
         DieSize::Percentile => (100, false),
         DieSize::Fudge => (3, true),
     };
@@ -288,5 +321,48 @@ mod tests {
         assert!(result.is_ok(), "4d6! should succeed");
         let result = result.unwrap();
         assert!(result.total > 0, "4d6! should produce a positive total");
+    }
+    /// Regression: previously totals were accumulated in `i64` with plain `+=`,
+    /// which overflowed (debug panic / release wrap) for large counts/sides, and
+    /// `n as i64` silently truncated sides larger than `i64::MAX`.
+    #[test]
+    fn w6_count_cap_rejects_excess_dice() {
+        let mut src = FixedSource { value: u64::MAX };
+        // 100000 dice is rejected by the per-term count cap (10000) before any
+        // rolling happens, instead of overflowing the accumulator.
+        let err = roll_dice(&mut src, "100000d20").unwrap_err();
+        let msg = format!("{err}");
+        assert!(
+            msg.contains("dice count per term exceeds 10000"),
+            "unexpected error: {msg}"
+        );
+    }
+
+    #[test]
+    fn w6_count_at_cap_succeeds() {
+        let mut src = FixedSource { value: u64::MAX };
+        // Exactly the cap (10000) is allowed. With an always-max source every d6
+        // rolls 6, so the total is exactly 60000, which fits i64 and i128.
+        let result = roll_dice(&mut src, "10000d6").expect("10000d6 should succeed");
+        assert_eq!(result.total, 60_000);
+    }
+
+    #[test]
+    fn w6_die_size_exceeding_i64_is_rejected() {
+        let mut src = FixedSource { value: u64::MAX };
+        // A die with more sides than fit in i64 must error instead of silently
+        // truncating via `n as i64`. Count is within the cap so the size check is
+        // the failure point.
+        let dice = DiceTerm {
+            count: 1,
+            size: DieSize::Sides(u64::MAX),
+            modifiers: vec![],
+        };
+        let err = roll_die_term(&mut src, &dice).unwrap_err();
+        let msg = format!("{err}");
+        assert!(
+            msg.contains("die size exceeds i64"),
+            "unexpected error: {msg}"
+        );
     }
 }

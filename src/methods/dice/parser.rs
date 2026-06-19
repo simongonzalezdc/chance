@@ -29,10 +29,10 @@ pub fn parse(input: &str) -> Result<Expr, ParseError> {
 fn normalize(input: &str) -> String {
     let s = input.to_lowercase().replace(' ', "");
     // Expand advantage/disadvantage shorthand.
-    s.replace("adv", "kh1")
-        .replace("dis", "kl1")
-        .replace("disadvantage", "kl1")
+    s.replace("disadvantage", "kl1")
         .replace("advantage", "kh1")
+        .replace("adv", "kh1")
+        .replace("dis", "kl1")
 }
 
 struct Parser<'a> {
@@ -93,7 +93,7 @@ impl<'a> Parser<'a> {
             return self.parse_dice_term_with_count(1);
         }
 
-        let _start = self.pos;
+        let start = self.pos;
         let number = self.parse_number()?;
 
         if self.peek() == 'd' {
@@ -101,8 +101,11 @@ impl<'a> Parser<'a> {
             return self.parse_die_rest(number);
         }
 
-        // Plain number.
-        Ok(Term::Number(number as i64))
+        // Plain number. Reject values that exceed i64 instead of silently
+        // flipping sign via `number as i64`.
+        Ok(Term::Number(
+            i64::try_from(number).map_err(|_| ParseError::InvalidNumber(start))?,
+        ))
     }
 
     fn parse_dice_term_with_count(&mut self, count: u64) -> Result<Term, ParseError> {
@@ -225,7 +228,9 @@ impl<'a> Parser<'a> {
             '=' => Comparator::Eq,
             c => return Err(ParseError::UnexpectedChar(c, self.pos - 1)),
         };
-        let value = self.parse_number()? as i64;
+        let num_start = self.pos;
+        let value =
+            i64::try_from(self.parse_number()?).map_err(|_| ParseError::InvalidNumber(num_start))?;
         Ok((cmp, value))
     }
 
@@ -293,5 +298,72 @@ mod tests {
                 _ => panic!("expected dice"),
             },
         }
+    }
+
+    /// Regression: `normalize()` previously expanded the short tokens `adv`/
+    /// `dis` *before* the long forms `advantage`/`disadvantage`, so `2d20advantage`
+    /// was mangled into `2d20kh1antage` and failed to parse.
+    #[test]
+    fn n3_advantage_long_form_parses() {
+        let expr = parse("2d20advantage").expect("2d20advantage should parse");
+        match expr {
+            Expr::Sum(v) => match &v[0].1 {
+                Term::Dice(d) => assert_eq!(d.modifiers, vec![Modifier::KeepHighest(1)]),
+                _ => panic!("expected dice"),
+            },
+        }
+    }
+
+    #[test]
+    fn n3_disadvantage_long_form_parses() {
+        let expr = parse("2d20disadvantage").expect("2d20disadvantage should parse");
+        match expr {
+            Expr::Sum(v) => match &v[0].1 {
+                Term::Dice(d) => assert_eq!(d.modifiers, vec![Modifier::KeepLowest(1)]),
+                _ => panic!("expected dice"),
+            },
+        }
+    }
+
+    /// Short forms still work after the reorder.
+    #[test]
+    fn n3_advantage_short_form_still_parses() {
+        let expr = parse("2d20dis").unwrap();
+        match expr {
+            Expr::Sum(v) => match &v[0].1 {
+                Term::Dice(d) => assert_eq!(d.modifiers, vec![Modifier::KeepLowest(1)]),
+                _ => panic!("expected dice"),
+            },
+        }
+    }
+
+    /// Regression: bare numbers were coerced via `number as i64`, which silently
+    /// wrapped values above i64::MAX (e.g. i64::MAX + 1 became a negative). They
+    /// must now be rejected.
+    #[test]
+    fn w6_bare_number_above_i64_max_is_rejected() {
+        let res = parse("+9223372036854775808"); // i64::MAX + 1
+        assert!(
+            matches!(res, Err(ParseError::InvalidNumber(_))),
+            "expected InvalidNumber, got {res:?}"
+        );
+    }
+
+    /// Sanity: the largest legitimate bare number still parses.
+    #[test]
+    fn w6_bare_number_at_i64_max_parses() {
+        let expr = parse("9223372036854775807").unwrap(); // i64::MAX
+        assert_eq!(expr, Expr::Sum(vec![(Sign::Plus, Term::Number(i64::MAX))]));
+    }
+
+    /// Regression: a comparator value above i64::MAX must be rejected too.
+    #[test]
+    fn w6_comparator_value_above_i64_max_is_rejected() {
+        // `1d20>9223372036854775808` -> success target exceeds i64::MAX.
+        let res = parse("1d20>9223372036854775808");
+        assert!(
+            matches!(res, Err(ParseError::InvalidNumber(_))),
+            "expected InvalidNumber, got {res:?}"
+        );
     }
 }

@@ -186,8 +186,16 @@ pub enum Commands {
     },
 
     /// Serve the HTTP API.
+    ///
+    /// Binds to loopback by default; pass `--host 0.0.0.0` (or another
+    /// interface) to expose the server beyond the local machine.
     #[cfg(feature = "api")]
     Serve {
+        /// Network interface to bind (default loopback for safety).
+        #[arg(long, default_value = "127.0.0.1")]
+        host: String,
+
+        /// TCP port to listen on.
         #[arg(short, long, default_value = "8080")]
         port: u16,
     },
@@ -226,7 +234,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
         Commands::Cowrie { shells } => cmd_cowrie(&cli, *shells),
         Commands::Lots { count, items } => cmd_lots(&cli, items, *count),
         #[cfg(feature = "api")]
-        Commands::Serve { port } => cmd_serve(*port),
+        Commands::Serve { host, port } => cmd_serve(host, *port),
         #[cfg(feature = "mcp")]
         Commands::Mcp => cmd_mcp(),
         #[cfg(feature = "tui")]
@@ -510,10 +518,40 @@ fn cmd_lots(cli: &Cli, items: &[String], count: usize) -> Result<(), Box<dyn std
 }
 
 #[cfg(feature = "api")]
-fn cmd_serve(port: u16) -> Result<(), Box<dyn std::error::Error>> {
+fn cmd_serve(host: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let rt = tokio::runtime::Runtime::new()?;
-    rt.block_on(crate::api::serve(port))?;
+    rt.block_on(crate::api::serve(host, port))?;
     Ok(())
+}
+
+#[cfg(all(test, feature = "api"))]
+mod tests {
+    use super::*;
+    use clap::Parser;
+
+    #[test]
+    fn serve_defaults_to_loopback() {
+        let cli = Cli::parse_from(["chance", "serve"]);
+        match cli.command {
+            Commands::Serve { host, port } => {
+                assert_eq!(host, "127.0.0.1", "default host must be loopback");
+                assert_eq!(port, 8080);
+            }
+            _ => panic!("expected Serve command"),
+        }
+    }
+
+    #[test]
+    fn serve_accepts_explicit_host() {
+        let cli = Cli::parse_from(["chance", "serve", "--host", "0.0.0.0", "-p", "9090"]);
+        match cli.command {
+            Commands::Serve { host, port } => {
+                assert_eq!(host, "0.0.0.0");
+                assert_eq!(port, 9090);
+            }
+            _ => panic!("expected Serve command"),
+        }
+    }
 }
 
 #[cfg(feature = "mcp")]

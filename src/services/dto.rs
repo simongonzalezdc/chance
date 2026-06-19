@@ -10,6 +10,12 @@ pub struct Provenance {
     pub request_id: String,
     pub seed: Option<String>,
     pub latency_ms: f64,
+    /// Self-reported health of the source that produced this result
+    /// (`healthy` / `degraded` / `unavailable`). `#[serde(default)]` so
+    /// deserializing older responses that omit the field still succeeds;
+    /// serialization always includes it.
+    #[serde(default)]
+    pub source_health: String,
 }
 
 /// Wrap any result with provenance.
@@ -495,6 +501,6 @@ impl Default for CowrieRequest {
 #[derive(Debug, Clone, Serialize)]
 pub struct CowrieResultDto {
     pub shells: usize,
-    pub open_count: u8,
+    pub open_count: u32,
     pub meaning: String,
 }

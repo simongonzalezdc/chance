@@ -52,6 +52,8 @@ pub fn all_tools() -> Vec<Tool> {
                 "notation": {
                     "type": "string",
                     "description": "Dice notation expression.",
+                    "minLength": 1,
+                    "maxLength": 256,
                     "default": "d20"
                 }
             }),
@@ -65,6 +67,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Number of flips.",
                     "minimum": 1,
+                    "maximum": 1000000,
                     "default": 1
                 }
             }),
@@ -92,7 +95,8 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "array",
                     "description": "Items to choose from.",
                     "items": { "type": "string" },
-                    "minItems": 1
+                    "minItems": 1,
+                    "maxItems": 100000
                 },
                 "count": {
                     "type": "integer",
@@ -111,7 +115,8 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "array",
                     "description": "Items to shuffle.",
                     "items": { "type": "string" },
-                    "minItems": 1
+                    "minItems": 0,
+                    "maxItems": 100000
                 }
             }),
         ),
@@ -141,6 +146,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Number of bytes.",
                     "minimum": 1,
+                    "maximum": 1048576,
                     "default": 16
                 },
                 "encoding": {
@@ -173,6 +179,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Password length.",
                     "minimum": 1,
+                    "maximum": 1024,
                     "default": 16
                 },
                 "symbols": {
@@ -191,6 +198,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Number of runes to draw.",
                     "minimum": 1,
+                    "maximum": 24,
                     "default": 1
                 }
             }),
@@ -231,12 +239,14 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Double-n set size (e.g. 6 for double-six).",
                     "minimum": 0,
+                    "maximum": 18,
                     "default": 6
                 },
                 "count": {
                     "type": "integer",
                     "description": "Number of dominoes to draw.",
                     "minimum": 1,
+                    "maximum": 1000,
                     "default": 1
                 }
             }),
@@ -249,7 +259,7 @@ pub fn all_tools() -> Vec<Tool> {
                 "variant": {
                     "type": "string",
                     "description": "Roulette variant.",
-                    "enum": ["european", "american", "french"],
+                    "enum": ["european", "american"],
                     "default": "european"
                 }
             }),
@@ -263,17 +273,21 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Highest numbered ball in the pool.",
                     "minimum": 1,
+                    "maximum": 99,
                     "default": 49
                 },
                 "pick": {
                     "type": "integer",
                     "description": "How many numbers to draw.",
                     "minimum": 1,
+                    "maximum": 20,
                     "default": 6
                 },
                 "bonus_pool": {
                     "type": ["integer", "null"],
-                    "description": "Optional separate bonus ball pool size."
+                    "description": "Optional separate bonus ball pool size.",
+                    "minimum": 1,
+                    "maximum": 99
                 }
             }),
         ),
@@ -286,6 +300,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Number of bones to cast.",
                     "minimum": 1,
+                    "maximum": 1000,
                     "default": 4
                 }
             }),
@@ -311,6 +326,7 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "integer",
                     "description": "Number of shells (traditionally 4 or 16).",
                     "minimum": 1,
+                    "maximum": 64,
                     "default": 4
                 }
             }),
@@ -324,7 +340,8 @@ pub fn all_tools() -> Vec<Tool> {
                     "type": "array",
                     "description": "Items to draw from.",
                     "items": { "type": "string" },
-                    "minItems": 1
+                    "minItems": 1,
+                    "maxItems": 100000
                 },
                 "count": {
                     "type": "integer",
@@ -465,5 +482,95 @@ pub fn call_tool(params: &CallToolParams) -> CallToolResult {
             CallToolResult::text(text)
         }
         Err(e) => CallToolResult::error(e),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// W8: an over-cap argument must surface as a tool error result
+    /// (`is_error == true`), never a panic. The services layer enforces the
+    /// 1 MiB byte cap; the MCP dispatch must propagate that as an error.
+    #[test]
+    fn over_cap_bytes_returns_error_not_panic() {
+        let params = CallToolParams {
+            name: "chance_bytes".to_string(),
+            arguments: Some(json!({ "count": 2_000_000u64, "encoding": "hex" })),
+        };
+        let result = call_tool(&params);
+        assert!(
+            result.is_error,
+            "expected is_error=true for over-cap count, got: {:?}",
+            result.content
+        );
+    }
+
+    /// W8: an oversized count that still fits in `usize` but exceeds the cap is
+    /// rejected by services and surfaced as an error, not a panic. This guards
+    /// against a panic path ever being introduced in the dispatch.
+    #[test]
+    fn over_cap_runes_returns_error() {
+        let params = CallToolParams {
+            name: "chance_runes".to_string(),
+            arguments: Some(json!({ "count": 99u64 })),
+        };
+        let result = call_tool(&params);
+        assert!(result.is_error, "expected is_error=true for 99 runes");
+    }
+
+    /// Roulette honesty: the schema must not advertise `french` (which is not a
+    /// distinct variant from `european`), while still listing american/european.
+    #[test]
+    fn roulette_schema_omits_french() {
+        let tools = all_tools();
+        let roulette = tools
+            .iter()
+            .find(|t| t.name == "chance_roulette")
+            .expect("chance_roulette tool must exist");
+        let schema = serde_json::to_string(&roulette.input_schema).unwrap();
+        assert!(
+            !schema.contains("french"),
+            "roulette schema must not advertise french: {}",
+            schema
+        );
+        assert!(schema.contains("european"));
+        assert!(schema.contains("american"));
+    }
+
+    /// W8: advertised schema maximums must match the caps enforced in
+    /// services/mod.rs so the schema is not misleading.
+    #[test]
+    fn schema_maximums_match_enforced_caps() {
+        let tools = all_tools();
+        let max_of = |tool_name: &str, field: &str| -> Option<u64> {
+            let tool = tools.iter().find(|t| t.name == tool_name).unwrap();
+            tool.input_schema["properties"][field]["maximum"].as_u64()
+        };
+
+        assert_eq!(max_of("chance_bytes", "count"), Some(1_048_576));
+        assert_eq!(max_of("chance_password", "length"), Some(1024));
+        assert_eq!(max_of("chance_flip", "times"), Some(1_000_000));
+        assert_eq!(max_of("chance_draw", "count"), Some(52));
+        assert_eq!(max_of("chance_tarot", "count"), Some(78));
+        assert_eq!(max_of("chance_runes", "count"), Some(24));
+        assert_eq!(max_of("chance_dominoes", "set"), Some(18));
+        assert_eq!(max_of("chance_dominoes", "count"), Some(1000));
+        assert_eq!(max_of("chance_lottery", "pool"), Some(99));
+        assert_eq!(max_of("chance_lottery", "pick"), Some(20));
+        assert_eq!(max_of("chance_knucklebones", "count"), Some(1000));
+        assert_eq!(max_of("chance_cowrie", "shells"), Some(64));
+
+        let max_items = |tool_name: &str| -> Option<u64> {
+            let tool = tools.iter().find(|t| t.name == tool_name).unwrap();
+            tool.input_schema["properties"]["items"]["maxItems"].as_u64()
+        };
+        assert_eq!(max_items("chance_pick"), Some(100_000));
+        assert_eq!(max_items("chance_shuffle"), Some(100_000));
+        assert_eq!(max_items("chance_lots"), Some(100_000));
+
+        // Roll notation length cap matches the services notation_len cap.
+        let roll = tools.iter().find(|t| t.name == "chance_roll").unwrap();
+        assert_eq!(roll.input_schema["properties"]["notation"]["maxLength"].as_u64(), Some(256));
     }
 }
