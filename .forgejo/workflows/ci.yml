@@ -1,0 +1,40 @@
+# chance — fmt, clippy (-D warnings), tests on every push/PR to master.
+# Mirrors the local quality bar landed 2026-07-25 (validate.sh + clippy clean).
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          set -euo pipefail
+          if ! command -v rustc >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --default-toolchain stable --profile minimal -c rustfmt,clippy
+          fi
+          # shellcheck source=/dev/null
+          source "$HOME/.cargo/env" 2>/dev/null || true
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          rustc --version
+          cargo --version
+
+      - name: cargo fmt --check
+        run: |
+          source "$HOME/.cargo/env" 2>/dev/null || true
+          cargo fmt --all -- --check
+
+      - name: cargo clippy (-D warnings)
+        run: |
+          source "$HOME/.cargo/env" 2>/dev/null || true
+          cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: cargo test
+        run: |
+          source "$HOME/.cargo/env" 2>/dev/null || true
+          cargo test --all-features
