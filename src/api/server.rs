@@ -26,14 +26,21 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 /// - a 2 MiB [`RequestBodyLimitLayer`] (defense in depth),
 /// - a [`TraceLayer`] for structured request spans.
 pub async fn serve(host: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
-    // Initialise structured logging exactly once. Ignore the error returned when
-    // the global subscriber was already installed (e.g. test harness, embedded use).
-    let _ = tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::from_default_env()
-                .add_directive("chance=info".parse().unwrap()),
-        )
-        .try_init();
+    // Initialise structured logging exactly once. `try_init` returns Err when a
+    // global subscriber is already installed (test harness / embedded use) — that
+    // is expected and safe to ignore after a single debug note.
+    let filter = tracing_subscriber::EnvFilter::from_default_env().add_directive(
+        "chance=info"
+            .parse()
+            .expect("static 'chance=info' directive must parse"),
+    );
+    if tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .try_init()
+        .is_err()
+    {
+        tracing::debug!("tracing subscriber already installed; keeping existing global subscriber");
+    }
 
     let state = Arc::new(AppState);
 

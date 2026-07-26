@@ -80,10 +80,15 @@ pub fn uniform_f64(source: &mut dyn Source) -> Result<f64, SourceError> {
 
 /// Generate a uniform `f64` in `[min, max)`.
 pub fn uniform_f64_range(source: &mut dyn Source, min: f64, max: f64) -> Result<f64, SourceError> {
-    if !(min < max) {
-        return Err(SourceError::GenerationFailed(
-            "min must be < max for f64 range".to_string(),
-        ));
+    use std::cmp::Ordering;
+    match min.partial_cmp(&max) {
+        Some(Ordering::Less) => {}
+        _ => {
+            return Err(SourceError::GenerationFailed(
+                "min must be < max for f64 range (and both must be finite comparable values)"
+                    .to_string(),
+            ));
+        }
     }
     let u = uniform_f64(source)?;
     Ok(min + u * (max - min))
@@ -126,8 +131,8 @@ mod tests {
     fn test_uniform_u64_inclusive_full_range() {
         let mut src = OsCsprng::new();
         for _ in 0..1000 {
-            let v = uniform_u64_inclusive(&mut src, 0, u64::MAX).unwrap();
-            assert!(v <= u64::MAX, "value out of full u64 range");
+            // Succeeds for any u64; the assertion that matters is "does not panic / Err".
+            let _v = uniform_u64_inclusive(&mut src, 0, u64::MAX).unwrap();
         }
     }
 

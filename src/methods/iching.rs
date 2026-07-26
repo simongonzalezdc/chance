@@ -111,13 +111,20 @@ const KING_WEN_BY_PRIMARY: [u8; 64] = [
 ];
 
 /// Cast one I Ching line using the given method.
+///
+/// `method` must already be normalized to `"coin"` or `"yarrow"`.
 fn cast_line(
     source: &mut dyn Source,
     method: &str,
 ) -> Result<IChingLine, crate::core::SourceError> {
     let value = match method {
         "yarrow" => cast_yarrow(source)?,
-        "coin" | _ => cast_coin(source)?,
+        "coin" => cast_coin(source)?,
+        other => {
+            return Err(crate::core::SourceError::InvalidInput(format!(
+                "unknown iching method '{other}'; expected 'coin' or 'yarrow'"
+            )));
+        }
     };
     Ok(IChingLine {
         value,
@@ -149,11 +156,22 @@ fn cast_coin(source: &mut dyn Source) -> Result<u8, crate::core::SourceError> {
 }
 
 /// Cast a full I Ching reading.
+///
+/// Accepted methods: `"coin"` and `"yarrow"`. Any other string is rejected
+/// with [`SourceError::InvalidInput`] rather than silently remapped.
 pub fn cast_iching(
     source: &mut dyn Source,
     method: &str,
 ) -> Result<IChingResult, crate::core::SourceError> {
-    let method = if method == "yarrow" { "yarrow" } else { "coin" };
+    let method: &'static str = match method {
+        "coin" => "coin",
+        "yarrow" => "yarrow",
+        other => {
+            return Err(crate::core::SourceError::InvalidInput(format!(
+                "unknown iching method '{other}'; expected 'coin' or 'yarrow'"
+            )));
+        }
+    };
     let mut lines = Vec::with_capacity(6);
     let mut primary = 0u8;
     let mut transformed: Option<u8> = None;
@@ -167,6 +185,7 @@ pub fn cast_iching(
     if lines.iter().any(|l| l.changing) {
         let mut t = 0u8;
         for line in lines.iter().rev() {
+            // Changing yang (9) becomes yin; changing yin (6) becomes yang.
             t = (t << 1)
                 | if line.yang {
                     if line.value == 9 {
@@ -174,12 +193,10 @@ pub fn cast_iching(
                     } else {
                         1
                     }
+                } else if line.value == 6 {
+                    1
                 } else {
-                    if line.value == 6 {
-                        1
-                    } else {
-                        0
-                    }
+                    0
                 };
         }
         transformed = Some(t);
@@ -217,6 +234,20 @@ mod tests {
             method: "test",
         }
         .hexagram_name()
+    }
+
+    #[test]
+    fn unknown_method_is_rejected() {
+        use crate::sources::OsCsprng;
+        let mut src = OsCsprng::new();
+        for bad in ["", "coins", "sticks", "YARROW", "french"] {
+            let err = cast_iching(&mut src, bad).expect_err("must reject unknown method");
+            let msg = err.to_string();
+            assert!(
+                msg.contains("unknown iching method"),
+                "unexpected error for {bad:?}: {msg}"
+            );
+        }
     }
 
     #[test]

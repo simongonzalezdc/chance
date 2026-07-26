@@ -136,21 +136,12 @@ impl Default for ListRequest {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct ShuffleRequest {
     #[serde(flatten)]
     pub source: SourceRequest,
     #[serde(default)]
     pub items: Vec<String>,
-}
-
-impl Default for ShuffleRequest {
-    fn default() -> Self {
-        Self {
-            source: SourceRequest::default(),
-            items: Vec::new(),
-        }
-    }
 }
 
 fn default_one_usize() -> usize {
@@ -463,21 +454,12 @@ fn default_four_usize() -> usize {
 }
 
 // Teetotum
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct TeetotumRequest {
     #[serde(flatten)]
     pub source: SourceRequest,
     #[serde(default)]
     pub dreidel: bool,
-}
-
-impl Default for TeetotumRequest {
-    fn default() -> Self {
-        Self {
-            source: SourceRequest::default(),
-            dreidel: false,
-        }
-    }
 }
 
 // Cowrie

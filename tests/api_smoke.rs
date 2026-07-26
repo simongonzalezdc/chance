@@ -16,7 +16,7 @@ fn roll_default_d20() {
     assert!(resp.result.total >= 1);
     assert!(resp.result.total <= 20);
     assert!(!resp.result.rolls.is_empty());
-    assert!(resp.provenance.source.len() > 0);
+    assert!(!resp.provenance.source.is_empty());
 }
 
 #[test]

@@ -99,6 +99,12 @@ impl DrandSource {
     }
 }
 
+impl Default for DrandSource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(feature = "drand-verify")]
 impl DrandSource {
     /// Fetch `/info` once and cache the chain's public key plus whether the
@@ -199,7 +205,7 @@ fn info_url() -> String {
 
 #[cfg(feature = "drand-verify")]
 fn fetch_chain_info(client: &reqwest::blocking::Client) -> Result<DrandChainInfo, SourceError> {
-    let resp = client.get(&info_url()).send().map_err(|e| {
+    let resp = client.get(info_url()).send().map_err(|e| {
         tracing::warn!(error = %e, "drand /info request failed");
         SourceError::GenerationFailed("drand chain info request failed".to_string())
     })?;

@@ -448,7 +448,7 @@ fn draw_matrix(frame: &mut Frame, area: Rect, tick: u64, accent: Color) {
             format!("{:>6}  ", row_lbl[r]),
             Style::default().fg(TEXT_DIM),
         ));
-        for c in 0..4 {
+        for (c, word) in words[r].iter().enumerate() {
             let active = if phase < 4 {
                 c == phase as usize
             } else {
@@ -462,7 +462,7 @@ fn draw_matrix(frame: &mut Frame, area: Rect, tick: u64, accent: Color) {
             } else {
                 Style::default().fg(TEXT)
             };
-            spans.push(Span::styled(format!(" {:^10} ", words[r][c]), style));
+            spans.push(Span::styled(format!(" {:^10} ", word), style));
             if c < 3 {
                 spans.push(Span::raw(" "));
             }

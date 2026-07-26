@@ -21,7 +21,7 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
 
 pub fn bytes_to_base64(bytes: &[u8]) -> String {
     const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity((bytes.len() + 2) / 3 * 4);
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
     let mut chunks = bytes.chunks_exact(3);
     for chunk in chunks.by_ref() {
         let n = (chunk[0] as u32) << 16 | (chunk[1] as u32) << 8 | (chunk[2] as u32);

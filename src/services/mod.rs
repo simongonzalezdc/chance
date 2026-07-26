@@ -549,16 +549,18 @@ pub fn health() -> serde_json::Value {
 /// - `healthy`     — constructed and produced bytes,
 /// - `unavailable` — constructed but the probe returned an error,
 /// - `unreachable` — the probe did not finish within the timeout (e.g. a
-///                   network beacon with no connectivity).
+///   network beacon with no connectivity).
 fn probe_source(display_name: &str, source_name: &str) -> &'static str {
     use std::sync::mpsc;
     use std::time::Duration;
 
     let key = source_name.to_string();
+    let probe_label = display_name.to_string();
+    let thread_label = probe_label.clone();
     let (tx, rx) = mpsc::channel::<Result<(), SourceError>>();
 
     let handle = std::thread::Builder::new()
-        .name(format!("chance-probe-{display_name}"))
+        .name(format!("chance-probe-{thread_label}"))
         .spawn(move || {
             let outcome = (|| {
                 let req = SourceRequest {
@@ -570,20 +572,39 @@ fn probe_source(display_name: &str, source_name: &str) -> &'static str {
                 src.fill_bytes(&mut buf)?;
                 Ok::<(), SourceError>(())
             })();
-            // `send` only fails if the receiver was dropped (timeout path),
-            // in which case there is nothing useful to do.
-            let _ = tx.send(outcome);
+            // Receiver drop means the parent already timed out; log rather than
+            // silently discard so operator logs still show probe outcomes.
+            if tx.send(outcome).is_err() {
+                tracing::debug!(
+                    source = %thread_label,
+                    "health probe result dropped (receiver timed out)"
+                );
+            }
         });
 
-    if handle.is_err() {
+    if let Err(e) = handle {
+        tracing::warn!(
+            source = %probe_label,
+            error = %e,
+            "failed to spawn health probe thread"
+        );
         return "unavailable";
     }
 
     match rx.recv_timeout(Duration::from_millis(800)) {
         Ok(Ok(())) => "healthy",
-        Ok(Err(_)) => "unavailable",
+        Ok(Err(e)) => {
+            tracing::debug!(source = %probe_label, error = %e, "health probe failed");
+            "unavailable"
+        }
         Err(mpsc::RecvTimeoutError::Timeout) => "unreachable",
-        Err(mpsc::RecvTimeoutError::Disconnected) => "unavailable",
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            tracing::warn!(
+                source = %probe_label,
+                "health probe thread disconnected before reporting"
+            );
+            "unavailable"
+        }
     }
 }
 
@@ -673,10 +694,7 @@ mod tests {
     /// permutation entropy log2(4P2) — not the with-replacement 2*log2(4).
     #[test]
     fn pick_entropy_is_permutation() {
-        let items: Vec<String> = vec!["a", "b", "c", "d"]
-            .iter()
-            .map(|s| s.to_string())
-            .collect();
+        let items: Vec<String> = ["a", "b", "c", "d"].iter().map(|s| s.to_string()).collect();
         let req = ListRequest {
             source: SourceRequest::default(),
             items,
