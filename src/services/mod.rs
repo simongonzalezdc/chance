@@ -164,17 +164,15 @@ pub fn draw(req: &DrawRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
 
     Ok(ApiResponse {
         result: out,
-        provenance: build_provenance(
-            source.as_ref(),
-            log2_permutations(52, req.count),
-            latency,
-        ),
+        provenance: build_provenance(source.as_ref(), log2_permutations(52, req.count), latency),
     })
 }
 
 pub fn pick(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
     if req.items.is_empty() {
-        return Err(SourceError::InvalidInput("cannot pick from an empty list".to_string()));
+        return Err(SourceError::InvalidInput(
+            "cannot pick from an empty list".to_string(),
+        ));
     }
     if req.items.len() > 100_000 {
         return Err(SourceError::InvalidInput(format!(
@@ -276,7 +274,11 @@ pub fn password(req: &PasswordRequest) -> Result<ApiResponse<String>, SourceErro
     };
     let pw = generate_password(source.as_mut(), &options)?;
     let latency = start.elapsed().as_secs_f64() * 1000.0;
-    let alphabet_size = if options.symbols { 26 + 26 + 10 + 25 } else { 26 + 26 + 10 } as f64;
+    let alphabet_size = if options.symbols {
+        26 + 26 + 10 + 25
+    } else {
+        26 + 26 + 10
+    } as f64;
 
     Ok(ApiResponse {
         result: pw,
@@ -471,7 +473,9 @@ pub fn cowrie(req: &CowrieRequest) -> Result<ApiResponse<CowrieResultDto>, Sourc
 
 pub fn lots(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> {
     if req.items.is_empty() {
-        return Err(SourceError::InvalidInput("cannot draw lots from an empty list".to_string()));
+        return Err(SourceError::InvalidInput(
+            "cannot draw lots from an empty list".to_string(),
+        ));
     }
     if req.items.len() > 100_000 {
         return Err(SourceError::InvalidInput(format!(
@@ -502,7 +506,10 @@ pub fn lots(req: &ListRequest) -> Result<ApiResponse<Vec<String>>, SourceError> 
 }
 
 pub fn source_names() -> Vec<String> {
-    crate::sources::source_names().iter().map(|s| s.to_string()).collect()
+    crate::sources::source_names()
+        .iter()
+        .map(|s| s.to_string())
+        .collect()
 }
 
 pub fn health() -> serde_json::Value {

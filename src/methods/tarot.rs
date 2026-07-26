@@ -3,11 +3,28 @@ use crate::core::source::Source;
 use crate::methods::shuffle::shuffle;
 
 const MAJOR_ARCANA: &[&str] = &[
-    "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
-    "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit",
-    "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance",
-    "The Devil", "The Tower", "The Star", "The Moon", "The Sun",
-    "Judgement", "The World",
+    "The Fool",
+    "The Magician",
+    "The High Priestess",
+    "The Empress",
+    "The Emperor",
+    "The Hierophant",
+    "The Lovers",
+    "The Chariot",
+    "Strength",
+    "The Hermit",
+    "Wheel of Fortune",
+    "Justice",
+    "The Hanged Man",
+    "Death",
+    "Temperance",
+    "The Devil",
+    "The Tower",
+    "The Star",
+    "The Moon",
+    "The Sun",
+    "Judgement",
+    "The World",
 ];
 
 const SUIT_NAMES: &[&str] = &["Wands", "Cups", "Swords", "Pentacles"];
@@ -21,7 +38,12 @@ pub struct TarotCard {
 
 impl std::fmt::Display for TarotCard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ({})", self.name, if self.upright { "upright" } else { "reversed" })
+        write!(
+            f,
+            "{} ({})",
+            self.name,
+            if self.upright { "upright" } else { "reversed" }
+        )
     }
 }
 
@@ -56,11 +78,11 @@ pub fn draw_tarot(
 ) -> Result<Vec<TarotCard>, crate::core::SourceError> {
     let mut deck = standard_tarot_deck();
     shuffle(source, &mut deck[..])?;
-    
+
     // Apply upright/reversed orientation.
     for card in deck.iter_mut() {
         card.upright = uniform_u64_inclusive(source, 0, 1)? == 1;
     }
-    
+
     Ok(deck.into_iter().take(count).collect())
 }

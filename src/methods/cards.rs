@@ -57,22 +57,37 @@ impl std::fmt::Display for Card {
 fn standard_deck() -> Vec<Card> {
     let mut deck = Vec::with_capacity(52);
     for suit in [Suit::Hearts, Suit::Diamonds, Suit::Clubs, Suit::Spades] {
-        deck.push(Card { suit, rank: Rank::Ace });
+        deck.push(Card {
+            suit,
+            rank: Rank::Ace,
+        });
         for n in 2..=10 {
             deck.push(Card {
                 suit,
                 rank: Rank::Number(n),
             });
         }
-        deck.push(Card { suit, rank: Rank::Jack });
-        deck.push(Card { suit, rank: Rank::Queen });
-        deck.push(Card { suit, rank: Rank::King });
+        deck.push(Card {
+            suit,
+            rank: Rank::Jack,
+        });
+        deck.push(Card {
+            suit,
+            rank: Rank::Queen,
+        });
+        deck.push(Card {
+            suit,
+            rank: Rank::King,
+        });
     }
     deck
 }
 
 /// Shuffle a deck using Fisher-Yates with the given source.
-pub fn shuffle_deck(source: &mut dyn Source, deck: &mut [Card]) -> Result<(), crate::core::SourceError> {
+pub fn shuffle_deck(
+    source: &mut dyn Source,
+    deck: &mut [Card],
+) -> Result<(), crate::core::SourceError> {
     let n = deck.len();
     for i in (1..n).rev() {
         let j = uniform_u64_inclusive(source, 0, i as u64)? as usize;
@@ -90,4 +105,3 @@ pub fn draw_cards(
     shuffle_deck(source, &mut deck)?;
     Ok(deck.into_iter().take(count).collect())
 }
-

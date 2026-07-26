@@ -32,7 +32,11 @@ fn d6_distribution_is_uniform() {
     for _ in 0..samples {
         let result = roll_dice(src.as_mut(), "d6").unwrap();
         let value = result.rolls[0].value as usize;
-        assert!((1..=6).contains(&value), "d6 rolled out of range: {}", value);
+        assert!(
+            (1..=6).contains(&value),
+            "d6 rolled out of range: {}",
+            value
+        );
         counts[value - 1] += 1;
     }
     // df = 5, p = 0.001 critical value ≈ 20.515; allow generous margin.
@@ -53,7 +57,11 @@ fn d20_distribution_is_uniform() {
     for _ in 0..samples {
         let result = roll_dice(src.as_mut(), "d20").unwrap();
         let value = result.rolls[0].value as usize;
-        assert!((1..=20).contains(&value), "d20 rolled out of range: {}", value);
+        assert!(
+            (1..=20).contains(&value),
+            "d20 rolled out of range: {}",
+            value
+        );
         counts[value - 1] += 1;
     }
     // df = 19, p = 0.001 critical value ≈ 43.82

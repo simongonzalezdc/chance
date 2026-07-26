@@ -65,7 +65,11 @@ impl<'a> Parser<'a> {
         terms.push((sign, term));
 
         while self.peek() == '+' || self.peek() == '-' {
-            let sign = if self.advance() == '+' { Sign::Plus } else { Sign::Minus };
+            let sign = if self.advance() == '+' {
+                Sign::Plus
+            } else {
+                Sign::Minus
+            };
             let term = self.parse_term()?;
             terms.push((sign, term));
         }
@@ -185,7 +189,10 @@ impl<'a> Parser<'a> {
                 '>' | '<' | '=' => {
                     self.pos = start; // backtrack to parse comparator fully
                     let (cmp, value) = self.parse_comparator_value()?;
-                    modifiers.push(Modifier::Success { comparator: cmp, value });
+                    modifiers.push(Modifier::Success {
+                        comparator: cmp,
+                        value,
+                    });
                 }
                 c => return Err(ParseError::UnexpectedChar(c, start)),
             }
@@ -237,8 +244,8 @@ impl<'a> Parser<'a> {
             c => return Err(ParseError::UnexpectedChar(c, self.pos - 1)),
         };
         let num_start = self.pos;
-        let value =
-            i64::try_from(self.parse_number()?).map_err(|_| ParseError::InvalidNumber(num_start))?;
+        let value = i64::try_from(self.parse_number()?)
+            .map_err(|_| ParseError::InvalidNumber(num_start))?;
         Ok((cmp, value))
     }
 

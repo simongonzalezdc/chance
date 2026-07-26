@@ -11,41 +11,85 @@ pub struct IChingResult {
 
 #[derive(Debug, Clone, Copy)]
 pub struct IChingLine {
-    pub value: u8,        // 6, 7, 8, 9
-    pub yang: bool,       // 7/9 are yang, 6/8 are yin
-    pub changing: bool,   // 6/9 are changing
+    pub value: u8,      // 6, 7, 8, 9
+    pub yang: bool,     // 7/9 are yang, 6/8 are yin
+    pub changing: bool, // 6/9 are changing
 }
 
 impl IChingResult {
     pub fn hexagram_name(&self) -> &'static str {
         let kw = KING_WEN_BY_PRIMARY[self.primary as usize];
-        HEXAGRAM_NAMES.get(kw as usize - 1).copied().unwrap_or("unknown")
+        HEXAGRAM_NAMES
+            .get(kw as usize - 1)
+            .copied()
+            .unwrap_or("unknown")
     }
 }
 
 const HEXAGRAM_NAMES: &[&str] = &[
-    "Ch'ien / The Creative", "K'un / The Receptive", "Chun / Difficulty at the Beginning",
-    "Mêng / Youthful Folly", "Hsü / Waiting", "Sung / Conflict",
-    "Shih / The Army", "Pi / Holding Together", "Hsiao Ch'u / The Taming Power of the Small",
-    "Lü / Treading", "T'ai / Peace", "P'i / Standstill",
-    "T'ung Jên / Fellowship with Men", "Ta Yu / Possession in Great Measure",
-    "Ch'ien / Modesty", "Yü / Enthusiasm", "Sui / Following", "Ku / Work on the Decayed",
-    "Lin / Approach", "Kuan / Contemplation", "Shih Ho / Biting Through",
-    "Pi / Grace", "Po / Splitting Apart", "Fu / Return",
-    "Wu Wang / Innocence", "Ta Ch'u / The Taming Power of the Great",
-    "I / The Corners of the Mouth", "Ta Kuo / Preponderance of the Great",
-    "K'an / The Abysmal", "Li / The Clinging", "Hsien / Influence",
-    "Hêng / Duration", "Tun / Retreat", "Ta Chuang / The Power of the Great",
-    "Chin / Progress", "Ming I / Darkening of the Light", "Chia Jên / The Family",
-    "K'uei / Opposition", "Chien / Obstruction", "Hsieh / Deliverance",
-    "Sun / Decrease", "I / Increase", "Kuai / Break-through",
-    "Kou / Coming to Meet", "Ts'ui / Gathering Together", "Shêng / Pushing Upward",
-    "K'un / Oppression", "Ching / The Well", "Ko / Revolution",
-    "Ting / The Cauldron", "Chên / The Arousing", "Kên / Keeping Still",
-    "Chien / Development", "Kuei Mei / The Marrying Maiden", "Fêng / Abundance",
-    "Lü / The Wanderer", "Sun / The Gentle", "Tui / The Joyous",
-    "Huan / Dispersion", "Chieh / Limitation", "Chung Fu / Inner Truth",
-    "Hsiao Kuo / Preponderance of the Small", "Chi Chi / After Completion",
+    "Ch'ien / The Creative",
+    "K'un / The Receptive",
+    "Chun / Difficulty at the Beginning",
+    "Mêng / Youthful Folly",
+    "Hsü / Waiting",
+    "Sung / Conflict",
+    "Shih / The Army",
+    "Pi / Holding Together",
+    "Hsiao Ch'u / The Taming Power of the Small",
+    "Lü / Treading",
+    "T'ai / Peace",
+    "P'i / Standstill",
+    "T'ung Jên / Fellowship with Men",
+    "Ta Yu / Possession in Great Measure",
+    "Ch'ien / Modesty",
+    "Yü / Enthusiasm",
+    "Sui / Following",
+    "Ku / Work on the Decayed",
+    "Lin / Approach",
+    "Kuan / Contemplation",
+    "Shih Ho / Biting Through",
+    "Pi / Grace",
+    "Po / Splitting Apart",
+    "Fu / Return",
+    "Wu Wang / Innocence",
+    "Ta Ch'u / The Taming Power of the Great",
+    "I / The Corners of the Mouth",
+    "Ta Kuo / Preponderance of the Great",
+    "K'an / The Abysmal",
+    "Li / The Clinging",
+    "Hsien / Influence",
+    "Hêng / Duration",
+    "Tun / Retreat",
+    "Ta Chuang / The Power of the Great",
+    "Chin / Progress",
+    "Ming I / Darkening of the Light",
+    "Chia Jên / The Family",
+    "K'uei / Opposition",
+    "Chien / Obstruction",
+    "Hsieh / Deliverance",
+    "Sun / Decrease",
+    "I / Increase",
+    "Kuai / Break-through",
+    "Kou / Coming to Meet",
+    "Ts'ui / Gathering Together",
+    "Shêng / Pushing Upward",
+    "K'un / Oppression",
+    "Ching / The Well",
+    "Ko / Revolution",
+    "Ting / The Cauldron",
+    "Chên / The Arousing",
+    "Kên / Keeping Still",
+    "Chien / Development",
+    "Kuei Mei / The Marrying Maiden",
+    "Fêng / Abundance",
+    "Lü / The Wanderer",
+    "Sun / The Gentle",
+    "Tui / The Joyous",
+    "Huan / Dispersion",
+    "Chieh / Limitation",
+    "Chung Fu / Inner Truth",
+    "Hsiao Kuo / Preponderance of the Small",
+    "Chi Chi / After Completion",
     "Wei Chi / Before Completion",
 ];
 // Map from the `primary` bitmap to the King Wen hexagram number (1..64).
@@ -61,18 +105,16 @@ const HEXAGRAM_NAMES: &[&str] = &[
 // complement-pairs (1/2, 27/28, 29/30, 61/62) and the remaining 28 rotation
 // pairs are consistent with the King Wen pairing structure.
 const KING_WEN_BY_PRIMARY: [u8; 64] = [
-    2, 23, 8, 20, 16, 35, 45, 12,
-    15, 52, 39, 53, 62, 56, 41, 33,
-    7, 4, 29, 59, 40, 64, 47, 6,
-    46, 18, 48, 57, 32, 50, 28, 44,
-    24, 27, 3, 42, 51, 21, 17, 25,
-    36, 22, 63, 37, 55, 30, 49, 13,
-    19, 31, 60, 61, 54, 38, 58, 10,
-    11, 26, 5, 9, 34, 14, 43, 1,
+    2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 41, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46,
+    18, 48, 57, 32, 50, 28, 44, 24, 27, 3, 42, 51, 21, 17, 25, 36, 22, 63, 37, 55, 30, 49, 13, 19,
+    31, 60, 61, 54, 38, 58, 10, 11, 26, 5, 9, 34, 14, 43, 1,
 ];
 
 /// Cast one I Ching line using the given method.
-fn cast_line(source: &mut dyn Source, method: &str) -> Result<IChingLine, crate::core::SourceError> {
+fn cast_line(
+    source: &mut dyn Source,
+    method: &str,
+) -> Result<IChingLine, crate::core::SourceError> {
     let value = match method {
         "yarrow" => cast_yarrow(source)?,
         "coin" | _ => cast_coin(source)?,
@@ -125,11 +167,20 @@ pub fn cast_iching(
     if lines.iter().any(|l| l.changing) {
         let mut t = 0u8;
         for line in lines.iter().rev() {
-            t = (t << 1) | if line.yang {
-                if line.value == 9 { 0 } else { 1 }
-            } else {
-                if line.value == 6 { 1 } else { 0 }
-            };
+            t = (t << 1)
+                | if line.yang {
+                    if line.value == 9 {
+                        0
+                    } else {
+                        1
+                    }
+                } else {
+                    if line.value == 6 {
+                        1
+                    } else {
+                        0
+                    }
+                };
         }
         transformed = Some(t);
     }

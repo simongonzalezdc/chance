@@ -3,9 +3,9 @@
 // and adversarial inputs (bad notation, empty pools, inverted ranges,
 // unsupported sources, oversized counts).
 
-use chance::services::dto::*;
-use chance::services;
 use chance::core::SourceError;
+use chance::services;
+use chance::services::dto::*;
 
 // ── Roll: Happy Paths ────────────────────────────────────────────────────
 
@@ -30,7 +30,10 @@ fn roll_with_seeded_source_is_deterministic() {
     };
     let r1 = services::roll(&req).unwrap();
     let r2 = services::roll(&req).unwrap();
-    assert_eq!(r1.result.total, r2.result.total, "seeded roll must be deterministic");
+    assert_eq!(
+        r1.result.total, r2.result.total,
+        "seeded roll must be deterministic"
+    );
 }
 
 #[test]
@@ -186,7 +189,13 @@ fn flip_multiple() {
 
 #[test]
 fn shuffle_preserves_elements() {
-    let original = vec!["a".to_string(), "b".into(), "c".into(), "d".into(), "e".into()];
+    let original = vec![
+        "a".to_string(),
+        "b".into(),
+        "c".into(),
+        "d".into(),
+        "e".into(),
+    ];
     let req = ShuffleRequest {
         source: SourceRequest::default(),
         items: original.clone(),

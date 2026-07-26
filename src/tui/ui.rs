@@ -51,7 +51,10 @@ impl Theme {
             dim: Style::default().fg(TEXT_DIM),
             accent: Style::default().fg(ACCENT),
             accent_bold: Style::default().fg(ACCENT).add_modifier(Modifier::BOLD),
-            selected: Style::default().bg(ACCENT).fg(ACCENT_DARK).add_modifier(Modifier::BOLD),
+            selected: Style::default()
+                .bg(ACCENT)
+                .fg(ACCENT_DARK)
+                .add_modifier(Modifier::BOLD),
             key: Style::default().fg(CYAN),
             string: Style::default().fg(GREEN),
             number: Style::default().fg(ACCENT),
@@ -144,8 +147,16 @@ fn draw_methods(frame: &mut Frame, app: &App, area: Rect, theme: &Theme) {
         .map(|(i, m)| {
             let is_selected = i == app.selected_method;
             let bullet = if is_selected { "▸" } else { "·" };
-            let name_style = if is_selected { theme.selected } else { theme.accent_bold };
-            let desc_style = if is_selected { theme.selected } else { theme.dim };
+            let name_style = if is_selected {
+                theme.selected
+            } else {
+                theme.accent_bold
+            };
+            let desc_style = if is_selected {
+                theme.selected
+            } else {
+                theme.dim
+            };
             let line = Line::from(vec![
                 Span::styled(format!(" {} ", bullet), name_style),
                 Span::styled(format!("{:<10}", m.name), name_style),
@@ -449,7 +460,8 @@ fn render_value_lines(value: &Value, depth: usize, theme: &Theme) -> Vec<Line<'s
                     ]));
                     let mut inner = render_value_lines(v, depth + 2, theme);
                     if let Some(last) = inner.last_mut() {
-                        last.spans.push(Span::styled(comma.to_string(), theme.punct));
+                        last.spans
+                            .push(Span::styled(comma.to_string(), theme.punct));
                     }
                     lines.extend(inner);
                 } else {
@@ -479,7 +491,8 @@ fn render_value_lines(value: &Value, depth: usize, theme: &Theme) -> Vec<Line<'s
                 if is_non_empty_container(v) {
                     let mut inner = render_value_lines(v, depth + 2, theme);
                     if let Some(last) = inner.last_mut() {
-                        last.spans.push(Span::styled(comma.to_string(), theme.punct));
+                        last.spans
+                            .push(Span::styled(comma.to_string(), theme.punct));
                     }
                     lines.extend(inner);
                 } else {
@@ -501,7 +514,13 @@ fn render_value_lines(value: &Value, depth: usize, theme: &Theme) -> Vec<Line<'s
     lines
 }
 
-fn scalar_member_line(key: &str, value: &Value, prefix: &str, theme: &Theme, comma: &str) -> Line<'static> {
+fn scalar_member_line(
+    key: &str,
+    value: &Value,
+    prefix: &str,
+    theme: &Theme,
+    comma: &str,
+) -> Line<'static> {
     Line::from(vec![
         Span::raw(format!("{}  ", prefix)),
         Span::styled(format!("\"{}\"", key), theme.key),
@@ -548,7 +567,9 @@ fn render_provenance_card(map: &serde_json::Map<String, Value>, theme: &Theme) -
         if let Some(v) = map.get(json_key) {
             let value_span = match (json_key, v) {
                 ("source_kind", Value::String(s)) => Span::styled(s.clone(), theme.accent),
-                ("entropy_bits", Value::Number(n)) => Span::styled(format!("{} bits", n), theme.number),
+                ("entropy_bits", Value::Number(n)) => {
+                    Span::styled(format!("{} bits", n), theme.number)
+                }
                 ("latency_ms", Value::Number(n)) => Span::styled(format!("{} ms", n), theme.number),
                 (_, Value::String(s)) if s.is_empty() => Span::styled("—", theme.dim),
                 (_, Value::Null) => Span::styled("—", theme.dim),

@@ -10,7 +10,11 @@ pub struct CowrieResult {
 
 impl std::fmt::Display for CowrieResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} shells, {} open ({})", self.shells, self.open_count, self.meaning)
+        write!(
+            f,
+            "{} shells, {} open ({})",
+            self.shells, self.open_count, self.meaning
+        )
     }
 }
 

@@ -1,8 +1,8 @@
-use crate::services::dto::*;
-use crate::services;
 use crate::core::SourceError;
-use axum::response::Json;
+use crate::services;
+use crate::services::dto::*;
 use axum::http::StatusCode;
+use axum::response::Json;
 
 pub struct AppState;
 
@@ -35,14 +35,18 @@ fn map_error(e: SourceError) -> (StatusCode, Json<serde_json::Value>) {
             tracing::error!(error = %e, request_id = %request_id, "request failed");
             (
                 StatusCode::SERVICE_UNAVAILABLE,
-                Json(serde_json::json!({ "error": "source unavailable", "request_id": request_id })),
+                Json(
+                    serde_json::json!({ "error": "source unavailable", "request_id": request_id }),
+                ),
             )
         }
         SourceError::UnsupportedOperation { .. } => {
             tracing::error!(error = %e, request_id = %request_id, "request failed");
             (
                 StatusCode::BAD_REQUEST,
-                Json(serde_json::json!({ "error": "unsupported operation", "request_id": request_id })),
+                Json(
+                    serde_json::json!({ "error": "unsupported operation", "request_id": request_id }),
+                ),
             )
         }
     }
@@ -219,8 +223,9 @@ mod tests {
     /// internal source plumbing) and is not echoed.
     #[test]
     fn map_error_invalid_source_is_500_generic() {
-        let (status, body) =
-            map_error(SourceError::InvalidSource("some-internal-source".to_string()));
+        let (status, body) = map_error(SourceError::InvalidSource(
+            "some-internal-source".to_string(),
+        ));
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
         let serialized = serde_json::to_string(&body.0).unwrap();
         assert!(!serialized.contains("some-internal-source"));

@@ -61,9 +61,9 @@ pub fn uniform_i64_inclusive(
         ));
     }
     let span = (max as i128) - (min as i128); // in [0, 2^64 - 1]
-    // The full i64 range is exactly 2^64 values, bijective with u64, so a raw
-    // u64 is correct and unbiased. For smaller spans, span+1 in [1, 2^64 - 1]
-    // fits u64 and the Lemire path is unbiased.
+                                              // The full i64 range is exactly 2^64 values, bijective with u64, so a raw
+                                              // u64 is correct and unbiased. For smaller spans, span+1 in [1, 2^64 - 1]
+                                              // fits u64 and the Lemire path is unbiased.
     let offset = if span >= u64::MAX as i128 {
         source.generate_u64()? as i128
     } else {
@@ -79,11 +79,7 @@ pub fn uniform_f64(source: &mut dyn Source) -> Result<f64, SourceError> {
 }
 
 /// Generate a uniform `f64` in `[min, max)`.
-pub fn uniform_f64_range(
-    source: &mut dyn Source,
-    min: f64,
-    max: f64,
-) -> Result<f64, SourceError> {
+pub fn uniform_f64_range(source: &mut dyn Source, min: f64, max: f64) -> Result<f64, SourceError> {
     if !(min < max) {
         return Err(SourceError::GenerationFailed(
             "min must be < max for f64 range".to_string(),

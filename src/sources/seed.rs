@@ -80,16 +80,14 @@ pub fn seeded_csprng<R: SeedableRng>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand_chacha::ChaCha20Rng;
     use rand::RngCore;
+    use rand_chacha::ChaCha20Rng;
 
     #[test]
     fn explicit_seed_is_reproducible() {
         // Determinism is a feature of the explicit-seed path.
-        let (mut a, _): (ChaCha20Rng, _) =
-            seeded_csprng(Some("0xDEADBEEF")).unwrap();
-        let (mut b, _): (ChaCha20Rng, _) =
-            seeded_csprng(Some("0xDEADBEEF")).unwrap();
+        let (mut a, _): (ChaCha20Rng, _) = seeded_csprng(Some("0xDEADBEEF")).unwrap();
+        let (mut b, _): (ChaCha20Rng, _) = seeded_csprng(Some("0xDEADBEEF")).unwrap();
 
         let mut ab = [0u8; 32];
         let mut bb = [0u8; 32];

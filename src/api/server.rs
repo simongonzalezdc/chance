@@ -1,7 +1,7 @@
 use crate::api::routes::*;
+use axum::response::Html;
 use axum::routing::{get, post};
 use axum::Router;
-use axum::response::Html;
 use std::sync::Arc;
 use std::time::Duration;
 use tower_http::limit::RequestBodyLimitLayer;

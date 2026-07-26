@@ -1,5 +1,5 @@
-use crate::services::dto::*;
 use crate::services;
+use crate::services::dto::*;
 use serde_json::{json, Map, Value};
 
 use super::protocol::{CallToolParams, CallToolResult, Tool};
@@ -18,10 +18,7 @@ fn source_properties() -> Value {
 }
 
 fn schema(required: &[&str], properties: Value) -> Value {
-    let mut props = source_properties()
-        .as_object()
-        .cloned()
-        .unwrap_or_default();
+    let mut props = source_properties().as_object().cloned().unwrap_or_default();
     if let Some(extra) = properties.as_object() {
         props.extend(extra.clone());
     }
@@ -38,7 +35,10 @@ fn tool(name: &str, description: &str, required: &[&str], properties: Value) -> 
     Tool {
         name: name.to_string(),
         description: Some(description.to_string()),
-        input_schema: schema(&req.iter().map(|s| s.as_str()).collect::<Vec<_>>(), properties),
+        input_schema: schema(
+            &req.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+            properties,
+        ),
     }
 }
 
@@ -471,7 +471,9 @@ pub fn call_tool(params: &CallToolParams) -> CallToolResult {
             serde_json::to_value(services::lots(&req).map_err(|e| e.to_string())?)
                 .map_err(|e| e.to_string())
         }
-        "chance_sources" => serde_json::to_value(services::source_names()).map_err(|e| e.to_string()),
+        "chance_sources" => {
+            serde_json::to_value(services::source_names()).map_err(|e| e.to_string())
+        }
         "chance_health" => serde_json::to_value(services::health()).map_err(|e| e.to_string()),
         _ => Err(format!("unknown tool: {}", params.name)),
     })();
@@ -571,6 +573,9 @@ mod tests {
 
         // Roll notation length cap matches the services notation_len cap.
         let roll = tools.iter().find(|t| t.name == "chance_roll").unwrap();
-        assert_eq!(roll.input_schema["properties"]["notation"]["maxLength"].as_u64(), Some(256));
+        assert_eq!(
+            roll.input_schema["properties"]["notation"]["maxLength"].as_u64(),
+            Some(256)
+        );
     }
 }

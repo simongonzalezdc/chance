@@ -110,9 +110,7 @@ impl DrandSource {
         if self.public_key.is_none() {
             let info = fetch_chain_info(&self.client)?;
             let pk = hex_to_bytes(&info.public_key).map_err(|_| {
-                SourceError::GenerationFailed(
-                    "drand signature verification failed".to_string(),
-                )
+                SourceError::GenerationFailed("drand signature verification failed".to_string())
             })?;
             self.public_key = Some(pk);
             self.scheme_g1 = Some(info.scheme_g1());
@@ -195,9 +193,7 @@ fn sha256_oneshot(msg: &[u8]) -> [u8; 32] {
 
 #[cfg(feature = "drand-verify")]
 fn info_url() -> String {
-    let base = DRAND_URL
-        .strip_suffix("public/latest")
-        .unwrap_or(DRAND_URL);
+    let base = DRAND_URL.strip_suffix("public/latest").unwrap_or(DRAND_URL);
     format!("{base}info")
 }
 
@@ -297,9 +293,8 @@ fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SourceError> {
     }
     let mut bytes = Vec::with_capacity(hex.len() / 2);
     for i in (0..hex.len()).step_by(2) {
-        let byte = u8::from_str_radix(&hex[i..i + 2], 16).map_err(|e| {
-            SourceError::GenerationFailed(format!("invalid hex: {e}"))
-        })?;
+        let byte = u8::from_str_radix(&hex[i..i + 2], 16)
+            .map_err(|e| SourceError::GenerationFailed(format!("invalid hex: {e}")))?;
         bytes.push(byte);
     }
     Ok(bytes)
@@ -321,9 +316,10 @@ fn fetch_round_at(
     client: &reqwest::blocking::Client,
     url: &str,
 ) -> Result<(u64, Vec<u8>, Vec<u8>), SourceError> {
-    let resp = client.get(url).send().map_err(|e| {
-        SourceError::GenerationFailed(format!("drand request failed: {e}"))
-    })?;
+    let resp = client
+        .get(url)
+        .send()
+        .map_err(|e| SourceError::GenerationFailed(format!("drand request failed: {e}")))?;
 
     if !resp.status().is_success() {
         return Err(SourceError::GenerationFailed(format!(
@@ -451,7 +447,8 @@ mod verify_tests {
     const ROUND: u64 = 29695341;
     const SIG: &str = "973dcef6c129441a36381a6341e1bbf10ee8a605c74830fbd6bd3981d52d3fdb690494899fb213cc861b8deb4d59f63c";
     // SHA-256 of the 8-byte big-endian encoding of `ROUND` (the signed message).
-    const ROUND_MSG_SHA256: &str = "4acd4994dec268e54142e8d19072e46e64c9f55a965abc7a36bc533ec80bb93d";
+    const ROUND_MSG_SHA256: &str =
+        "4acd4994dec268e54142e8d19072e46e64c9f55a965abc7a36bc533ec80bb93d";
 
     fn ctx() -> VerifyCtx {
         VerifyCtx {
@@ -466,13 +463,19 @@ mod verify_tests {
         // signed-message hash). Computed independently with Node's crypto.
         let msg = sha256_oneshot(&ROUND.to_be_bytes());
         let expected = hex_to_bytes(ROUND_MSG_SHA256).unwrap();
-        assert_eq!(&msg[..], &expected[..], "blst_sha256 must equal standard SHA-256");
+        assert_eq!(
+            &msg[..],
+            &expected[..],
+            "blst_sha256 must equal standard SHA-256"
+        );
     }
 
     #[test]
     fn quicknet_signature_verifies() {
         let sig = hex_to_bytes(SIG).unwrap();
-        ctx().verify(ROUND, &sig).expect("real quicknet signature must verify");
+        ctx()
+            .verify(ROUND, &sig)
+            .expect("real quicknet signature must verify");
     }
 
     #[test]
@@ -483,14 +486,20 @@ mod verify_tests {
         let last = sig.len() - 1;
         sig[last] ^= 0x01;
         let res = ctx().verify(ROUND, &sig);
-        assert!(matches!(res, Err(SourceError::GenerationFailed(_))), "tampered signature must be rejected");
+        assert!(
+            matches!(res, Err(SourceError::GenerationFailed(_))),
+            "tampered signature must be rejected"
+        );
     }
 
     #[test]
     fn wrong_round_is_rejected() {
         let sig = hex_to_bytes(SIG).unwrap();
         let res = ctx().verify(ROUND + 1, &sig);
-        assert!(matches!(res, Err(SourceError::GenerationFailed(_))), "signature for a different round must fail");
+        assert!(
+            matches!(res, Err(SourceError::GenerationFailed(_))),
+            "signature for a different round must fail"
+        );
     }
 
     #[test]

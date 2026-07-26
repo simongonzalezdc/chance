@@ -3,9 +3,9 @@ pub mod chacha;
 pub mod external;
 pub mod os;
 pub mod pcg;
-pub mod registry;
 #[cfg(target_arch = "x86_64")]
 pub mod rdrand;
+pub mod registry;
 pub mod seed;
 pub mod splitmix;
 pub mod xoshiro;
@@ -15,9 +15,9 @@ pub use chacha::*;
 pub use external::*;
 pub use os::*;
 pub use pcg::*;
-pub use registry::*;
 #[cfg(target_arch = "x86_64")]
 pub use rdrand::*;
+pub use registry::*;
 pub use seed::*;
 pub use splitmix::*;
 pub use xoshiro::*;

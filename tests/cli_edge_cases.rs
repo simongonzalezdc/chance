@@ -26,7 +26,9 @@ fn cli_handles_unicode_items_in_pick() {
     // The chosen winner must be one of the unicode items.
     let trimmed = stdout.trim();
     assert!(
-        ["café", "ñandú", "日本語", "🎲", "αβγ"].iter().any(|s| trimmed.contains(s)),
+        ["café", "ñandú", "日本語", "🎲", "αβγ"]
+            .iter()
+            .any(|s| trimmed.contains(s)),
         "pick output did not contain a unicode item: {}",
         trimmed
     );
@@ -52,7 +54,12 @@ fn cli_handles_very_long_item_list() {
 fn cli_large_but_valid_dice_count_succeeds() {
     // 1000d6 is valid notation and should succeed without crashing.
     let (ok, stdout, stderr) = run(&["roll", "1000d6"]);
-    assert!(ok, "1000d6 failed: stdout={} stderr={}", stdout.trim(), stderr.trim());
+    assert!(
+        ok,
+        "1000d6 failed: stdout={} stderr={}",
+        stdout.trim(),
+        stderr.trim()
+    );
     // Total must be in [1000, 6000].
     let total: i64 = stdout
         .trim()
@@ -69,7 +76,11 @@ fn cli_large_but_valid_dice_count_succeeds() {
 fn cli_d0_notation_errors_cleanly() {
     let (ok, stdout, stderr) = run(&["roll", "d0"]);
     // d0 is invalid; the binary should exit non-zero with a message, no panic.
-    assert!(!ok, "d0 should have failed but succeeded: {}", stdout.trim());
+    assert!(
+        !ok,
+        "d0 should have failed but succeeded: {}",
+        stdout.trim()
+    );
     let combined = format!("{}\n{}", stdout.to_lowercase(), stderr.to_lowercase());
     assert!(
         combined.contains("error") || combined.contains("parse"),
@@ -110,7 +121,10 @@ fn cli_unicode_seed_is_deterministic() {
     let (ok1, out1, _) = run(&["--source", "chacha20", "--seed", "🎲🎲", "roll", "d20"]);
     let (ok2, out2, _) = run(&["--source", "chacha20", "--seed", "🎲🎲", "roll", "d20"]);
     assert!(ok1 && ok2, "unicode-seeded roll invocations failed");
-    assert_eq!(out1, out2, "unicode-seeded roll output is not deterministic");
+    assert_eq!(
+        out1, out2,
+        "unicode-seeded roll output is not deterministic"
+    );
 }
 
 #[test]

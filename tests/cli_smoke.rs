@@ -3,11 +3,11 @@
 // Covers happy paths and adversarial inputs.
 
 use chance::core::range::{
-    uniform_u64_inclusive, uniform_i64_inclusive, uniform_u64_lemire, uniform_entropy_bits,
+    uniform_entropy_bits, uniform_i64_inclusive, uniform_u64_inclusive, uniform_u64_lemire,
 };
+use chance::methods::dice::ast::{DiceTerm, DieSize, Expr, Sign, Term};
 use chance::methods::dice::parser::parse;
-use chance::methods::dice::ast::{Expr, Sign, Term, DiceTerm, DieSize};
-use chance::methods::pick::{pick_one, pick_distinct};
+use chance::methods::pick::{pick_distinct, pick_one};
 use chance::sources::{create_source, parse_seed, OsCsprng};
 
 // ── Dice Parser: Happy Paths ─────────────────────────────────────────────
@@ -229,9 +229,8 @@ fn create_all_known_sources() {
         if *name == "drand" || *name == "mix" {
             continue;
         }
-        let src = create_source(name, Some("seed")).unwrap_or_else(|e| {
-            panic!("failed to create source '{}': {}", name, e)
-        });
+        let src = create_source(name, Some("seed"))
+            .unwrap_or_else(|e| panic!("failed to create source '{}': {}", name, e));
         assert_eq!(src.name(), *name);
     }
 }

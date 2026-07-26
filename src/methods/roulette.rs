@@ -11,7 +11,11 @@ pub struct RouletteResult {
 
 impl std::fmt::Display for RouletteResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} ({}, house edge {:.2}%)", self.number, self.color, self.variant, self.house_edge_percent)
+        write!(
+            f,
+            "{} {} ({}, house edge {:.2}%)",
+            self.number, self.color, self.variant, self.house_edge_percent
+        )
     }
 }
 
@@ -23,7 +27,9 @@ fn roulette_color(number: u8, variant: &str) -> &'static str {
         return "green"; // 00 represented as 37
     }
     // European red numbers.
-    let reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+    let reds = [
+        1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
+    ];
     if reds.contains(&number) {
         "red"
     } else {
@@ -49,9 +55,17 @@ pub fn spin_roulette(
     };
 
     let raw = uniform_u64_inclusive(source, 0, max)? as u8;
-    let number = if variant == "american" && raw == 37 { 37 } else { raw };
+    let number = if variant == "american" && raw == 37 {
+        37
+    } else {
+        raw
+    };
     let color = roulette_color(number, variant);
-    let variant_label = if variant == "american" { "american" } else { "european" };
+    let variant_label = if variant == "american" {
+        "american"
+    } else {
+        "european"
+    };
 
     Ok(RouletteResult {
         number,
@@ -71,12 +85,20 @@ mod tests {
         let mut src = OsCsprng::new();
         for _ in 0..200 {
             let eu = spin_roulette(&mut src, "european").unwrap();
-            assert!(eu.number <= 36, "european number out of range: {}", eu.number);
+            assert!(
+                eu.number <= 36,
+                "european number out of range: {}",
+                eu.number
+            );
             assert_eq!(eu.variant, "european");
             assert_eq!(eu.house_edge_percent, 2.70);
 
             let am = spin_roulette(&mut src, "american").unwrap();
-            assert!(am.number <= 37, "american number out of range: {}", am.number);
+            assert!(
+                am.number <= 37,
+                "american number out of range: {}",
+                am.number
+            );
             assert_eq!(am.variant, "american");
             assert_eq!(am.house_edge_percent, 5.26);
         }
@@ -89,7 +111,11 @@ mod tests {
         let mut src = OsCsprng::new();
         for v in ["french", "european", "FRENCH", "", "xyz"] {
             let r = spin_roulette(&mut src, v).unwrap();
-            assert_eq!(r.variant, "european", "variant {:?} must map to european", v);
+            assert_eq!(
+                r.variant, "european",
+                "variant {:?} must map to european",
+                v
+            );
             assert_eq!(r.house_edge_percent, 2.70);
             assert!(r.number <= 36);
         }

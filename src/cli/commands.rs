@@ -228,7 +228,11 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
         Commands::Tarot { count } => cmd_tarot(&cli, *count),
         Commands::Dominoes { set, count } => cmd_dominoes(&cli, *set, *count),
         Commands::Roulette { variant } => cmd_roulette(&cli, variant),
-        Commands::Lottery { pool, pick, bonus_pool } => cmd_lottery(&cli, *pool, *pick, *bonus_pool),
+        Commands::Lottery {
+            pool,
+            pick,
+            bonus_pool,
+        } => cmd_lottery(&cli, *pool, *pick, *bonus_pool),
         Commands::Knucklebones { count } => cmd_knucklebones(&cli, *count),
         Commands::Teetotum { dreidel } => cmd_teetotum(&cli, *dreidel),
         Commands::Cowrie { shells } => cmd_cowrie(&cli, *shells),
@@ -278,10 +282,16 @@ fn cmd_roll(cli: &Cli, notation: &str) -> Result<(), Box<dyn std::error::Error>>
     } else {
         println!("{}", result.total);
         if cli.verbose {
-            eprintln!("source: {} ({})" , source.name(), source.kind());
-            eprintln!("rolls:  {:?}", result.rolls.iter().map(|r| r.value).collect::<Vec<_>>());
+            eprintln!("source: {} ({})", source.name(), source.kind());
+            eprintln!(
+                "rolls:  {:?}",
+                result.rolls.iter().map(|r| r.value).collect::<Vec<_>>()
+            );
             if !result.dropped.is_empty() {
-                eprintln!("dropped: {:?}", result.dropped.iter().map(|r| r.value).collect::<Vec<_>>());
+                eprintln!(
+                    "dropped: {:?}",
+                    result.dropped.iter().map(|r| r.value).collect::<Vec<_>>()
+                );
             }
             if result.modifier_total != 0 {
                 eprintln!("modifier: {}", result.modifier_total);
@@ -364,7 +374,12 @@ fn cmd_int(cli: &Cli, min: i64, max: i64) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
-fn cmd_bytes(cli: &Cli, count: usize, hex: bool, base64: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn cmd_bytes(
+    cli: &Cli,
+    count: usize,
+    hex: bool,
+    base64: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut source = make_source(cli)?;
     let bytes = random_bytes(source.as_mut(), count)?;
 
@@ -387,7 +402,11 @@ fn cmd_uuid(cli: &Cli, version: u8) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn cmd_password(cli: &Cli, length: usize, no_symbols: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn cmd_password(
+    cli: &Cli,
+    length: usize,
+    no_symbols: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut source = make_source(cli)?;
     let options = PasswordOptions {
         length,
@@ -439,13 +458,22 @@ fn cmd_runes(cli: &Cli, count: usize) -> Result<(), Box<dyn std::error::Error>> 
 fn cmd_iching(cli: &Cli, method: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut source = make_source(cli)?;
     let reading = cast_iching(source.as_mut(), method)?;
-    println!("Primary hexagram: {} - {}", reading.primary, reading.hexagram_name());
+    println!(
+        "Primary hexagram: {} - {}",
+        reading.primary,
+        reading.hexagram_name()
+    );
     if let Some(t) = reading.transformed {
         println!("Transformed hexagram: {}", t);
     }
     if cli.verbose {
         for (i, line) in reading.lines.iter().enumerate() {
-            println!("Line {}: {} ({})", i + 1, line.value, if line.changing { "changing" } else { "stable" });
+            println!(
+                "Line {}: {} ({})",
+                i + 1,
+                line.value,
+                if line.changing { "changing" } else { "stable" }
+            );
         }
     }
     Ok(())
@@ -476,7 +504,12 @@ fn cmd_roulette(cli: &Cli, variant: &str) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
-fn cmd_lottery(cli: &Cli, pool: u8, pick: usize, bonus_pool: Option<u8>) -> Result<(), Box<dyn std::error::Error>> {
+fn cmd_lottery(
+    cli: &Cli,
+    pool: u8,
+    pick: usize,
+    bonus_pool: Option<u8>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut source = make_source(cli)?;
     let result = draw_lottery(source.as_mut(), pool, pick, bonus_pool)?;
     println!("{}", result);

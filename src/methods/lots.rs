@@ -22,5 +22,9 @@ pub fn draw_lots<T: Clone>(
         indices.swap(i, j);
     }
 
-    Ok(indices.into_iter().take(count).map(|i| items[i].clone()).collect())
+    Ok(indices
+        .into_iter()
+        .take(count)
+        .map(|i| items[i].clone())
+        .collect())
 }

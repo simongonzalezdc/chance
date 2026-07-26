@@ -11,8 +11,7 @@ pub fn splitmix64(seed: Option<&str>) -> Result<Box<dyn Source>, crate::core::So
     };
     let seed_str = format!("0x{:016x}", raw);
     Ok(Box::new(
-        RngSource::new(SplitMix64::new(raw), "splitmix64", SourceKind::Prng)
-            .with_seed(seed_str),
+        RngSource::new(SplitMix64::new(raw), "splitmix64", SourceKind::Prng).with_seed(seed_str),
     ))
 }
 

@@ -38,8 +38,15 @@ pub enum Modifier {
     DropLowest(u64),
     Explode,
     ExplodeCompound,
-    Reroll { comparator: Comparator, value: i64, once: bool },
-    Success { comparator: Comparator, value: i64 },
+    Reroll {
+        comparator: Comparator,
+        value: i64,
+        once: bool,
+    },
+    Success {
+        comparator: Comparator,
+        value: i64,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

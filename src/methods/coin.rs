@@ -18,7 +18,11 @@ impl std::fmt::Display for CoinSide {
 
 pub fn flip(source: &mut dyn Source) -> Result<CoinSide, crate::core::SourceError> {
     let v = uniform_u64_inclusive(source, 0, 1)?;
-    Ok(if v == 0 { CoinSide::Heads } else { CoinSide::Tails })
+    Ok(if v == 0 {
+        CoinSide::Heads
+    } else {
+        CoinSide::Tails
+    })
 }
 
 pub fn flip_n(source: &mut dyn Source, n: u64) -> Result<Vec<CoinSide>, crate::core::SourceError> {

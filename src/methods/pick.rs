@@ -2,7 +2,10 @@ use crate::core::range::uniform_u64_inclusive;
 use crate::core::source::Source;
 
 /// Pick one item uniformly from a list.
-pub fn pick_one<T: Clone>(source: &mut dyn Source, items: &[T]) -> Result<T, crate::core::SourceError> {
+pub fn pick_one<T: Clone>(
+    source: &mut dyn Source,
+    items: &[T],
+) -> Result<T, crate::core::SourceError> {
     if items.is_empty() {
         return Err(crate::core::SourceError::GenerationFailed(
             "cannot pick from empty list".to_string(),
@@ -37,4 +40,3 @@ pub fn pick_distinct<T: Clone>(
     }
     Ok(result)
 }
-

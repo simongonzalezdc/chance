@@ -21,11 +21,7 @@ impl Mixer {
         }
     }
 
-    fn mix(
-        &mut self,
-        mut inputs: Vec<Vec<u8>>,
-        needed: usize,
-    ) -> Result<Vec<u8>, SourceError> {
+    fn mix(&mut self, mut inputs: Vec<Vec<u8>>, needed: usize) -> Result<Vec<u8>, SourceError> {
         const MAX_OUTPUT: usize = 1024 * 1024; // 1 MiB cap
         const BLOCK_LEN: usize = 32; // SHA-256 output block size
 
@@ -184,10 +180,8 @@ mod tests {
     }
 
     fn two_os_mixer() -> Mixer {
-        let sources: Vec<Box<dyn Source>> = vec![
-            Box::new(OsCsprng::new()),
-            Box::new(OsCsprng::new()),
-        ];
+        let sources: Vec<Box<dyn Source>> =
+            vec![Box::new(OsCsprng::new()), Box::new(OsCsprng::new())];
         Mixer::new(sources, "test-mixer")
     }
 
@@ -198,24 +192,26 @@ mod tests {
     fn fill_bytes_handles_buffers_larger_than_64() {
         let mut mixer = two_os_mixer();
         let mut buf = [0u8; 200];
-        mixer.fill_bytes(&mut buf).expect("fill_bytes should succeed");
+        mixer
+            .fill_bytes(&mut buf)
+            .expect("fill_bytes should succeed");
 
         // Exactly 200 bytes produced (no panic, no short slice).
         assert_eq!(buf.len(), 200);
 
         // A real CSPRNG-mixed buffer of 200 bytes is astronomically unlikely
         // to be all zeros; this guards against a no-op / wrong-length path.
-        assert!(buf.iter().any(|&b| b != 0), "buffer should not be all zeros");
+        assert!(
+            buf.iter().any(|&b| b != 0),
+            "buffer should not be all zeros"
+        );
     }
 
     /// W2: a mixer with one healthy and one unavailable source must report
     /// `Degraded`, not silently `Healthy`.
     #[test]
     fn health_degraded_when_any_source_is_down() {
-        let sources: Vec<Box<dyn Source>> = vec![
-            Box::new(OsCsprng::new()),
-            Box::new(AlwaysDown),
-        ];
+        let sources: Vec<Box<dyn Source>> = vec![Box::new(OsCsprng::new()), Box::new(AlwaysDown)];
         let mixer = Mixer::new(sources, "degraded-mixer");
         assert_eq!(mixer.health(), SourceHealth::Degraded);
     }

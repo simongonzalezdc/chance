@@ -75,15 +75,15 @@ pub struct JsonRpcError {
     pub data: Option<Value>,
 }
 
-
 #[derive(Debug, Serialize, Clone)]
 pub struct Tool {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// MCP wire name is camelCase `inputSchema` (not snake_case).
+    #[serde(rename = "inputSchema")]
     pub input_schema: Value,
 }
-
 
 #[derive(Debug, Deserialize)]
 pub struct CallToolParams {
@@ -95,6 +95,8 @@ pub struct CallToolParams {
 #[derive(Debug, Serialize)]
 pub struct CallToolResult {
     pub content: Vec<ToolContent>,
+    /// MCP wire name is camelCase `isError`.
+    #[serde(rename = "isError")]
     pub is_error: bool,
 }
 

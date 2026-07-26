@@ -191,10 +191,7 @@ fn handle_message(line: &str, initialized: &mut bool) -> Option<JsonRpcResponse>
             };
 
             if params.name.is_empty() {
-                return Some(JsonRpcResponse::invalid_params(
-                    id,
-                    "missing tool name",
-                ));
+                return Some(JsonRpcResponse::invalid_params(id, "missing tool name"));
             }
 
             let tool_result = tools::call_tool(&params);
@@ -311,13 +308,14 @@ mod tests {
     #[test]
     fn multiple_normal_lines_round_trip() {
         let mut reader = Cursor::new(b"a\nbb\nccc\n".to_vec());
-        let collected: Vec<String> = std::iter::from_fn(|| {
-            match read_bounded_line(&mut reader, MAX_LINE_BYTES).unwrap() {
-                LineRead::Line(s) => Some(s),
-                _ => None,
-            }
-        })
-        .collect();
+        let collected: Vec<String> =
+            std::iter::from_fn(
+                || match read_bounded_line(&mut reader, MAX_LINE_BYTES).unwrap() {
+                    LineRead::Line(s) => Some(s),
+                    _ => None,
+                },
+            )
+            .collect();
         assert_eq!(
             collected,
             vec!["a".to_string(), "bb".to_string(), "ccc".to_string()]

@@ -30,6 +30,8 @@ pub fn cast_knucklebones(
     source: &mut dyn Source,
     count: usize,
 ) -> Result<KnucklebonesResult, crate::core::SourceError> {
-    let values = (0..count).map(|_| cast_astragalus(source)).collect::<Result<Vec<_>, _>>()?;
+    let values = (0..count)
+        .map(|_| cast_astragalus(source))
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(KnucklebonesResult { values })
 }

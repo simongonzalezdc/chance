@@ -2,10 +2,9 @@ use crate::core::range::uniform_u64_inclusive;
 use crate::core::source::Source;
 
 const ELDER_FUTHARK: &[&str] = &[
-    "fehu", "uruz", "thurisaz", "ansuz", "raido", "kenaz",
-    "gebo", "wunjo", "hagalaz", "nauthiz", "isa", "jera",
-    "eihwaz", "perthro", "algiz", "sowilo", "tiwaz", "berkano",
-    "ehwaz", "mannaz", "laguz", "ingwaz", "dagaz", "othala",
+    "fehu", "uruz", "thurisaz", "ansuz", "raido", "kenaz", "gebo", "wunjo", "hagalaz", "nauthiz",
+    "isa", "jera", "eihwaz", "perthro", "algiz", "sowilo", "tiwaz", "berkano", "ehwaz", "mannaz",
+    "laguz", "ingwaz", "dagaz", "othala",
 ];
 
 #[derive(Debug, Clone)]
@@ -129,9 +128,12 @@ mod tests {
 
         let mut src = ScriptedSource {
             values: vec![
-                x_gebo as u64, reversed_bit as u64,
-                x_isa as u64, reversed_bit as u64,
-                x_fehu as u64, reversed_bit as u64,
+                x_gebo as u64,
+                reversed_bit as u64,
+                x_isa as u64,
+                reversed_bit as u64,
+                x_fehu as u64,
+                reversed_bit as u64,
             ],
             pos: 0,
         };
@@ -166,6 +168,9 @@ mod tests {
             }
         }
         // Orientation still flips for reversible runes.
-        assert!(runes.iter().any(|r| !r.upright), "expected at least one reversed rune");
+        assert!(
+            runes.iter().any(|r| !r.upright),
+            "expected at least one reversed rune"
+        );
     }
 }

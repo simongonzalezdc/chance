@@ -2,10 +2,10 @@
 pub mod api;
 pub mod cli;
 pub mod core;
-pub mod methods;
-pub mod services;
 #[cfg(feature = "mcp")]
 pub mod mcp;
+pub mod methods;
+pub mod services;
 pub mod sources;
 #[cfg(feature = "tui")]
 pub mod tui;

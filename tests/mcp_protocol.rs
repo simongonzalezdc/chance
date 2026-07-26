@@ -52,7 +52,11 @@ fn tools_list_before_initialize_is_rejected() {
     let responses = parse_responses(&out);
     assert_eq!(responses.len(), 1, "expected exactly one response: {}", out);
     let resp = &responses[0];
-    assert!(resp.get("error").is_some(), "expected error response: {}", resp);
+    assert!(
+        resp.get("error").is_some(),
+        "expected error response: {}",
+        resp
+    );
     let msg = resp["error"]["message"]
         .as_str()
         .unwrap_or("")
@@ -71,7 +75,11 @@ fn wrong_jsonrpc_version_is_rejected() {
     let responses = parse_responses(&out);
     assert_eq!(responses.len(), 1, "expected one response: {}", out);
     let resp = &responses[0];
-    assert!(resp.get("error").is_some(), "expected error response: {}", resp);
+    assert!(
+        resp.get("error").is_some(),
+        "expected error response: {}",
+        resp
+    );
     let msg = resp["error"]["message"].as_str().unwrap_or("");
     assert!(
         msg.contains("2.0"),
@@ -84,9 +92,18 @@ fn wrong_jsonrpc_version_is_rejected() {
 fn malformed_json_returns_parse_error() {
     let out = mcp_exchange(&["{this is not valid json"]);
     let responses = parse_responses(&out);
-    assert_eq!(responses.len(), 1, "expected one parse-error response: {}", out);
+    assert_eq!(
+        responses.len(),
+        1,
+        "expected one parse-error response: {}",
+        out
+    );
     let resp = &responses[0];
-    assert!(resp.get("error").is_some(), "expected error envelope: {}", resp);
+    assert!(
+        resp.get("error").is_some(),
+        "expected error envelope: {}",
+        resp
+    );
     let code = resp["error"]["code"].as_i64().unwrap_or(0);
     // -32700 is the standard JSON-RPC parse error code.
     assert_eq!(code, -32700, "expected parse error code -32700: {}", resp);
@@ -100,10 +117,18 @@ fn unknown_method_returns_method_not_found() {
     let responses = parse_responses(&out);
     assert!(responses.len() >= 2, "expected >=2 responses: {}", out);
     let last = responses.last().unwrap();
-    assert!(last.get("error").is_some(), "expected error for unknown method: {}", last);
+    assert!(
+        last.get("error").is_some(),
+        "expected error for unknown method: {}",
+        last
+    );
     let code = last["error"]["code"].as_i64().unwrap_or(0);
     // -32601 is the standard JSON-RPC "method not found" code.
-    assert_eq!(code, -32601, "expected method-not-found code -32601: {}", last);
+    assert_eq!(
+        code, -32601,
+        "expected method-not-found code -32601: {}",
+        last
+    );
 }
 
 #[test]

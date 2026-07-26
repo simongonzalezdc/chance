@@ -45,7 +45,11 @@ fn concurrent_roll_requests_all_succeed() {
     for h in handles {
         h.join().expect("worker thread panicked under concurrency");
     }
-    assert_eq!(errors.load(Ordering::Relaxed), 0, "some roll requests failed");
+    assert_eq!(
+        errors.load(Ordering::Relaxed),
+        0,
+        "some roll requests failed"
+    );
     assert_eq!(oks.load(Ordering::Relaxed), n);
 }
 
@@ -122,5 +126,9 @@ fn concurrent_seeded_roll_is_deterministic_per_thread() {
         "seeded concurrent rolls diverged: {:?}",
         totals
     );
-    assert!((1..=100).contains(&first), "d100 total out of range: {}", first);
+    assert!(
+        (1..=100).contains(&first),
+        "d100 total out of range: {}",
+        first
+    );
 }

@@ -34,7 +34,9 @@ fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> io::Re
     terminal.show_cursor()
 }
 
-fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<(), Box<dyn std::error::Error>> {
+fn run_app(
+    terminal: &mut Terminal<CrosstermBackend<Stdout>>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut app = App::new();
     let tick_rate = Duration::from_millis(100);
 
@@ -141,8 +143,7 @@ fn handle_viz_popup(app: &mut App, code: KeyCode) {
         KeyCode::Esc | KeyCode::Char('v') | KeyCode::Enter => {
             app.selected_source = app.popup_selection;
             app.popup = Popup::None;
-            app.status_message =
-                Some(format!("source set to {}", app.current_source_name()));
+            app.status_message = Some(format!("source set to {}", app.current_source_name()));
         }
         KeyCode::Up | KeyCode::Left | KeyCode::Char('k') | KeyCode::Char('h') => {
             if app.popup_selection > 0 {

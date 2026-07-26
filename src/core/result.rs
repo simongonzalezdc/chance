@@ -39,4 +39,3 @@ pub enum SourceHealth {
     Degraded,
     Unavailable,
 }
-

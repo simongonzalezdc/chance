@@ -3,8 +3,8 @@
 // and adversarial inputs (unknown tools, missing required params,
 // invalid arguments, malformed JSON payloads).
 
-use chance::mcp::tools::{all_tools, call_tool};
 use chance::mcp::protocol::CallToolParams;
+use chance::mcp::tools::{all_tools, call_tool};
 use serde_json::json;
 
 // ── Tool Listing ─────────────────────────────────────────────────────────
@@ -74,7 +74,10 @@ fn call_roll_default_notation_succeeds() {
         arguments: Some(json!({})),
     };
     let result = call_tool(&params);
-    assert!(!result.is_error, "roll with default notation should succeed");
+    assert!(
+        !result.is_error,
+        "roll with default notation should succeed"
+    );
 }
 
 #[test]

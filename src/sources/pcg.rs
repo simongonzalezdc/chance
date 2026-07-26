@@ -6,7 +6,8 @@ use rand_pcg::Pcg64;
 pub fn pcg64(seed: Option<&str>) -> Result<Box<dyn Source>, crate::core::SourceError> {
     let (rng, seed_str) = seeded_rng::<Pcg64>(seed)?;
     Ok(Box::new(
-        RngSource::new(rng, "pcg64", SourceKind::Prng).with_seed(seed_str.unwrap_or_default().to_string()),
+        RngSource::new(rng, "pcg64", SourceKind::Prng)
+            .with_seed(seed_str.unwrap_or_default().to_string()),
     ))
 }
 
@@ -14,6 +15,7 @@ pub fn pcg64(seed: Option<&str>) -> Result<Box<dyn Source>, crate::core::SourceE
 pub fn pcg64mcg(seed: Option<&str>) -> Result<Box<dyn Source>, crate::core::SourceError> {
     let (rng, seed_str) = seeded_rng::<rand_pcg::Pcg64Mcg>(seed)?;
     Ok(Box::new(
-        RngSource::new(rng, "pcg64mcg", SourceKind::Prng).with_seed(seed_str.unwrap_or_default().to_string()),
+        RngSource::new(rng, "pcg64mcg", SourceKind::Prng)
+            .with_seed(seed_str.unwrap_or_default().to_string()),
     ))
 }

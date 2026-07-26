@@ -1,6 +1,9 @@
 use crate::core::source::Source;
 
-pub fn random_bytes(source: &mut dyn Source, count: usize) -> Result<Vec<u8>, crate::core::SourceError> {
+pub fn random_bytes(
+    source: &mut dyn Source,
+    count: usize,
+) -> Result<Vec<u8>, crate::core::SourceError> {
     let mut buf = vec![0u8; count];
     source.fill_bytes(&mut buf)?;
     Ok(buf)

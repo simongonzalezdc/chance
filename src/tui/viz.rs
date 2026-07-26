@@ -19,7 +19,9 @@ use ratatui::{
 };
 
 use super::app::App;
-use super::ui::{ACCENT, ACCENT_DARK, BG, BORDER, CYAN, GREEN, MAGENTA, RED, SURFACE, TEXT, TEXT_DIM};
+use super::ui::{
+    ACCENT, ACCENT_DARK, BG, BORDER, CYAN, GREEN, MAGENTA, RED, SURFACE, TEXT, TEXT_DIM,
+};
 
 /// A soft electric blue used for splitmix64.
 const BLUE: Color = Color::Rgb(120, 180, 255);
@@ -49,9 +51,18 @@ const OS: Spec = Spec {
             reservoir, vets it, and serves unpredictable bytes via getrandom().",
     accent: CYAN,
     stages: &[
-        Stage { glyph: "⏳", label: "entropy pool" },
-        Stage { glyph: "⚙", label: "getrandom()" },
-        Stage { glyph: "✓", label: "CSPRNG bytes" },
+        Stage {
+            glyph: "⏳",
+            label: "entropy pool",
+        },
+        Stage {
+            glyph: "⚙",
+            label: "getrandom()",
+        },
+        Stage {
+            glyph: "✓",
+            label: "CSPRNG bytes",
+        },
     ],
     show_matrix: false,
 };
@@ -62,10 +73,22 @@ const CHACHA: Spec = Spec {
             add–rotate–xor rounds over a 4×4 matrix, yielding a fast keystream.",
     accent: ACCENT,
     stages: &[
-        Stage { glyph: "🔑", label: "256-bit key" },
-        Stage { glyph: "▦", label: "4×4 state" },
-        Stage { glyph: "⟳", label: "20 ARX rounds" },
-        Stage { glyph: "≈", label: "keystream" },
+        Stage {
+            glyph: "🔑",
+            label: "256-bit key",
+        },
+        Stage {
+            glyph: "▦",
+            label: "4×4 state",
+        },
+        Stage {
+            glyph: "⟳",
+            label: "20 ARX rounds",
+        },
+        Stage {
+            glyph: "≈",
+            label: "keystream",
+        },
     ],
     show_matrix: true,
 };
@@ -76,9 +99,18 @@ const XOSHIRO: Spec = Spec {
             (multiply ** or add-rotate ++) into a 64-bit output.",
     accent: MAGENTA,
     stages: &[
-        Stage { glyph: "▣", label: "state words" },
-        Stage { glyph: "↻", label: "xor·shift·rotate" },
-        Stage { glyph: "✦", label: "tempered out" },
+        Stage {
+            glyph: "▣",
+            label: "state words",
+        },
+        Stage {
+            glyph: "↻",
+            label: "xor·shift·rotate",
+        },
+        Stage {
+            glyph: "✦",
+            label: "tempered out",
+        },
     ],
     show_matrix: false,
 };
@@ -89,10 +121,22 @@ const PCG: Spec = Spec {
             scrambles the high bits into fast, statistically-excellent output.",
     accent: GREEN,
     stages: &[
-        Stage { glyph: "▢", label: "u128 state" },
-        Stage { glyph: "×", label: "LCG step" },
-        Stage { glyph: "⚢", label: "permute" },
-        Stage { glyph: "→", label: "output" },
+        Stage {
+            glyph: "▢",
+            label: "u128 state",
+        },
+        Stage {
+            glyph: "×",
+            label: "LCG step",
+        },
+        Stage {
+            glyph: "⚢",
+            label: "permute",
+        },
+        Stage {
+            glyph: "→",
+            label: "output",
+        },
     ],
     show_matrix: false,
 };
@@ -103,10 +147,22 @@ const SPLITMIX: Spec = Spec {
             splitmix xor·shift·multiply scatters the bits into output.",
     accent: BLUE,
     stages: &[
-        Stage { glyph: "▢", label: "u64 state" },
-        Stage { glyph: "+γ", label: "golden add" },
-        Stage { glyph: "ǂ", label: "xor·mul mix" },
-        Stage { glyph: "→", label: "output" },
+        Stage {
+            glyph: "▢",
+            label: "u64 state",
+        },
+        Stage {
+            glyph: "+γ",
+            label: "golden add",
+        },
+        Stage {
+            glyph: "ǂ",
+            label: "xor·mul mix",
+        },
+        Stage {
+            glyph: "→",
+            label: "output",
+        },
     ],
     show_matrix: false,
 };
@@ -117,10 +173,22 @@ const DRAND: Spec = Spec {
             chained signatures are unbiased, publicly-verifiable randomness.",
     accent: GREEN,
     stages: &[
-        Stage { glyph: "📡", label: "beacon nodes" },
-        Stage { glyph: "✶", label: "BLS threshold" },
-        Stage { glyph: "⛓", label: "round chain" },
-        Stage { glyph: "☉", label: "public rand" },
+        Stage {
+            glyph: "📡",
+            label: "beacon nodes",
+        },
+        Stage {
+            glyph: "✶",
+            label: "BLS threshold",
+        },
+        Stage {
+            glyph: "⛓",
+            label: "round chain",
+        },
+        Stage {
+            glyph: "☉",
+            label: "public rand",
+        },
     ],
     show_matrix: false,
 };
@@ -131,10 +199,22 @@ const HARDWARE: Spec = Spec {
             RDRAND / RDSEED instruction.",
     accent: RED,
     stages: &[
-        Stage { glyph: "⚡", label: "noise source" },
-        Stage { glyph: "🔒", label: "conditioner" },
-        Stage { glyph: "🧬", label: "DRBG" },
-        Stage { glyph: "→", label: "instruction" },
+        Stage {
+            glyph: "⚡",
+            label: "noise source",
+        },
+        Stage {
+            glyph: "🔒",
+            label: "conditioner",
+        },
+        Stage {
+            glyph: "🧬",
+            label: "DRBG",
+        },
+        Stage {
+            glyph: "→",
+            label: "instruction",
+        },
     ],
     show_matrix: false,
 };
@@ -145,10 +225,22 @@ const MIX: Spec = Spec {
             one trustworthy source taints the blend into a CSPRNG.",
     accent: ACCENT,
     stages: &[
-        Stage { glyph: "A·B", label: "input sources" },
-        Stage { glyph: "▽", label: "SHA-256 funnel" },
-        Stage { glyph: "↯", label: "HKDF extract" },
-        Stage { glyph: "☉", label: "blended" },
+        Stage {
+            glyph: "A·B",
+            label: "input sources",
+        },
+        Stage {
+            glyph: "▽",
+            label: "SHA-256 funnel",
+        },
+        Stage {
+            glyph: "↯",
+            label: "HKDF extract",
+        },
+        Stage {
+            glyph: "☉",
+            label: "blended",
+        },
     ],
     show_matrix: false,
 };
@@ -176,7 +268,10 @@ pub fn draw_viz(frame: &mut Frame, app: &App) {
     let spec = spec_for(name);
     let accent = spec.accent;
 
-    frame.render_widget(Paragraph::new("").style(Style::default().bg(BG)), frame.area());
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(BG)),
+        frame.area(),
+    );
 
     let area = frame.area();
     let chunks = Layout::default()

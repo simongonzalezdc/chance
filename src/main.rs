@@ -1,4 +1,4 @@
-use chance::cli::{Cli, run};
+use chance::cli::{run, Cli};
 use clap::Parser;
 
 fn main() {

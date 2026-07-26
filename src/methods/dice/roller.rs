@@ -1,5 +1,5 @@
-use crate::core::source::Source;
 use crate::core::range::{uniform_i64_inclusive, uniform_u64_inclusive};
+use crate::core::source::Source;
 use crate::methods::dice::ast::*;
 use crate::methods::dice::parser::parse;
 
@@ -27,7 +27,10 @@ pub struct DieRoll {
     pub rerolled: bool,
 }
 
-pub fn roll_dice(source: &mut dyn Source, notation: &str) -> Result<RollResult, crate::core::SourceError> {
+pub fn roll_dice(
+    source: &mut dyn Source,
+    notation: &str,
+) -> Result<RollResult, crate::core::SourceError> {
     let expr = parse(notation).map_err(|e| {
         crate::core::SourceError::GenerationFailed(format!("dice parse error: {e}"))
     })?;
@@ -49,9 +52,7 @@ fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::c
                 modifier_total = modifier_total
                     .checked_add((sign_mult as i128) * (*n as i128))
                     .ok_or_else(|| {
-                        crate::core::SourceError::GenerationFailed(
-                            "dice total overflow".into(),
-                        )
+                        crate::core::SourceError::GenerationFailed("dice total overflow".into())
                     })?;
             }
             Term::Dice(dice) => {
@@ -59,9 +60,7 @@ fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::c
                 total = total
                     .checked_add((sign_mult as i128) * (result.total as i128))
                     .ok_or_else(|| {
-                        crate::core::SourceError::GenerationFailed(
-                            "dice total overflow".into(),
-                        )
+                        crate::core::SourceError::GenerationFailed("dice total overflow".into())
                     })?;
                 all_rolls.extend(result.rolls);
                 all_dropped.extend(result.dropped);
@@ -76,8 +75,9 @@ fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::c
         .checked_add(modifier_total)
         .ok_or_else(|| crate::core::SourceError::GenerationFailed("dice total overflow".into()))?;
 
-    let total_i64 = i64::try_from(total)
-        .map_err(|_| crate::core::SourceError::GenerationFailed("dice total out of i64 range".into()))?;
+    let total_i64 = i64::try_from(total).map_err(|_| {
+        crate::core::SourceError::GenerationFailed("dice total out of i64 range".into())
+    })?;
     let modifier_total_i64 = i64::try_from(modifier_total).map_err(|_| {
         crate::core::SourceError::GenerationFailed("dice total out of i64 range".into())
     })?;
@@ -91,7 +91,10 @@ fn evaluate(source: &mut dyn Source, expr: &Expr) -> Result<RollResult, crate::c
     })
 }
 
-fn roll_die_term(source: &mut dyn Source, dice: &DiceTerm) -> Result<RollResult, crate::core::SourceError> {
+fn roll_die_term(
+    source: &mut dyn Source,
+    dice: &DiceTerm,
+) -> Result<RollResult, crate::core::SourceError> {
     // Guard against degenerate inputs that would overflow the accumulator or
     // spin for an unbounded number of rolls. This cap is enforced at the method
     // level so direct callers (not just the API, which caps per-field) are safe.
@@ -144,7 +147,12 @@ fn roll_die_term(source: &mut dyn Source, dice: &DiceTerm) -> Result<RollResult,
 
         // Apply reroll modifiers before anything else.
         for modifier in &dice.modifiers {
-            if let Modifier::Reroll { comparator, value, once } = modifier {
+            if let Modifier::Reroll {
+                comparator,
+                value,
+                once,
+            } = modifier
+            {
                 let mut guard = 0u32;
                 while comparator.compare(roll.value, *value) && guard < 100 {
                     roll.value = if fudge {
@@ -253,7 +261,10 @@ fn roll_die_term(source: &mut dyn Source, dice: &DiceTerm) -> Result<RollResult,
     let mut success_count: Option<u64> = None;
     for modifier in &dice.modifiers {
         if let Modifier::Success { comparator, value } = modifier {
-            let count = kept.iter().filter(|r| comparator.compare(r.value, *value)).count() as u64;
+            let count = kept
+                .iter()
+                .filter(|r| comparator.compare(r.value, *value))
+                .count() as u64;
             success_count = Some(success_count.unwrap_or(0) + count);
         }
     }
