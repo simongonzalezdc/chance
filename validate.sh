@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# Integration smoke for chance (CLI / API / MCP / TUI / adversarial).
+#
+# Prerequisites: release binary at ./target/release/chance (cargo build --release),
+# curl, tmux. Network not required for local os-csprng paths.
+#
+# Quality gates (run from repo root before push):
+#   cargo fmt --check
+#   cargo clippy --all-targets --all-features -- -D warnings
+#   cargo test
+#   cargo build --release
+#   ./validate.sh
+#
+# MCP assertions match the wire field isError (camelCase), not Rust is_error.
 set -u
 
 BIN="./target/release/chance"
@@ -147,8 +160,9 @@ done
 
 "$BIN" mcp < "$MCP_IN" > "$MCP_OUT" 2>&1
 
-MCP_ERRORS=$(grep -c '"is_error":true' "$MCP_OUT" || true)
-MCP_OK=$(grep -c '"is_error":false' "$MCP_OUT" || true)
+# Wire format uses camelCase isError (see src/mcp/protocol.rs CallToolResult).
+MCP_ERRORS=$(grep -c '"isError":true' "$MCP_OUT" || true)
+MCP_OK=$(grep -c '"isError":false' "$MCP_OUT" || true)
 if [ "$MCP_ERRORS" -eq 0 ] && [ "$MCP_OK" -ge 19 ]; then
     record_pass "mcp all tools"
 else
@@ -264,7 +278,7 @@ JSON
 
 "$BIN" mcp < "$MCP_ADV_IN" > "$MCP_ADV_OUT" 2>&1
 
-MCP_ADV_ERRORS=$(grep -c '"is_error":true' "$MCP_ADV_OUT" || true)
+MCP_ADV_ERRORS=$(grep -c '"isError":true' "$MCP_ADV_OUT" || true)
 if [ "$MCP_ADV_ERRORS" -ge 5 ]; then
     record_pass "mcp adversarial (5 errors returned)"
 else
