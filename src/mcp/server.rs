@@ -175,7 +175,7 @@ fn handle_message(line: &str, initialized: &mut bool) -> Option<JsonRpcResponse>
         )),
         "tools/list" => {
             let tools = tools::all_tools();
-            let result = json!({ "tools": tools });
+            let result = json!({ "tools": tools, "_meta": { "ttlMs": 3600000, "cacheScope": "public" } });
             Some(JsonRpcResponse::ok(id, result))
         }
         "tools/call" => {

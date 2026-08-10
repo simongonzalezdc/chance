@@ -43,10 +43,10 @@ fn tool(name: &str, description: &str, required: &[&str], properties: Value) -> 
 }
 
 pub fn all_tools() -> Vec<Tool> {
-    vec![
+    let mut tools = vec![
         tool(
             "chance_roll",
-            "Roll dice using standard RPG notation (e.g. d20, 4d6kh3, 2d20adv).",
+            "Roll dice using standard RPG notation (e.g. d20, 4d6kh3, 2d20adv). Returns the roll total, individual die values, and modifier breakdown. Use when a game or RPG session needs random dice results. Pass notation directly from the user's roll request.",
             &["notation"],
             json!({
                 "notation": {
@@ -60,7 +60,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_flip",
-            "Flip one or more coins.",
+            "Flip one or more coins. Returns each flip result (heads/tails) and aggregate counts. Use when generating a binary random decision or coin toss. Pass times from the user request for how many flips.",
             &[],
             json!({
                 "times": {
@@ -74,7 +74,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_draw",
-            "Draw cards from a shuffled 52-card deck.",
+            "Draw cards from a shuffled standard 52-card deck. Returns each card's rank and suit. Use when dealing a hand of cards for a game. Pass count from the user request for how many cards to draw.",
             &[],
             json!({
                 "count": {
@@ -88,7 +88,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_pick",
-            "Pick one or more distinct winners from a list.",
+            "Pick one or more distinct winners from a list without replacement. Returns the selected items. Use when choosing random winners or samples from a candidate set. Pass items from the user request and count for how many to pick.",
             &["items"],
             json!({
                 "items": {
@@ -108,7 +108,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_shuffle",
-            "Shuffle a list of items.",
+            "Shuffle a list of items into a uniformly random order. Returns the full list reordered. Use when randomizing the ordering of known items. Pass items from the user request.",
             &["items"],
             json!({
                 "items": {
@@ -122,7 +122,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_integer",
-            "Generate a random integer in an inclusive range.",
+            "Generate a random integer in an inclusive range. Returns the generated integer value. Use when picking a number within bounds. Pass min and max from the user request to set the range.",
             &[],
             json!({
                 "min": {
@@ -139,7 +139,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_bytes",
-            "Generate random bytes, encoded as hex or base64.",
+            "Generate cryptographically random bytes encoded as hex or base64. Returns the encoded byte string and count. Use when generating tokens, salts, or raw entropy. Pass count and encoding from the user request.",
             &[],
             json!({
                 "count": {
@@ -159,7 +159,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_uuid",
-            "Generate a random UUID (v4 or v7).",
+            "Generate a random UUID (v4 or v7). Returns the UUID string. Use when creating unique identifiers for records or resources. Pass version from the user request (4 or 7).",
             &[],
             json!({
                 "version": {
@@ -172,7 +172,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_password",
-            "Generate a random password.",
+            "Generate a random password. Returns the generated password string. Use when creating credentials or secrets. Pass length and symbols from the user request.",
             &[],
             json!({
                 "length": {
@@ -191,7 +191,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_runes",
-            "Draw Elder Futhark runes.",
+            "Draw Elder Futhark runes. Returns each rune's name, meaning, and upright or merk (reversed) orientation. Use when performing Norse runic divination. Pass count from the user request for how many runes to draw.",
             &[],
             json!({
                 "count": {
@@ -205,7 +205,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_iching",
-            "Cast an I Ching hexagram using coin or yarrow method.",
+            "Cast an I Ching hexagram using the coin or yarrow method. Returns the primary hexagram number, changing lines, and the resulting transformed hexagram. Use when performing I Ching divination. Pass method from the user request (coin or yarrow).",
             &[],
             json!({
                 "method": {
@@ -218,7 +218,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_tarot",
-            "Draw Tarot cards (Major Arcana + Minor Arcana) with upright/reversed orientation.",
+            "Draw Tarot cards from the full 78-card deck (Major and Minor Arcana). Returns each card's name, arcana, suit, number, and upright/reversed orientation. Use when performing tarot divination. Pass count from the user request for how many cards to draw.",
             &[],
             json!({
                 "count": {
@@ -232,7 +232,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_dominoes",
-            "Draw dominoes from a double-n set.",
+            "Draw dominoes from a double-n set. Returns each tile's two pip-counts. Use when generating a domino hand for tabletop play. Pass set and count from the user request.",
             &[],
             json!({
                 "set": {
@@ -253,7 +253,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_roulette",
-            "Spin a roulette wheel.",
+            "Spin a roulette wheel. Returns the winning number, its color, and the wheel variant. Use when simulating casino roulette. Pass variant from the user request (european or american).",
             &[],
             json!({
                 "variant": {
@@ -266,7 +266,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_lottery",
-            "Draw lottery numbers from a pool.",
+            "Draw lottery numbers from a numbered pool. Returns the drawn numbers sorted ascending, plus optional bonus balls from a separate pool. Use when simulating a lottery draw. Pass pool, pick, and optional bonus_pool from the user request.",
             &[],
             json!({
                 "pool": {
@@ -293,7 +293,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_knucklebones",
-            "Cast knucklebones / astragali.",
+            "Cast knucklebones or astragali (ancient bone dice). Returns each bone's landed face and numeric value. Use when simulating ancient bone-dice divination or games. Pass count from the user request for how many bones to cast.",
             &[],
             json!({
                 "count": {
@@ -307,7 +307,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_teetotum",
-            "Spin a teetotum or dreidel.",
+            "Spin a teetotum or dreidel. Returns the landed face and its meaning. Use when simulating a spinning-top game. Pass dreidel from the user request to select Hebrew dreidel faces over Latin teetotum faces.",
             &[],
             json!({
                 "dreidel": {
@@ -319,7 +319,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_cowrie",
-            "Cast cowrie shells (Santería / Ifá divination).",
+            "Cast cowrie shells for Santería or Ifá divination. Returns each shell's orientation (open/closed) and the resulting odu signature. Use when performing Afro-Cuban religious divination. Pass shells from the user request (traditionally 4 or 16).",
             &[],
             json!({
                 "shells": {
@@ -333,7 +333,7 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         tool(
             "chance_lots",
-            "Draw lots (sortition) from a list.",
+            "Draw lots (sortition) from a list. Returns the selected items in draw order. Use when performing sortition or random selection from a set of candidates. Pass items from the user request and count for how many to draw.",
             &["items"],
             json!({
                 "items": {
@@ -353,15 +353,17 @@ pub fn all_tools() -> Vec<Tool> {
         ),
         Tool {
             name: "chance_sources".to_string(),
-            description: Some("List available randomness sources.".to_string()),
+            description: Some("List available randomness sources. Returns an array of source name strings (e.g. os-csprng, chacha20, xoshiro256**, mix, drand). Use when discovering which entropy backends the server supports. Takes no parameters.".to_string()),
             input_schema: json!({"type": "object", "properties": {}}),
         },
         Tool {
             name: "chance_health".to_string(),
-            description: Some("Check server health.".to_string()),
+            description: Some("Check the MCP server health. Returns server status and the configured randomness source. Use when verifying the server is responsive and operational. Takes no parameters.".to_string()),
             input_schema: json!({"type": "object", "properties": {}}),
         },
-    ]
+    ];
+    tools.sort_by(|a, b| a.name.cmp(&b.name));
+    tools
 }
 
 fn empty_args() -> Value {
