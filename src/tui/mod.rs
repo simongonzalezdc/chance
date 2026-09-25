@@ -150,10 +150,10 @@ fn handle_viz_popup(app: &mut App, code: KeyCode) {
                 app.popup_selection -= 1;
             }
         }
-        KeyCode::Down | KeyCode::Right | KeyCode::Char('j') | KeyCode::Char('l') => {
-            if app.popup_selection + 1 < app.sources.len() {
-                app.popup_selection += 1;
-            }
+        KeyCode::Down | KeyCode::Right | KeyCode::Char('j') | KeyCode::Char('l')
+            if app.popup_selection + 1 < app.sources.len() =>
+        {
+            app.popup_selection += 1;
         }
         _ => {}
     }
