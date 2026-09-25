@@ -1,6 +1,6 @@
 ═══════════════════════════════════════════════════════
  CHANCE END-TO-END JOURNEY VALIDATION
- binary: /Users/simongonzalezdecruz/workspaces/chance/target/release/chance  | LLM model: claude-haiku-4-5-20251001
+ binary: ~/workspaces/chance/target/release/chance  | LLM model: claude-haiku-4-5-20251001
 ═══════════════════════════════════════════════════════
 
 ══ PHASE 1: CLI USER JOURNEYS ══
